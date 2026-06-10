@@ -6,7 +6,7 @@ import "../styles/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Đăng Kiểm Việt Nam",
+  title: "Quản lý ký túc xá",
   description: "A platform for Dang Kiem Viet Nam",
 };
 

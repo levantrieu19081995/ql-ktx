@@ -49,6 +49,6 @@ export default function LoginLayout({
 
 // (tuỳ chọn)
 export const metadata = {
-  title: "Đăng nhập • Đăng kiểm việt Nam",
+  title: "Đăng nhập • Quản lý ký túc xá",
   robots: { index: false },
 };

@@ -109,7 +109,7 @@ function LoginContent() {
         <Group justify="center">
           <Image
             src={logo}
-            alt="Đăng kiểm Việt Nam"
+            alt="Quản lý ký túc xá"
             width={120}
             height={120}
             priority

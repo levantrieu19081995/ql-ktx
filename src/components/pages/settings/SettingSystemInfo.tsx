@@ -222,7 +222,7 @@ export default function SettingSystemInfo({
           <TextInput
             withAsterisk
             label="Tên (Title)"
-            placeholder="VD: QUẢN LÝ ĐĂNG KIỂM"
+            placeholder="VD: QUẢN LÝ KÝ TÚC XÁ"
             leftSection={<IconBuildingSkyscraper size={16} />}
             value={values.title}
             onChange={(e) => onChange("title", e.currentTarget.value)}

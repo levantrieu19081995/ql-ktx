@@ -1,5 +1,5 @@
  
-// Thay số liệu/URL đúng với Đăng kiểm việt Nam của bạn
+// Thay số liệu/URL đúng với Quản lý ký túc xá của bạn
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 import logoPng from "@/assets/images/logo.png";
 type Company = {
@@ -14,7 +14,7 @@ type Company = {
   socials:  any; 
 };
 export const COMPANY:Company = {
-  name: "Đăng kiểm việt Nam",
+  name: "Quản lý ký túc xá",
 
   logoSrc: logoPng, 
   email: "info@ctgroupvietnam.com",

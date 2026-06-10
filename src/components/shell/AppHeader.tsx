@@ -46,7 +46,7 @@ type CompanySettings = {
 };
 
 const DEFAULT_SETTINGS: CompanySettings = {
-  title: "QUẢN LÝ ĐĂNG KIỂM",
+  title: "QUẢN LÝ KÝ TÚC XÁ",
   primaryColor: "#4C6EF5",
   address: "Tòa nhà ABC, Quận 1, TP. HCM",
   phone: "+84 912 345 678",
@@ -64,7 +64,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
   const name = user?.ten || user?.ten || "User";
 
   const [titleConfig, setTitleConfig] = useState<string>(
-    DEFAULT_SETTINGS.title
+    DEFAULT_SETTINGS.title,
   ); // Đặt giá trị mặc định
   const [logoConfig, setLogoConfig] = useState<string>("");
 

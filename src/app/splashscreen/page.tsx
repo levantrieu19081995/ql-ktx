@@ -56,7 +56,7 @@ const SplashScreen = () => {
         {/* Logo */}
         <Image
           src={logo}
-          alt="Đăng Kiểm Việt Nam Logo"
+          alt="Quản lý ký túc xá Logo"
           width={150}
           height={150}
           priority
@@ -64,7 +64,7 @@ const SplashScreen = () => {
       </div>
 
       <p style={{ fontSize: "16px", textAlign: "center" }}>
-        Chào mừng đến với Đăng kiểm Việt Nam!
+        Chào mừng đến với Đại học Cần Thơ!
       </p>
       <p
         style={{
@@ -74,7 +74,7 @@ const SplashScreen = () => {
           marginTop: 20,
         }}
       >
-        QUẢN LÝ ĐĂNG KIỂM LÁI XE
+        QUẢN LÝ KÝ TÚC XÁ
       </p>
     </div>
   );

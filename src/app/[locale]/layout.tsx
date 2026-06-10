@@ -13,7 +13,7 @@ import { Suspense } from "react";
 type Props = { children: React.ReactNode; params: { locale: string } };
 
 export const metadata = {
-  title: "Quản lý đăng kiểm",
+  title: "Quản lý ký túc xá",
   description: "Next.js + Mantine",
 };
 

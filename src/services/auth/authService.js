@@ -22,7 +22,7 @@ export async function refreshTokenAPI(refreshToken) {
   }
 }
 
-// Hàm verify credentials (lấy token) Quản lý đăng kiểm
+// Hàm verify credentials (lấy token) Quản lý ký túc xá
 export async function verifyCredentialsAPI({ username, password }) {
   const params = { captchaGuid: "", captchaCode: "", deviceToken: "", type: 1 };
   try {

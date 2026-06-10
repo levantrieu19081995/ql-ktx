@@ -33,7 +33,7 @@ type CompanySettings = {
 const STORAGE_KEY = "company_settings_v1";
 
 const DEFAULT_SETTINGS: CompanySettings = {
-  title: "QUẢN LÝ ĐĂNG KIỂM",
+  title: "QUẢN LÝ KÝ TÚC XÁ",
   primaryColor: "#4C6EF5",
   address: "Tòa nhà ABC, Quận 1, TP. HCM",
   phone: "+84 912 345 678",
@@ -56,7 +56,7 @@ export default function SettingPage() {
 
   const previewColor = useMemo(
     () => values.primaryColor || "#4C6EF5",
-    [values.primaryColor]
+    [values.primaryColor],
   );
 
   // load từ localStorage

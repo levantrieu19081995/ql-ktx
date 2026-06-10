@@ -4,14 +4,14 @@
     "followers": "{count, plural, =0 {Chưa có người theo dõi} =1 {1 người theo dõi} other {# người theo dõi}}"
   },
   "Login": {
-    "title": "Đăng nhập QUẢN LÝ ĐĂNG KIỂM",
+    "title": "Đăng nhập QUẢN LÝ KÝ TÚC XÁ",
     "welcome": "Chào mừng bạn trở lại. Vui lòng đăng nhập để tiếp tục.",
     "username": "Tài khoản",
     "password": "Mật khẩu",
     "usernamePh": "Nhập tài khoản",
     "passwordPh": "••••••••",
     "submit": "Đăng nhập",
-    "divider": "QUẢN LÝ ĐĂNG KIỂM • an internal system",
+    "divider": "QUẢN LÝ KÝ TÚC XÁ • an internal system",
     "forgot": "Quên mật khẩu? Liên hệ quản trị viên để được cấp lại.",
     "errors": {
       "CredentialsSignin": "Tài khoản hoặc mật khẩu không đúng.",
