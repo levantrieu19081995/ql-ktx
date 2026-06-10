@@ -1,0 +1,11 @@
+/* src\styles\mantine-overrides.css */
+/* Drawer luôn đứng trên AppShell */
+/* Drawer luôn top nhất */
+.mantine-Drawer-root {
+  z-index: 99999 !important;
+}
+
+/* Modal dưới Drawer */
+.mantine-Modal-root {
+  z-index: 99990 !important;
+}

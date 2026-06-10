@@ -1,0 +1,56 @@
+{
+  "appInfo": {
+    "appVersion": "v1.0.0",
+    "buildDate": "2025-11-26 16:10"
+  },
+  "versions": [
+    {
+      "id": 1,
+      "date": "2025-11-23 17:10",
+      "version": "v1.0.0",
+      "note": "1 bản cập nhật trong ngày",
+      "newFeatures": [
+        "Hiệu chỉnh chức năng tiếp tục đăng nhập khi hết phiên đăng nhập hiện tại",
+        "Chỉnh sửa quyền được cập nhật khi khởi động hệ thống",
+        "Tối ưu tốc độ tải dữ liệu khi mở chi tiết hồ sơ"
+      ]
+    },
+    {
+      "id": 2,
+      "date": "2025-02-24 17:10",
+      "version": "v1.0.4",
+      "note": "4 bản cập nhật ",
+      "newFeatures": [
+        "Hiệu chỉnh giao diện mobile",
+        "Hiệu chỉnh các thông báo của hệ thống theo giá trị api trả về",
+        "Bổ sung chức năng tự động chọn chủ sở hữu sao khi thêm mới thành công"
+      ]
+    },
+    {
+      "id": 3,
+      "date": "2025-02-26 16:10",
+      "version": "v1.0.0",
+      "note": "1 bản cập nhật ",
+      "newFeatures": [
+        "Hiệu chỉnh giao diện mobile",
+        "Bổ sung chức năng thống kê quản lý hóa đơn"
+      ]
+    }
+  ],
+  "ListOfAppFunctions": [
+    "Tổng quan: Hiển thị số lượng tổng phương tiện đăng kiểm, Xe đạt đăng kiểm, Xe không đạt, Tổng thu phí, Lượt đăng kiểm theo loại phương tiện, Tỷ trọng theo loại phương tiện,Danh sách thu phí dịch vụ",
+    "Đăng kiểm PTGT đường bộ: Tiếp nhận hồ sơ, Thu phí đăng kiểm, Thu phí GCN, Hoàn thành",
+    "Thu phí khác: Tiếp nhận hồ sơ, Thu phí khác, Hoàn thành",
+    "Thu phí PT thủy nội địa: Tiếp nhận hồ sơ, Thu phí, hoàn thành",
+    "Kiểm định ATLĐ: Tiếp nhận hồ sơ, Thu phí, hoàn thành",
+    "Chứng nhận cải tạo: Tiếp nhận hồ sơ, Thu phí, hoàn thành",
+    "Xe máy chuyên dụng: Tiếp nhận hồ sơ, Thu phí, hoàn thành",
+    "Quản lý hóa đơn: Danh sách hóa đơn, chi tiết hóa đơn",
+    "Danh mục hệ thống: Danh mục loại phí, phí dịch vụ, loại phương tiện, phương tiện, thủ tục, biễu mẫu",
+    "Người dùng - Vai trò: Quản lý người dùng, quản lý vai trò",
+    "Tài liệu hướng dẫn: Tài liệu hướng dẫn sử dụng Đăng kiểm PTGT đường bộ, Thu phí khác",
+    "Quản trị hệ thống: Thông tin hiển thị, thông tin thanh toán, xem trước giao diện thông tin ",
+    "Phiếu tạm thu: Bổ sung thông tin số phiếu (stt)",
+    "Đăng xuất: Xác nhận đăng xuất"
+  ]
+}

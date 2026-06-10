@@ -1,0 +1,124 @@
+{
+  "Common": {
+    "hello": "hello Tiếng Anh ",
+    "followers": "{count, plural, =0 {Chưa có người theo dõi} =1 {1 người theo dõi} other {# người theo dõi}}"
+  },
+  "Login": {
+    "title": "Sign in to QUAN LY DANG KIEM",
+    "welcome": "Welcome back. Please sign in to continue.",
+    "username": "Username",
+    "password": "Password",
+    "usernamePh": "Enter username",
+    "passwordPh": "••••••••",
+    "submit": "Sign in",
+    "divider": "QUAN LY DANG KIEM • an internal system",
+    "forgot": "Forgot password? Contact the admin to reset.",
+    "errors": {
+      "CredentialsSignin": "Incorrect username or password.",
+      "AccessDenied": "You do not have permission to access.",
+      "generic": "Sign-in failed.",
+      "requiredUsername": "Please enter your username",
+      "minUsername": "Username must be at least {count} characters",
+      "requiredPassword": "Please enter your password",
+      "minPassword": "Password must be at least {count} characters"
+    }
+  },
+  "Header": { "search": "Search..." },
+  "UserMenu": {
+    "signedInAs": "Signed in as {name}"
+  },
+  "Menu": {
+    "home": "Overview",
+    "content": "Content",
+    "scheduler": "Scheduler",
+    "analytics": "Analytics",
+    "settings": "System Management",
+    "logout": "Logout",
+    "integrations": "Integrations",
+    "users-roles": "Users - Roles",
+    "manage-users": "User Management",
+    "manage-roles": "Roles Management",
+    "manage-permissions": "Permissions Management",
+    "cancel": "Cancel",
+    "logoutConfirmTitle": "Confirm log out",
+    "logoutConfirmDesc": "Are you sure you want to log out of this account?",
+    "billManagement": "Bill Management",
+    "feesmanagement": "Fees Management",
+    "tollManagement": "Road motor vehicle inspection",
+    "extraFeesManagement": "Toll Other",
+    "inlandWaterwaysFeesManagement": "Inland Waterway Vehicle Fee Collection",
+    "specializedMotorbikeFeesManagement": "Specialized Motorbike",
+    "inspectionFeesManagement": "Inspection ATLĐ",
+    "certificateOfRenovationFeesManagenment": "Certificate of Renovation",
+    "category": "Category system",
+    "reportsAndStatistics": "Reports And Statistics",
+    "instructionManual": "Instruction Manual",
+    "DocumentVehicleinspection": "Road motor vehicle inspection",
+    "DocumentExtraFees": "Toll Other",
+    "VersionApp": "Version",
+    "versionDetails": "Version Details",
+    "versionDetailsTitle": "New Version of the Application",
+    "currentVersion": "Current Features",
+    "newVersion": "New Features in the Version",
+    "close": "Close"
+  },
+  "Integrations": {
+    "title": "Connect platforms",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "connected": "Connected",
+    "not_connected": "Not connected",
+    "desc_connected": "Your account is linked. You can sync data and publish.",
+    "desc_not_connected": "No link yet. Click Connect to authorize.",
+    "providers": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter/X",
+      "tiktok": "TikTok"
+    }
+  },
+  "Home": {
+    "title": "Home"
+  },
+
+  "LocaleSwitcher": {
+    "aria": "Change language to {code, select, vi {Vietnamese} en {English} other {#}}",
+    "title": "Switch to {code, select, vi {Vietnamese} en {English} other {#}}"
+  },
+  "session": {
+    "expiredTitle": "TA Phiên đăng nhập đã hết hạn TA",
+    "expiredMessage": "TA Phiên của bạn đã hết hạn. Bạn có muốn tiếp tục hay đăng nhập lại?",
+    "relogin": "TA Đăng nhập lại",
+    "continue": "TA Tiếp tục"
+  },
+  "NoPermission": {
+    "title": "You don't have permission to access this page",
+    "message": "Please contact the administrator to request access.",
+    "backHome": "Back to Home"
+  },
+  "Dashboard": { "title": "Overview" },
+  "Analytics": { "title": "Analytics" },
+  "Content": { "title": "Content" },
+  "Scheduler": { "title": "Scheduler" },
+  "Settings": { "title": "Settings" },
+  "Manage-users": {
+    "title": "User Management"
+  },
+  "TollManagement": { "title": "Road vehicle inspection" },
+  "ExtraFeesManagement": { "title": "Toll Other" },
+  "InlandWaterwaysFeesManagement": {
+    "title": "Inland Waterway Vehicle Fee Collection"
+  },
+  "Category": { "title": "Category system" },
+  "BillManagement": { "title": "Bill Management" },
+  "FeesManagement": { "title": "Fees Management" },
+  "RolesManagement": { "title": "Roles Management" },
+  "PermissionsManagement": { "title": "Permissions Management" },
+  "InstructionManual": { "title": "Instruction Manual" },
+  "InspectionFeesManagement": { "title": "Inspection ATLĐ" },
+  "SpecializedMotorbikeFeesManagement": { "title": "Specialized Motorbike" },
+  "CertificateOfRenovationFeesManagenment": {
+    "title": "Certificate of Renovation"
+  }
+}

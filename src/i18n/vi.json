@@ -1,0 +1,123 @@
+{
+  "Common": {
+    "hello": "Xin chào Tiếng việt",
+    "followers": "{count, plural, =0 {Chưa có người theo dõi} =1 {1 người theo dõi} other {# người theo dõi}}"
+  },
+  "Login": {
+    "title": "Đăng nhập QUẢN LÝ ĐĂNG KIỂM",
+    "welcome": "Chào mừng bạn trở lại. Vui lòng đăng nhập để tiếp tục.",
+    "username": "Tài khoản",
+    "password": "Mật khẩu",
+    "usernamePh": "Nhập tài khoản",
+    "passwordPh": "••••••••",
+    "submit": "Đăng nhập",
+    "divider": "QUẢN LÝ ĐĂNG KIỂM • an internal system",
+    "forgot": "Quên mật khẩu? Liên hệ quản trị viên để được cấp lại.",
+    "errors": {
+      "CredentialsSignin": "Tài khoản hoặc mật khẩu không đúng.",
+      "AccessDenied": "Bạn không có quyền truy cập.",
+      "generic": "Đăng nhập thất bại.",
+      "requiredUsername": "Vui lòng nhập tài khoản",
+      "minUsername": "Tài khoản tối thiểu {count} ký tự",
+      "requiredPassword": "Vui lòng nhập mật khẩu",
+      "minPassword": "Mật khẩu tối thiểu {count} ký tự"
+    }
+  },
+  "Header": { "search": "Tìm kiếm..." },
+  "UserMenu": {
+    "signedInAs": "Đang đăng nhập: {name}"
+  },
+  "Menu": {
+    "home": "Tổng quan",
+    "content": "Quản lý nội dung",
+    "scheduler": "Lên lịch đăng",
+    "analytics": "Báo cáo thống kê",
+    "settings": "Quản lý hệ thống",
+    "logout": "Đăng xuất",
+    "integrations": "Kết nối nền tảng",
+    "users-roles": "Người dùng - Vai trò",
+    "manage-users": "Quản lý người dùng",
+    "manage-roles": "Quản lý vai trò",
+    "manage-permissions": "Quản lý quyền",
+    "cancel": "Hủy",
+    "logoutConfirmTitle": "Xác nhận đăng xuất",
+    "logoutConfirmDesc": "Bạn có chắc muốn đăng xuất khỏi tài khoản này?",
+    "billManagement": "Quản lý hóa đơn",
+    "feesmanagement": "Quản lý lệ phí",
+    "tollManagement": "Đăng kiểm PTCG đường bộ",
+    "extraFeesManagement": "Thu phí khác",
+    "inlandWaterwaysFeesManagement": "Thu phí PT thủy nội địa",
+    "specializedMotorbikeFeesManagement": "Xe máy chuyên dùng",
+    "inspectionFeesManagement": "Kiểm định ATLĐ",
+    "certificateOfRenovationFeesManagenment": "Chứng nhận cải tạo",
+    "category": "Danh mục hệ thống",
+    "reportsAndStatistics": "Báo cáo và thống kê",
+    "instructionManual": "Tài liệu hướng dẫn",
+    "DocumentVehicleinspection": "Đăng kiểm PTCG đường bộ",
+    "DocumentExtraFees": "Thu phí khác",
+    "VersionApp": "Phiên bản",
+    "versionDetails": "Chi tiết phiên bản",
+    "versionDetailsTitle": "Phiên bản mới của ứng dụng",
+    "currentVersion": "Chức năng hiện tại",
+    "newVersion": "Chức năng mới của phiên bản",
+    "close": "Đóng"
+  },
+  "Integrations": {
+    "title": "Kết nối nền tảng",
+    "connect": "Kết nối",
+    "disconnect": "Ngắt kết nối",
+    "connected": "Đã kết nối",
+    "not_connected": "Chưa kết nối",
+    "desc_connected": "Tài khoản của bạn đã được liên kết. Bạn có thể đồng bộ dữ liệu và đăng bài.",
+    "desc_not_connected": "Chưa có liên kết. Nhấn Kết nối để uỷ quyền với nền tảng.",
+    "providers": {
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "linkedin": "LinkedIn",
+      "twitter": "Twitter/X",
+      "tiktok": "TikTok"
+    }
+  },
+  "Manage-users": {
+    "title": "Quản lý người dùng"
+  },
+  "LocaleSwitcher": {
+    "aria": "Chuyển ngôn ngữ sang {code, select, vi {Tiếng Việt} en {Tiếng Anh} other {#}}",
+    "title": "Chuyển sang {code, select, vi {Tiếng Việt} en {Tiếng Anh} other {#}}"
+  },
+
+  "session": {
+    "expiredTitle": "Phiên đăng nhập đã hết hạn",
+    "expiredMessage": "Phiên của bạn đã hết hạn. Bạn có muốn tiếp tục hay đăng nhập lại?",
+    "relogin": "Đăng nhập lại",
+    "continue": "Tiếp tục"
+  },
+
+  "NoPermission": {
+    "title": "Bạn không có quyền truy cập trang này",
+    "message": "Vui lòng liên hệ quản trị viên để được cấp quyền phù hợp.",
+    "backHome": "Về trang chủ"
+  },
+
+  "Dashboard": { "title": "Tổng quan" },
+  "Analytics": { "title": "Báo cáo thống kê" },
+  "Content": { "title": "Quản lý nội dung" },
+  "Scheduler": { "title": "Lên lịch đăng" },
+  "Settings": { "title": "Cài đặt" },
+  "TollManagement": { "title": "Đăng kiểm phương tiện giao thông đường bộ" },
+  "ExtraFeesManagement": { "title": "Thu phí khác" },
+  "InlandWaterwaysFeesManagement": {
+    "title": "Thu phí Phương tiện thuỷ nội địa"
+  },
+  "Category": { "title": "Danh mục hệ thống" },
+  "BillManagement": { "title": "Quản lý hóa đơn" },
+  "FeesManagement": { "title": "Quản lý lệ phí" },
+  "RolesManagement": { "title": "Quản lý vai trò" },
+  "PermissionsManagement": { "title": "Quản lý quyền" },
+  "InstructionManual": { "title": "Tài liệu hướng dẫn" },
+  "InspectionFeesManagement": { "title": "Kiểm định ATLĐ" },
+  "SpecializedMotorbikeFeesManagement": { "title": "Xe máy chuyên dùng" },
+  "CertificateOfRenovationFeesManagenment": {
+    "title": "Chứng nhận cải tạo"
+  }
+}
