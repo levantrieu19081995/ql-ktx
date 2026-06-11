@@ -42,22 +42,18 @@ export default function DocumentMenu() {
 
         <Menu.Item
           leftSection={<IconFileText size={16} />}
-          onClick={() =>
-            window.open("/doc/HuongDan_TiepNhan_ThuPhi_DangKiem.pdf", "_blank")
-          }
+          onClick={() => window.open("/doc/huong_dan1.pdf", "_blank")}
           c={"#0f2b52ff"}
         >
-          Hướng dẫn tiếp nhận đăng kiểm
+          Hướng dẫn 1
         </Menu.Item>
         <Divider />
         <Menu.Item
           leftSection={<IconFileInvoice size={16} />}
-          onClick={() =>
-            window.open("/doc/HuongDan_TiepNhan_ThuPhi_Khac.pdf", "_blank")
-          }
+          onClick={() => window.open("/doc/huong_dan2.pdf", "_blank")}
           c={"#0f2b52ff"}
         >
-          Hướng dẫn thu phí khác
+          Hướng dẫn 2
         </Menu.Item>
       </Menu.Dropdown>
     </Menu>

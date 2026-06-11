@@ -83,10 +83,10 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === State điều khiển mở rộng các menu cha ===
   const [openParent, setOpenParent] = useState<string | null>(null);
   const openDocA = () => {
-    window.open("/doc/HuongDan_TiepNhan_ThuPhi_DangKiem.pdf", "_blank");
+    window.open("/doc/huong_dan1.pdf", "_blank");
   };
   const openDocB = () => {
-    window.open("/doc/HuongDan_TiepNhan_ThuPhi_Khac.pdf", "_blank");
+    window.open("/doc/huong_dan2.pdf", "_blank");
   };
 
   // === Danh sách menu ===

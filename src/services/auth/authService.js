@@ -9,8 +9,7 @@ export async function refreshTokenAPI(refreshToken) {
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const response = await axios.post(
-      // `${API_BASE_URL}${API_URLS.auth.refreshToken}`,
-      `${API_URLS.auth.refreshToken}`,
+      `${API_BASE_URL}${API_URLS.auth.refreshToken}`,
       { refreshToken },
     );
 
@@ -44,8 +43,7 @@ export async function verifyCredentialsAPI({ username, password }) {
     };
 
     const response = await axios.post(
-      // `${API_BASE_URL}${API_URLS.auth.authToken}`,
-      `${API_URLS.auth.authToken}`,
+      `${API_BASE_URL}${API_URLS.auth.authToken}`,
       payload,
       {
         headers: {
@@ -72,8 +70,7 @@ export async function fetchUserAPI(accessToken) {
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const response = await axios.get(
-      // `${API_BASE_URL}${API_URLS.account.inforUser}`,
-      `${API_URLS.account.inforUser}`,
+      `${API_BASE_URL}${API_URLS.account.inforUser}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

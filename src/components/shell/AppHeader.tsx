@@ -75,6 +75,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
 
       // Gọi API để lấy dữ liệu
       const configData = await fetchConfigSystem(params);
+      console.log("[RUN_LOG] ===> AppHeader  configData: ", configData);
 
       // Lọc và xử lý dữ liệu từ API để lấy app.name và app.logo
       const filteredData = configData.payload.reduce((acc: any, item) => {
@@ -96,26 +97,6 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
       console.error("Error fetching config:", error);
     }
   };
-
-  const splitTitleEvenly = (title: string) => {
-    // Tách chuỗi thành các từ
-    const words = title.split(" ");
-
-    // Tính số lượng từ trong chuỗi
-    const wordCount = words.length;
-
-    // Nếu số lượng từ là chẵn, tách ngay giữa
-    // Nếu số lượng từ là lẻ, đặt phần "lẻ" vào phần sau
-    const middleIndex = Math.floor(wordCount / 2);
-
-    // Tách phần đầu và phần sau
-    const firstPart = words.slice(0, middleIndex).join(" ");
-    const secondPart = words.slice(middleIndex).join(" ");
-
-    return { firstPart, secondPart };
-  };
-
-  const { firstPart, secondPart } = splitTitleEvenly(titleConfig);
 
   const [fullUser, setFullUser] = useState<any>(null);
   const [loadingFullUser, setLoadingFullUser] = useState(false);
@@ -192,8 +173,9 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           }}
         >
           <Image
-            src={logoConfig ? logoConfig : logo}
-            alt="Đăng kiểm việt Nam"
+            // src={logoConfig ? logoConfig : logo}
+            src={logo}
+            alt="Quản lý ký túc xá"
             width={120}
             height={120}
             priority
@@ -212,6 +194,18 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           wordBreak: "break-word", // cho phép xuống hàng
         }}
       >
+        {/* <Text
+          fw={900}
+          c={BRAND_BLUE}
+          style={{
+            fontSize: "26px",
+            letterSpacing: "2.4px",
+            lineHeight: 1.2,
+            whiteSpace: "normal", // cho phép xuống hàng
+          }}
+        >
+          {titleConfig}
+        </Text> */}
         <Text
           fw={900}
           c={BRAND_BLUE}
@@ -222,10 +216,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             whiteSpace: "normal", // cho phép xuống hàng
           }}
         >
-          {firstPart}{" "}
-          <Text span fw={900} c={BRAND_RED} style={{ fontSize: "inherit" }}>
-            {secondPart}
-          </Text>
+          QUẢN LÝ KÝ TÚC XÁ
         </Text>
       </Box>
 

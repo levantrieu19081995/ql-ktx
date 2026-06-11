@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
     "http://localhost:3000",
     "http://172.16.1.229:3000" // chỉnh theo IP máy bạn dùng
   ],
+
+  env: {
+    API_BASE_URL: process.env.API_BASE_URL,
+    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  },
   // env: {
   //   // //server
   //   // API_BASE_URL: '',
@@ -15,27 +20,14 @@ const nextConfig: NextConfig = {
 
 
   //   // //Local
-  //   // API_BASE_URL: 'http://172.16.1.123:2001',
-  //   // NEXT_PUBLIC_API_BASE_URL: 'http://172.16.1.123:2001',
+  //   API_BASE_URL: 'http://172.16.1.123:2001',
+  //   NEXT_PUBLIC_API_BASE_URL: 'http://172.16.1.123:2001',
 
-  //   API_BASE_URL: 'http://172.16.1.123:8787',
-  //   NEXT_PUBLIC_API_BASE_URL: 'http://172.16.1.123:8787',
+  // //   API_BASE_URL: 'http://172.16.1.123:8787',
+  // //   NEXT_PUBLIC_API_BASE_URL: 'http://172.16.1.123:8787',
 
   // },
   
-  // Cấu hình tạm
-  env: {
-    API_BASE_URL: process.env.API_BASE_URL,
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-
-    NEXT_PUBLIC_API_MODE: process.env.NEXT_PUBLIC_API_MODE,
-    NEXT_PUBLIC_GATEWAY_URL: process.env.NEXT_PUBLIC_GATEWAY_URL,
-    NEXT_PUBLIC_USER_SERVICE_URL: process.env.NEXT_PUBLIC_USER_SERVICE_URL,
-    NEXT_PUBLIC_KTX_SERVICE_URL: process.env.NEXT_PUBLIC_KTX_SERVICE_URL,
-    NEXT_PUBLIC_FACE_DETECT_SERVICE_URL: process.env.NEXT_PUBLIC_FACE_DETECT_SERVICE_URL,
-  },
-
-
   // Bật tính năng middleware cho tất cả các route
   // middleware: true,
 };
