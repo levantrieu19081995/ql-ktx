@@ -49,6 +49,8 @@ import {
   IconTruckLoading,
   IconBus,
   IconCraneOff,
+  IconHistory,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -92,6 +94,8 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
+    { icon: <IconHistory />, label: t("historyMenu"), href: "/history" },
+    { icon: <IconAlertTriangle />, label: t("warningsMenu"), href: "/warnings" },
     { icon: <IconCar />, label: t("tollManagement"), href: "/toll-management" },
 
     {
@@ -352,7 +356,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     if (item?.onClick && !href) return true;
 
     if (!href) return false;
-    const alwaysVisible = ["/dashboard"];
+    const alwaysVisible = ["/dashboard", "/history", "/warnings"];
     if (alwaysVisible.includes(href)) return true;
 
     const found = permissions.find((p: any) => {

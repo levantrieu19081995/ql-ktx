@@ -23,7 +23,9 @@
       "minPassword": "Mật khẩu tối thiểu {count} ký tự"
     }
   },
-  "Header": { "search": "Tìm kiếm..." },
+  "Header": {
+    "search": "Tìm kiếm..."
+  },
   "UserMenu": {
     "signedInAs": "Đang đăng nhập: {name}"
   },
@@ -60,7 +62,10 @@
     "versionDetailsTitle": "Phiên bản mới của ứng dụng",
     "currentVersion": "Chức năng hiện tại",
     "newVersion": "Chức năng mới của phiên bản",
-    "close": "Đóng"
+    "close": "Đóng",
+    "historyMenu": "Lịch sử ra vào",
+    "warningsMenu": "Cảnh báo người lạ",
+    "unit": "Đơn vị"
   },
   "Integrations": {
     "title": "Kết nối nền tảng",
@@ -85,39 +90,188 @@
     "aria": "Chuyển ngôn ngữ sang {code, select, vi {Tiếng Việt} en {Tiếng Anh} other {#}}",
     "title": "Chuyển sang {code, select, vi {Tiếng Việt} en {Tiếng Anh} other {#}}"
   },
-
   "session": {
     "expiredTitle": "Phiên đăng nhập đã hết hạn",
     "expiredMessage": "Phiên của bạn đã hết hạn. Bạn có muốn tiếp tục hay đăng nhập lại?",
     "relogin": "Đăng nhập lại",
     "continue": "Tiếp tục"
   },
-
   "NoPermission": {
     "title": "Bạn không có quyền truy cập trang này",
     "message": "Vui lòng liên hệ quản trị viên để được cấp quyền phù hợp.",
     "backHome": "Về trang chủ"
   },
-
-  "Dashboard": { "title": "Tổng quan" },
-  "Analytics": { "title": "Báo cáo thống kê" },
-  "Content": { "title": "Quản lý nội dung" },
-  "Scheduler": { "title": "Lên lịch đăng" },
-  "Settings": { "title": "Cài đặt" },
-  "TollManagement": { "title": "Đăng kiểm phương tiện giao thông đường bộ" },
-  "ExtraFeesManagement": { "title": "Thu phí khác" },
+  "Dashboard": {
+    "title": "Tổng quan"
+  },
+  "Analytics": {
+    "title": "Báo cáo thống kê"
+  },
+  "Content": {
+    "title": "Quản lý nội dung"
+  },
+  "Scheduler": {
+    "title": "Lên lịch đăng"
+  },
+  "Settings": {
+    "title": "Cài đặt"
+  },
+  "TollManagement": {
+    "title": "Đăng kiểm phương tiện giao thông đường bộ"
+  },
+  "ExtraFeesManagement": {
+    "title": "Thu phí khác"
+  },
   "InlandWaterwaysFeesManagement": {
     "title": "Thu phí Phương tiện thuỷ nội địa"
   },
-  "Category": { "title": "Danh mục hệ thống" },
-  "BillManagement": { "title": "Quản lý hóa đơn" },
-  "FeesManagement": { "title": "Quản lý lệ phí" },
-  "RolesManagement": { "title": "Quản lý vai trò" },
-  "PermissionsManagement": { "title": "Quản lý quyền" },
-  "InstructionManual": { "title": "Tài liệu hướng dẫn" },
-  "InspectionFeesManagement": { "title": "Kiểm định ATLĐ" },
-  "SpecializedMotorbikeFeesManagement": { "title": "Xe máy chuyên dùng" },
+  "Category": {
+    "title": "Danh mục hệ thống"
+  },
+  "BillManagement": {
+    "title": "Quản lý hóa đơn"
+  },
+  "FeesManagement": {
+    "title": "Quản lý lệ phí"
+  },
+  "RolesManagement": {
+    "title": "Quản lý vai trò"
+  },
+  "PermissionsManagement": {
+    "title": "Quản lý quyền"
+  },
+  "InstructionManual": {
+    "title": "Tài liệu hướng dẫn"
+  },
+  "InspectionFeesManagement": {
+    "title": "Kiểm định ATLĐ"
+  },
+  "SpecializedMotorbikeFeesManagement": {
+    "title": "Xe máy chuyên dùng"
+  },
   "CertificateOfRenovationFeesManagenment": {
     "title": "Chứng nhận cải tạo"
+  },
+  "History": {
+    "title": "LỊCH SỬ RA VÀO",
+    "tabs": {
+      "log": "Lịch sử",
+      "statistics": "Thống kê",
+      "present": "Sinh viên đang có mặt",
+      "absent": "Sinh viên vắng mặt",
+      "staff": "Cán bộ",
+      "student": "Sinh viên",
+      "warnings": "Cảnh báo"
+    },
+    "filter": {
+      "fromDate": "Từ ngày",
+      "toDate": "Đến ngày",
+      "studentId": "MSSV",
+      "fullName": "Họ tên",
+      "dormitory": "Khu KTX",
+      "group": "Nhóm",
+      "status": "Trạng thái",
+      "action": "Hành động",
+      "objectType": "Loại đối tượng",
+      "search": "Tìm kiếm",
+      "reset": "Làm mới",
+      "exportExcel": "Xuất Excel",
+      "exportPdf": "Xuất PDF",
+      "addData": "Thêm dữ liệu",
+      "all": "Tất cả",
+      "in": "Vào",
+      "out": "Ra",
+      "stranger": "Người lạ",
+      "student": "Sinh viên",
+      "staff": "Cán bộ",
+      "present": "Đang có mặt",
+      "absent": "Vắng mặt",
+      "dormA": "Khu A",
+      "dormB": "Khu B",
+      "dormC": "Khu C",
+      "dormD": "Khu D",
+      "unpaid": "Nợ phí",
+      "banned": "Bị cấm",
+      "expand": "Mở rộng bộ lọc",
+      "collapse": "Thu gọn bộ lọc"
+    },
+    "table": {
+      "no": "STT",
+      "time": "Thời gian",
+      "fullName": "Họ tên",
+      "name": "Họ tên",
+      "image": "Hình ảnh",
+      "type": "Loại",
+      "dormitory": "KTX",
+      "room": "Phòng",
+      "unit": "Đơn vị",
+      "noData": "Không có dữ liệu",
+      "loading": "Đang tải dữ liệu...",
+      "paginationInfo": "Hiển thị {start} - {end} của {total} bản ghi",
+      "rowsPerPage": "{count} / Trang"
+    },
+    "card": {
+      "detailTitle": "Thông tin chi tiết",
+      "emptyText": "Vui lòng chọn một dòng lịch sử để xem thông tin chi tiết",
+      "dormitory": "KTX:",
+      "time": "Thời gian:",
+      "room": "Phòng:",
+      "status": "Trạng thái:",
+      "feedbackBtn": "Phản hồi sai thông tin"
+    },
+    "drawer": {
+      "createTitle": "Ghi nhận lịch sử ra vào mới",
+      "dormLabel": "Khu ký túc xá",
+      "dormPlaceholder": "Chọn khu",
+      "roomLabel": "Phòng",
+      "roomPlaceholder": "Nhập phòng (ví dụ: 101)",
+      "actionLabel": "Loại ghi nhận",
+      "actionPlaceholder": "Vào hoặc ra",
+      "actionIn": "Vào ký túc xá",
+      "actionOut": "Ra ngoài",
+      "deviceLabel": "Thiết bị quét",
+      "devicePlaceholder": "Tên thiết bị ghi nhận",
+      "noteLabel": "Ghi chú thêm",
+      "notePlaceholder": "Ghi chú sự kiện nếu có",
+      "saveBtn": "Lưu ghi nhận",
+      "cancelBtn": "Hủy",
+      "studentIdLabel": "Mã số sinh viên (MSSV)",
+      "studentIdPlaceholder": "Nhập mã số sinh viên (ví dụ: B2003789)",
+      "fullNameLabel": "Họ và tên sinh viên",
+      "fullNamePlaceholder": "Nhập họ và tên sinh viên",
+      "validateStudentId": "Mã số sinh viên phải gồm ít nhất 8 ký tự",
+      "validateFullName": "Họ tên sinh viên phải gồm ít nhất 3 ký tự",
+      "validateDorm": "Vui lòng chọn Khu KTX",
+      "validateRoom": "Vui lòng nhập phòng",
+      "validateAction": "Vui lòng chọn loại ghi nhận",
+      "validateDevice": "Vui lòng nhập thiết bị ghi nhận"
+    },
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách lịch sử",
+      "updated": "Đã cập nhật bộ lọc tìm kiếm",
+      "exportExcelSuccess": "Xuất tệp Excel thành công!",
+      "exportPdfSuccess": "Xuất tệp PDF thành công!",
+      "success": "Thành công",
+      "error": "Lỗi",
+      "reportSuccess": "Gửi phản hồi sai thông tin thành công!"
+    },
+    "feedbackModal": {
+      "title": "Xác nhận phản hồi",
+      "body": "Bạn có chắc chắn muốn gửi phản hồi sai thông tin cho lượt ra vào của",
+      "submitBtn": "Xác nhận gửi"
+    },
+    "statistics": {
+      "chartHourly": "Biểu đồ tần suất ra vào theo ngày",
+      "chartDorm": "Biểu đồ ra vào theo khu KTX",
+      "day": "Ngày",
+      "month": "Tháng",
+      "year": "Năm",
+      "inbound": "Lượt vào",
+      "outbound": "Lượt ra",
+      "turn": "lượt",
+      "turnsCount": "Số lượt ra vào",
+      "topTitle": "Sinh viên ra vào nhiều nhất",
+      "viewAll": "Xem tất cả"
+    }
   }
 }
