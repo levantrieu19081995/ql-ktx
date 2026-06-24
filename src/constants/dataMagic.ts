@@ -1,0 +1,4 @@
+export const STATUS_CHU_SO_HUU = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+};
