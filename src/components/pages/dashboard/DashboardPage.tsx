@@ -1,130 +1,62 @@
-/* eslint-disable react/jsx-key */
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
+<<<<<<< HEAD
 import {
   GetThongKeChiTietPhiDichVu,
   GetThongKeDashBoard,
   GetThongKePhiDichVu,
 } from "@/services/thong-ke/thongKeService";
+=======
+import React, { useEffect, useState } from 'react';
+import { Stack, Title, Grid, Loader, Center } from '@mantine/core';
+import { useTranslations } from 'next-intl';
+import dayjs from 'dayjs';
+import QuickStatsCards from './QuickStatsCards';
+import RecentHistoryTable from './RecentHistoryTable';
+import TimeInOutChart from './TimeInOutChart';
+import TopStudentsChart from './TopStudentsChart';
+import KtxInOutChart from './KtxInOutChart';
+import KtxDistributionChart from './KtxDistributionChart';
+import StrangerDetectionChart from './StrangerDetectionChart';
+import IntrusionAlertsChart from './IntrusionAlertsChart';
+
 import {
-  Box,
-  Card,
-  Grid,
-  Group,
-  SimpleGrid,
-  Stack,
-  Text,
-  Title,
-  Table,
-  Badge,
-  Modal,
-  Divider,
-  Button,
-  Flex,
-} from "@mantine/core";
+  fetchNguoiLaPaginate,
+  fetchSinhVienPaginate,
+  fetchPhongPaginate,
+  fetchKhuPaginate,
+  fetchThongKeLuotRaVao,
+  fetchSuKienRaVaoPaginate
+} from '@/services/dashboard/dashboardService';
+
 import {
-  IconCircleCheck,
-  IconCurrencyDong,
-  IconCar,
-  IconAlertTriangle,
-  IconSearch,
-  IconUser,
-  IconNotes,
-} from "@tabler/icons-react";
-import { useEffect, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  ResponsiveContainer,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import { useMediaQuery } from "@mantine/hooks";
-import { Skeleton } from "@mantine/core";
-import "@mantine/dates/styles.css";
-import DateFilterInput from "@/components/common/DateRangeFilter";
-import { ThongKePhiDichVuItem } from "@/types/global";
-import CustomPagination from "@/components/common/CustomPagination";
-import BienSoComponent from "./BienSoComponent";
-import DateButtonPicker from "./DateButtonPicker";
-import dayjs from "dayjs";
-import { ThuTucSelect } from "./ThuTucSelect";
-import RecentPaymentsCard from "./RecentPaymentsCard";
-function StatCard({
-  icon,
-  title,
-  value,
-  caption,
-  iconBg,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  value: string;
-  caption: string;
-  iconBg: string;
-}) {
-  return (
-    <Card withBorder radius="lg" p="lg">
-      <Group align="flex-start" gap="md">
-        <Box
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: 12,
-            display: "grid",
-            placeItems: "center",
-            background: iconBg,
-          }}
-        >
-          {icon}
-        </Box>
-        <Stack gap={6} style={{ flex: 1 }}>
-          <Text c="dimmed" fw={600}>
-            {title}
-          </Text>
-          <Title order={2}>{value}</Title>
-          <Text size="sm" c="teal.6" fw={600}>
-            {caption}
-          </Text>
-        </Stack>
-      </Group>
-    </Card>
-  );
-}
-const colors = [
-  "#E800C8",
-  "#C9522F",
-  "#10B981",
-  "#F59E0B",
-  "#6557FF",
-  "#1A0891",
-];
-const colorsBarChar = [
-  "#10B981",
-  "#6557FF",
-  "#1A0891",
-  "#E800C8",
-  "#C9522F",
-  "#F59E0B",
-];
+  QUICK_STATS,
+  TIME_CHART_DATA,
+  STRANGER_DETECTION,
+  KTX_IN_OUT_DATA,
+  IN_OUT_HISTORY,
+  QuickStat,
+  TimeChartData,
+  StrangerDetection,
+  KtxInOutData,
+  InOutHistory
+} from './mockDashboardData';
+
 export default function DashboardPage() {
-  //-- biến khởi tạo hằng số
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  //--- useState ------
-  const [dashboard, setDashboard] = useState<any>(null);
-  const [dataPhiDichVu, setDataPhiDichVu] = useState<ThongKePhiDichVuItem[]>(
-    [],
-  );
-  const [selectedPhiDichVu, setSelectedPhiDichVu] = useState<any>(null);
-  const [opened, setOpened] = useState(false);
-  const [openedListXe, setOpenedListXe] = useState(false);
-  const [openedListXeByDangKiem, setOpenedListXeByDangKiem] = useState(false);
+  const t = useTranslations("Dashboard");
+
+  const [stats, setStats] = useState<QuickStat[]>(QUICK_STATS);
+  const [timeData, setTimeData] = useState<TimeChartData[]>(TIME_CHART_DATA);
+  const [strangerData, setStrangerData] = useState<StrangerDetection[]>(STRANGER_DETECTION);
+  const [ktxInOutData, setKtxInOutData] = useState<KtxInOutData[]>(KTX_IN_OUT_DATA);
+  const [historyData, setHistoryData] = useState<InOutHistory[]>(IN_OUT_HISTORY);
+
+  // Dynamic Date and Time Unit states
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date('2026-01-06'));
+  const [timeUnit, setTimeUnit] = useState<'day' | 'month' | 'year'>('day');
   const [loading, setLoading] = useState(true);
 
+<<<<<<< HEAD
   // --- Thêm useState cho paginate ---
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -472,77 +404,285 @@ export default function DashboardPage() {
     }
   };
 
-  useEffect(() => {
-    if (dataPhiDichVu.length > 0) {
-      handlePaginate(dataPhiDichVu, 1, pageSize);
+=======
+>>>>>>> 11f35a4 (Hoàn thành giao diện trang dashboard)
+useEffect(() => {
+  let active = true;
+
+  async function loadDashboardData() {
+    try {
+      console.log("Starting dashboard API connection with date:", selectedDate, "unit:", timeUnit);
+
+      // 1. Fetch Students count
+      let totalStudents = 1256;
+      try {
+        const svRes = await fetchSinhVienPaginate({ page: 1, pageSize: 1 });
+        console.log("SV API Response:", svRes);
+        if (svRes && svRes.payload) {
+          totalStudents = svRes.payload.totalElements ?? svRes.payload.items?.length ?? totalStudents;
+        }
+      } catch (e) {
+        console.error("Failed to fetch Sinh Vien pagination data", e);
+      }
+
+      // 2. Fetch Stranger count & data for graph
+      let totalStrangers = 12;
+      let strangerItems: any[] = [];
+      try {
+        const strangerRes = await fetchNguoiLaPaginate({ page: 1, pageSize: 100 });
+        console.log("Stranger API Response:", strangerRes);
+        if (strangerRes && strangerRes.payload) {
+          totalStrangers = strangerRes.payload.totalElements ?? strangerRes.payload.items?.length ?? totalStrangers;
+          strangerItems = strangerRes.payload.items || [];
+        }
+      } catch (e) {
+        console.error("Failed to fetch Stranger pagination data", e);
+      }
+
+      // 3. Fetch Rooms (for verification and logs)
+      try {
+        const roomRes = await fetchPhongPaginate({ page: 1, pageSize: 1 });
+        console.log("Room API Response:", roomRes);
+      } catch (e) {
+        console.error("Failed to fetch Phong pagination data", e);
+      }
+
+      // 4. Fetch Zones/Khu (for verification and logs)
+      try {
+        const khuRes = await fetchKhuPaginate({ page: 1, pageSize: 1 });
+        console.log("Khu API Response:", khuRes);
+      } catch (e) {
+        console.error("Failed to fetch Khu pagination data", e);
+      }
+
+      // 5. Fetch In/Out stats
+      let inOutRawData: any = null;
+      try {
+        const dateStr = selectedDate ? dayjs(selectedDate).format("DD/MM/YYYY") : dayjs().format("DD/MM/YYYY");
+        inOutRawData = await fetchThongKeLuotRaVao({
+          tuNgay: dateStr,
+          denNgay: dateStr,
+          groupBy: timeUnit.toUpperCase()
+        });
+        console.log("In/Out Stats API Response:", inOutRawData);
+      } catch (e) {
+        console.error("Failed to fetch In/Out stats data", e);
+      }
+
+      // 6. Fetch check-in/out event history list (latest student records)
+      let historyItems: any[] = [];
+      try {
+        const historyRes = await fetchSuKienRaVaoPaginate(1, 20);
+        console.log("Check-in/out History API Response:", historyRes);
+        if (historyRes && historyRes.payload) {
+          historyItems = historyRes.payload.items || [];
+        }
+      } catch (e) {
+        console.error("Failed to fetch KTX su kien ra vao pagination data", e);
+      }
+
+      if (!active) return;
+
+      // Map Stats Card
+      setStats(prev => prev.map(item => {
+        if (item.id === 'total_sv') {
+          return { ...item, value: totalStudents };
+        }
+        if (item.id === 'stranger') {
+          return { ...item, value: totalStrangers };
+        }
+        return item;
+      }));
+
+      // Map Stranger Detection Line Chart
+      if (strangerItems.length > 0) {
+        const groupedStrangers = mapStrangerDetections(strangerItems);
+        setStrangerData(groupedStrangers);
+      }
+
+      // Map Time In/Out Chart
+      if (inOutRawData) {
+        const mappedTimeData = mapTimeInOut(inOutRawData);
+        setTimeData(mappedTimeData);
+
+        const mappedKtxInOut = mapKtxInOut(inOutRawData);
+        setKtxInOutData(mappedKtxInOut);
+      } else {
+        setTimeData(TIME_CHART_DATA);
+        setKtxInOutData(KTX_IN_OUT_DATA);
+      }
+
+      // Map Check-in/out History List
+      if (historyItems.length > 0) {
+        const mappedHistory = mapSuKienRaVao(historyItems);
+        setHistoryData(mappedHistory);
+      }
+
+    } catch (err) {
+      console.error("General error loading dashboard data:", err);
+    } finally {
+      if (active) {
+        setLoading(false);
+      }
     }
-  }, [dataPhiDichVu, pageSize]);
+  }
 
-  const handleOpenModal = () => {
-    setOpenedListXe(true);
-  };
-  const handleOpenModalByDangKiem = () => {
-    setOpenedListXeByDangKiem(true);
-  };
+  loadDashboardData();
 
-  // Hàm đóng modal
-  const handleCloseModal = () => {
-    setOpenedListXe(false);
+  return () => {
+    active = false;
   };
-  const handleCloseModalByDangKiem = () => {
-    setOpenedListXeByDangKiem(false);
-  };
+}, [selectedDate, timeUnit]);
 
-  return (
-    <Stack gap="xl">
-      {/* Thẻ thống kê */}
-      <SimpleGrid cols={{ base: 1, md: 2, lg: 4 }}>
-        {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} height={120} radius="lg" />
-          ))
-        ) : (
-          <>
-            <StatCard
-              icon={<IconCar size={18} color="#6E7CF6" />}
-              title="Tổng phương tiện đăng kiểm"
-              value={dashboard?.tongXeDangKiemThangHienTai?.toString() ?? "--"}
-              caption="Trong tháng hiện tại"
-              iconBg="linear-gradient(135deg,#E9EBFF,#F3F5FF)"
-            />
-            <StatCard
-              icon={<IconCircleCheck size={18} color="#2FBF71" />}
-              title="Phương tiện đạt đăng kiểm"
-              value={dashboard?.soLuongXeDangKiemDat?.toString() ?? "--"}
-              caption={`Tỉ lệ ${(dashboard?.tiLeDangKiemDat * 100 || 0).toFixed(
-                1,
-              )}%`}
-              iconBg="linear-gradient(135deg,#E8FFF3,#F6FFF9)"
-            />
-            <StatCard
-              icon={<IconAlertTriangle size={18} color="#D6AC00" />}
-              title="Phương tiện không đạt"
-              value={dashboard?.soLuongXeDangKiemKhongDat?.toString() ?? "--"}
-              caption={`Tỉ lệ ${(
-                dashboard?.tiLeDangKiemKhongDat * 100 || 0
-              ).toFixed(1)}%`}
-              iconBg="linear-gradient(135deg,#FFF9E6,#FFFBF0)"
-            />
-            <StatCard
-              icon={<IconCurrencyDong size={18} color="#8B5CF6" />}
-              title="Tổng thu phí"
-              value={`${
-                dashboard?.tongPhiDangKiemThangHienTai?.toLocaleString() || 0
-              } đ`}
-              caption="Trong tháng hiện tại"
-              iconBg="linear-gradient(135deg,#F5E9FF,#FBF6FF)"
-            />
-          </>
-        )}
-      </SimpleGrid>
+// Helper parser for stranger detections
+const mapStrangerDetections = (items: any[]): StrangerDetection[] => {
+  const groups: { [key: string]: number } = {};
+  items.forEach(item => {
+    const rawTime = item.detectTime || item.createdDate || item.time || item.checkTime;
+    if (!rawTime) return;
+    try {
+      let dateLabel = '';
+      if (typeof rawTime === 'string') {
+        const match = rawTime.match(/(\d{2})[\/\-](\d{2})/);
+        if (match) {
+          dateLabel = `${match[1]}/${match[2]}`;
+        } else {
+          const d = new Date(rawTime);
+          if (!isNaN(d.getTime())) {
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            dateLabel = `${day}/${month}`;
+          }
+        }
+      }
+      if (dateLabel) {
+        groups[dateLabel] = (groups[dateLabel] || 0) + 1;
+      }
+    } catch (e) {
+      console.warn("Date parse warn:", e);
+    }
+  });
 
-      {/* Bộ lọc */}
-      {/* <>
+  const result = Object.keys(groups).map(date => ({
+    date,
+    count: groups[date]
+  })).sort((a, b) => a.date.localeCompare(b.date));
+
+  return result.length > 0 ? result : STRANGER_DETECTION;
+};
+
+// Helper parser for Time In/Out
+const mapTimeInOut = (apiData: any): TimeChartData[] => {
+  const items = Array.isArray(apiData)
+    ? apiData
+    : (apiData.payload && Array.isArray(apiData.payload) ? apiData.payload : null);
+
+  if (!items) return TIME_CHART_DATA;
+  if (items.length === 0) return [];
+
+  const mapped = items.map((item: any) => {
+    const timeVal = item.time || item.thoiGian || item.hour || item.label || '0h';
+    const vaoVal = typeof item.vao === 'number' ? item.vao : (typeof item.soLuotVao === 'number' ? item.soLuotVao : 0);
+    const raVal = typeof item.ra === 'number' ? item.ra : (typeof item.soLuotRa === 'number' ? item.soLuotRa : 0);
+    return {
+      time: String(timeVal),
+      vao: vaoVal,
+      ra: raVal
+    };
+  });
+  return mapped;
+};
+
+// Helper parser for KTX Building In/Out
+const mapKtxInOut = (apiData: any): KtxInOutData[] => {
+  const items = Array.isArray(apiData)
+    ? apiData
+    : (apiData.payload && Array.isArray(apiData.payload) ? apiData.payload : null);
+
+  if (!items) return KTX_IN_OUT_DATA;
+  if (items.length === 0) return [];
+
+  const hasKtx = items.some((item: any) => item.ktx || item.building || item.area || item.tenKhu);
+  if (!hasKtx) return KTX_IN_OUT_DATA;
+
+  return items.map((item: any) => {
+    const nameVal = item.ktx || item.building || item.area || item.tenKhu || 'KTX';
+    const vaoVal = typeof item.vao === 'number' ? item.vao : (typeof item.soLuotVao === 'number' ? item.soLuotVao : 0);
+    const raVal = typeof item.ra === 'number' ? item.ra : (typeof item.soLuotRa === 'number' ? item.soLuotRa : 0);
+    return {
+      name: String(nameVal),
+      vao: vaoVal,
+      ra: raVal
+    };
+  });
+};
+
+// Helper parser for su-kien-ra-vao items list
+const mapSuKienRaVao = (items: any[]): InOutHistory[] => {
+  return items.map((item: any, idx: number) => {
+    const student = item.sinhVien || item.student || item.caNhan || {};
+    const studentIdVal = item.maSinhVien || student.maSinhVien || student.studentId || item.studentId || 'N/A';
+    const fullNameVal = item.hoTen || student.hoTen || student.ten || student.fullName || item.fullName || 'Ẩn danh';
+
+    // Parse direction: Vào / Ra
+    let typeVal: 'Vào' | 'Ra' = 'Vào';
+    const rawType = String(item.type || item.action || item.checkType || item.trangThai || '').toLowerCase();
+    if (rawType.includes('ra') || rawType.includes('out') || rawType === '0') {
+      typeVal = 'Ra';
+    } else if (rawType.includes('vào') || rawType.includes('in') || rawType === '1') {
+      typeVal = 'Vào';
+    }
+
+    // Parse timestamp
+    let timeStr = item.time || item.checkTime || item.thoiGian || item.createdDate || '';
+    if (timeStr) {
+      try {
+        const d = new Date(timeStr);
+        if (!isNaN(d.getTime())) {
+          const day = String(d.getDate()).padStart(2, '0');
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const hours = String(d.getHours()).padStart(2, '0');
+          const minutes = String(d.getMinutes()).padStart(2, '0');
+          timeStr = `${day}/${month} ${hours}:${minutes}`;
+        }
+      } catch (e) {
+        console.warn("Time parse error", e);
+      }
+    } else {
+      timeStr = 'Vừa xong';
+    }
+
+    // Parse location
+    const ktxVal = item.ktx || item.building || item.khu || item.tenKhu || student.khu || 'KTX';
+    const roomVal = item.room || item.phong || item.tenPhong || student.phong || 'Chưa rõ';
+
+    // Parse avatar or generate custom DiceBear avatar based on name
+    const avatarVal = item.avatarUrl || item.imageUrl || student.avatar || student.linkAnh ||
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullNameVal)}`;
+
+    return {
+      stt: idx + 1,
+      time: String(timeStr),
+      studentId: String(studentIdVal),
+      avatarUrl: avatarVal,
+      fullName: String(fullNameVal),
+      type: typeVal,
+      ktx: String(ktxVal),
+      room: String(roomVal)
+    };
+  });
+};
+
+return (
+  <Stack gap="xl" p="sm" style={{ backgroundColor: '#fafbfd', minHeight: '100vh' }}>
+    {/* Title */}
+    <Title order={2} fw={800} c="#0f172a" style={{ letterSpacing: '-0.5px' }}>
+      {t("title")}
+    </Title>
+
+<<<<<<< HEAD
+{/* Bộ lọc */ }
+{/* <>
         {loading ? (
           <Skeleton height={80} radius="lg" />
         ) : (
@@ -622,196 +762,100 @@ export default function DashboardPage() {
         )}
       </> */}
 
-      <>
-        {loading ? (
-          <Skeleton height={80} radius="lg" />
-        ) : (
-          <Flex gap="md" align="stretch" wrap="wrap">
-            {/* CỤM NGÀY – WIDTH CỐ ĐỊNH */}
-            <Flex gap="md">
-              <Box w={150}>
-                <DateButtonPicker
-                  label="Từ ngày"
-                  value={filtersDate.fromDate}
-                  valueFormat="DD/MM/YYYY"
-                  onChange={(date: any) =>
-                    setFiltersDate((prev) => ({ ...prev, fromDate: date }))
-                  }
-                  title="Từ ngày"
-                />
-              </Box>
+<>
+  {loading ? (
+    <Skeleton height={80} radius="lg" />
+  ) : (
+    <Flex gap="md" align="stretch" wrap="wrap">
+      {/* CỤM NGÀY – WIDTH CỐ ĐỊNH */}
+      <Flex gap="md">
+        <Box w={150}>
+          <DateButtonPicker
+            label="Từ ngày"
+            value={filtersDate.fromDate}
+            valueFormat="DD/MM/YYYY"
+            onChange={(date: any) =>
+              setFiltersDate((prev) => ({ ...prev, fromDate: date }))
+            }
+            title="Từ ngày"
+          />
+        </Box>
+=======
+      {/* Quick Stats Grid */}
+        <QuickStatsCards stats={stats} />
+>>>>>>> 11f35a4 (Hoàn thành giao diện trang dashboard)
 
-              <Box w={150}>
-                <DateButtonPicker
-                  label="Đến ngày"
-                  value={filtersDate.toDate}
-                  valueFormat="DD/MM/YYYY"
-                  onChange={(date: any) =>
-                    setFiltersDate((prev) => ({ ...prev, toDate: date }))
-                  }
-                  title="Đến ngày"
-                />
-              </Box>
-            </Flex>
+        {/* Recent History Table */}
+        <RecentHistoryTable history={historyData} />
 
-            {/* THỦ TỤC – ĂN HẾT PHẦN CÒN LẠI */}
-            <Box style={{ flex: 1, minWidth: 280 }}>
-              <ThuTucSelect
-                value={filtersDate.thuTuc}
-                onChange={(v: any) =>
-                  setFiltersDate((prev) => ({ ...prev, thuTuc: v }))
-                }
-              />
-            </Box>
+        {/* Charts Grid */}
+        <Stack gap="lg">
+          <Title order={3} fw={800} c="#0f172a" style={{ letterSpacing: '-0.25px', marginTop: '10px' }}>
+            {t("chartsTitle")}
+          </Title>
 
-            {/* BUTTON – WIDTH CỐ ĐỊNH, KHÔNG ĐÈ */}
-            <Box
-              style={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                onClick={handleFetchThongKe}
-                leftSection={<IconSearch size={16} />}
-                size="md"
-                radius="lg"
-                style={{
-                  background: "linear-gradient(135deg, #6EA8FF, #4E7BFA)",
-                  boxShadow:
-                    "0px 4px 12px rgba(78, 123, 250, 0.35), inset 0px -2px 4px rgba(255,255,255,0.3)",
-                  backdropFilter: "blur(6px)",
-                  color: "white",
-                  fontWeight: 600,
-                  transition: "0.25s ease",
-                  minWidth: "auto",
-                }}
-              >
-                Tìm kiếm
-              </Button>
-            </Box>
-          </Flex>
+<<<<<<< HEAD
+{/* BUTTON – WIDTH CỐ ĐỊNH, KHÔNG ĐÈ */ }
+<Box
+  style={{
+    display: "flex",
+    alignItems: "center",
+  }}
+>
+  <Button
+    onClick={handleFetchThongKe}
+    leftSection={<IconSearch size={16} />}
+    size="md"
+    radius="lg"
+    style={{
+      background: "linear-gradient(135deg, #6EA8FF, #4E7BFA)",
+      boxShadow:
+        "0px 4px 12px rgba(78, 123, 250, 0.35), inset 0px -2px 4px rgba(255,255,255,0.3)",
+      backdropFilter: "blur(6px)",
+      color: "white",
+      fontWeight: 600,
+      transition: "0.25s ease",
+      minWidth: "auto",
+    }}
+  >
+    Tìm kiếm
+  </Button>
+</Box>
+          </Flex >
         )}
       </>
+=======
+        {/* Time In/Out Chart */}
+        <TimeInOutChart
+          data={timeData}
+          date={selectedDate}
+          onDateChange={setSelectedDate}
+          timeUnit={timeUnit}
+          onTimeUnitChange={setTimeUnit}
+        />
+>>>>>>> 11f35a4 (Hoàn thành giao diện trang dashboard)
 
-      {/* Biểu đồ */}
-      <Grid gutter="xl" align="stretch">
-        {/* Cột trái */}
-        <Grid.Col span={{ base: 12, lg: 7 }}>
-          {loading ? (
-            <Skeleton height={360} radius="lg" />
-          ) : (
-            <Card withBorder radius="lg" p="lg" style={{ height: 450 }}>
-              <Title order={4} mb="md">
-                Lượt đăng kiểm theo loại phương tiện
-              </Title>
-              <Box h="100%" px="sm">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={
-                      dashboard?.danhSachPhuongTienDangKiemThangHienTai ?? []
-                    }
-                    barCategoryGap="20%"
-                    barGap={5}
-                    margin={{ top: 30, left: 20, right: 0, bottom: 30 }}
-                  >
-                    <XAxis
-                      dataKey="lptTen"
-                      tickLine={false}
-                      axisLine={false}
-                      tick={{
-                        fontSize: 12,
-                        fill: "#374151",
-                        textAnchor: "end",
-                      }}
-                      angle={0} // độ nghiên cửa lable
-                      interval={0}
-                      height={60}
-                      // tickFormatter={(v) =>
-                      //   v.length > 10 ? v.slice(0, 10) + "..." : v
-                      // }
+  {/* Top 5 Students Chart */ }
+  < TopStudentsChart />
 
-                      tickFormatter={(v) => {
-                        if (!v) return "Không xác định";
-                        return v.length > 10 ? v.slice(0, 10) + "..." : v;
-                      }}
-                    />
-                    <Tooltip
-                      labelFormatter={() => "  "}
-                      cursor={{
-                        fill: "transparent",
-                        width: 40,
-                      }}
-                      contentStyle={{
-                        borderRadius: "10px",
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                      }}
-                      formatter={(value, name, props) => {
-                        const item = props?.payload;
-                        const tongXe =
-                          dashboard?.tongXeDangKiemThangHienTai || 1;
-                        const tiLe = (
-                          (item?.soLuotDangKiem / tongXe) *
-                          100
-                        ).toFixed(1);
-                        return [
-                          <span
-                            style={{
-                              wordWrap: "break-word",
-                              whiteSpace: "normal",
-                              maxWidth: "220px",
-                              display: "block",
-                              lineHeight: "1.6",
-                              color: "#222",
-                            }}
-                          >
-                            <strong style={{ color: "#6E7CF6" }}>
-                              {item?.lptTen}
-                            </strong>
-                            <br />
-                            Số lượt đăng kiểm: {item?.soLuotDangKiem ?? 0}
-                            <br />
-                            Tỷ trọng: {tiLe}%
-                          </span>,
-                        ];
-                      }}
-                    />
-                    <Bar
-                      dataKey="soLuotDangKiem"
-                      radius={[8, 8, 0, 0]}
-                      isAnimationActive={false}
-                    >
-                      {dashboard?.danhSachPhuongTienDangKiemThangHienTai?.map(
-                        (entry: any, idx: number) => (
-                          <Cell key={`cell-${idx}`} fill={entry.color} />
-                        ),
-                      )}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>{" "}
-              <Box
-                mt="md"
-                style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
-              >
-                <IconNotes
-                  size={24}
-                  color="#6E7CF6"
-                  style={{ cursor: "pointer" }}
-                  onClick={handleOpenModalByDangKiem}
-                />
-              </Box>
-            </Card>
-          )}
-        </Grid.Col>
+  {/* Mid-Row: Ktx In/Out Chart & Ktx Distribution (Donut) */ }
+  < Grid gutter = "xl" align = "stretch" >
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <KtxInOutChart data={ktxInOutData} />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <KtxDistributionChart />
+          </Grid.Col>
+        </Grid >
 
-        {/* Cột phải */}
-        <Grid.Col span={{ base: 12, lg: 5 }}>
-          {loading ? (
-            <Skeleton height={360} radius="lg" />
-          ) : (
-            <Card withBorder radius="lg" p="lg" style={{ height: 450 }}>
+<<<<<<< HEAD
+  {/* Cột phải */ }
+  < Grid.Col span = {{ base: 12, lg: 5 }}>
+  {
+    loading?(
+            <Skeleton height = { 360} radius = "lg" />
+          ): (
+        <Card withBorder radius = "lg" p = "lg" style = {{ height: 450 }} >
               <Title order={4} mb="sm">
                 Tỷ trọng theo loại phương tiện
               </Title>
@@ -861,73 +905,74 @@ export default function DashboardPage() {
                     />
                   </PieChart>
                 </ResponsiveContainer>
-              </Box>{" "}
-              <Box
-                mt="md"
-                style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
-              >
-                <IconNotes
-                  size={24}
-                  color="#6E7CF6"
-                  style={{ cursor: "pointer" }}
-                  onClick={handleOpenModal}
-                />
-              </Box>
-            </Card>
+              </Box>{ " " }
+<Box
+  mt="md"
+  style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}
+>
+  <IconNotes
+    size={24}
+    color="#6E7CF6"
+    style={{ cursor: "pointer" }}
+    onClick={handleOpenModal}
+  />
+</Box>
+            </Card >
           )}
-        </Grid.Col>
-      </Grid>
+        </Grid.Col >
+      </Grid >
 
-      {/* Danh sách */}
-      <Grid gutter="xl">
-        <Grid.Col span={{ base: 12 }}>
-          {loading ? (
-            <Card withBorder radius="lg" p="lg">
-              <Skeleton height={30} width="40%" mb="md" />
-              <Skeleton height={180} radius="md" />
-            </Card>
-          ) : (
-            <RecentPaymentsCard
-              paginatedData={paginatedData}
-              page={page}
-              pageSize={pageSize}
-              totalItems={totalItems}
-              totalPages={totalPages}
-              setPage={setPage}
-              setPageSize={setPageSize}
-              fetchChiTietPhiDichVu={fetchChiTietPhiDichVu}
-              fetchData={_fetchListHoSoDangKiem}
-            />
-          )}
-        </Grid.Col>
-      </Grid>
+  {/* Danh sách */ }
+  < Grid gutter = "xl" >
+    <Grid.Col span={{ base: 12 }}>
+      {loading ? (
+        <Card withBorder radius="lg" p="lg">
+          <Skeleton height={30} width="40%" mb="md" />
+          <Skeleton height={180} radius="md" />
+        </Card>
+      ) : (
+        <RecentPaymentsCard
+          paginatedData={paginatedData}
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          setPage={setPage}
+          setPageSize={setPageSize}
+          fetchChiTietPhiDichVu={fetchChiTietPhiDichVu}
+          fetchData={_fetchListHoSoDangKiem}
+        />
+      )}
+    </Grid.Col>
+      </Grid >
 
-      {/* Modal hiển thị chi tiết */}
-      <Modal
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title={
-          <Box>
-            <Title order={3} c="#0b0f1a" component="div">
-              Chi tiết phí dịch vụ
-            </Title>
-          </Box>
+  {/* Modal hiển thị chi tiết */ }
+  < Modal
+opened = { opened }
+onClose = {() => setOpened(false)}
+title = {
+          < Box >
+  <Title order={3} c="#0b0f1a" component="div">
+    Chi tiết phí dịch vụ
+  </Title>
+          </Box >
         }
-        centered
-        radius="lg"
-        size={isMobile ? "95%" : "70%"}
-      >
-        {selectedPhiDichVu ? (
-          <Stack gap="md">
-            {/* --- Phần TT PDV --- */}
-            <Box
-              p="md"
-              style={{
-                borderRadius: 12,
-                border: "1px solid #dee2e6",
-                background: "#f9fafb",
-              }}
-            >
+centered
+radius = "lg"
+size = { isMobile? "95%": "70%" }
+  >
+{
+  selectedPhiDichVu?(
+          <Stack gap = "md" >
+      {/* --- Phần TT PDV --- */ }
+      < Box
+              p = "md"
+              style = {{
+      borderRadius: 12,
+      border: "1px solid #dee2e6",
+      background: "#f9fafb",
+    }}
+  >
               <Title order={5} mb="sm">
                 Thông tin phí dịch vụ
               </Title>
@@ -946,10 +991,10 @@ export default function DashboardPage() {
                   {selectedPhiDichVu.tongPhiDichVu?.toLocaleString()} đ
                 </Text>
               </Group>
-            </Box>
+            </Box >
 
-            {/* --- Phần DS PDV --- */}
-            <Box>
+  {/* --- Phần DS PDV --- */ }
+  < Box >
               <Title order={5} mb="sm">
                 Danh sách phí dịch vụ
               </Title>
@@ -1022,115 +1067,127 @@ export default function DashboardPage() {
                   )}
                 </Table.Tbody>
               </Table>
-            </Box>
-          </Stack>
+            </Box >
+          </Stack >
         ) : (
-          <Text c="dimmed">Đang tải dữ liệu...</Text>
-        )}
-      </Modal>
+  <Text c="dimmed">Đang tải dữ liệu...</Text>
+)}
+      </Modal >
 
-      {/* Modal hiển thị danh sách phương tiện Tỷ trọng theo loại phương tiện*/}
-      <Modal
-        opened={openedListXe} // Điều kiện hiển thị modal
-        onClose={handleCloseModal} // Đóng modal khi nhấn close
-        title={
-          <Box>
-            <Title order={4} component="div">
-              Danh sách phương tiện theo loại
-            </Title>
-          </Box>
+  {/* Modal hiển thị danh sách phương tiện Tỷ trọng theo loại phương tiện*/ }
+  < Modal
+opened = { openedListXe } // Điều kiện hiển thị modal
+onClose = { handleCloseModal } // Đóng modal khi nhấn close
+title = {
+          < Box >
+  <Title order={4} component="div">
+    Danh sách phương tiện theo loại
+  </Title>
+          </Box >
         }
-        centered
-        radius="lg"
-        size="lg"
+centered
+radius = "lg"
+size = "lg"
+  >
+  <Flex
+    direction="column"
+    wrap="wrap"
+    gap="sm"
+    mt="sm"
+    style={{ alignItems: "flex-start" }}
+  >
+    {pieDataDynamic.map((item: any, idx: any) => (
+      <Flex
+        key={idx}
+        style={{
+          width: "100%",
+          justifyContent: "flex-start",
+        }}
       >
+        <Box
+          style={{
+            width: 15,
+            height: 15,
+            // borderRadius: "50%",
+            backgroundColor: item.color,
+            marginRight: 15,
+            marginTop: 5,
+          }}
+        />
+        <span>
+          <Text size="sm" c="#353636f5" mr={6}>
+            {item.value}%
+          </Text>
+          <Text size="sm" c="#6E7CF6">
+            {item.name}
+          </Text>
+        </span>
+      </Flex>
+    ))}
+  </Flex>
+      </Modal >
+
+  {/* Modal hiển thị danh sách phương tiện Lượt đăng kiểm theo loại phương tiện*/ }
+  < Modal
+opened = { openedListXeByDangKiem } // Điều kiện hiển thị modal
+onClose = { handleCloseModalByDangKiem } // Đóng modal khi nhấn close
+title = {
+          < Box >
+  <Title order={4} component="div">
+    Danh sách phương tiện theo loại
+  </Title>
+          </Box >
+        }
+centered
+radius = "lg"
+size = "lg"
+  >
+  <Flex direction="column" gap="xs" mt="sm">
+    {dashboard?.danhSachPhuongTienDangKiemThangHienTai?.map(
+      (item: any, idx: number) => (
         <Flex
-          direction="column"
-          wrap="wrap"
-          gap="sm"
-          mt="sm"
-          style={{ alignItems: "flex-start" }}
+          key={idx}
+          style={{
+            width: "100%",
+            justifyContent: "flex-start",
+          }}
         >
-          {pieDataDynamic.map((item: any, idx: any) => (
-            <Flex
-              key={idx}
-              style={{
-                width: "100%",
-                justifyContent: "flex-start",
-              }}
-            >
-              <Box
-                style={{
-                  width: 15,
-                  height: 15,
-                  // borderRadius: "50%",
-                  backgroundColor: item.color,
-                  marginRight: 15,
-                  marginTop: 5,
-                }}
-              />
-              <span>
-                <Text size="sm" c="#353636f5" mr={6}>
-                  {item.value}%
-                </Text>
-                <Text size="sm" c="#6E7CF6">
-                  {item.name}
-                </Text>
-              </span>
-            </Flex>
-          ))}
+          <Box
+            style={{
+              width: 15,
+              height: 15,
+              // borderRadius: "50%",
+              backgroundColor: item.color,
+              marginRight: 15,
+              marginTop: 5,
+            }}
+          />
+          <span>
+            <Text size="sm" c="#353636f5" mr={6}>
+              {item.soLuotDangKiem}
+              {" Xe"}
+            </Text>
+            <Text size="sm" c="#6E7CF6">
+              {item.lptTen}
+            </Text>
+          </span>
         </Flex>
-      </Modal>
-
-      {/* Modal hiển thị danh sách phương tiện Lượt đăng kiểm theo loại phương tiện*/}
-      <Modal
-        opened={openedListXeByDangKiem} // Điều kiện hiển thị modal
-        onClose={handleCloseModalByDangKiem} // Đóng modal khi nhấn close
-        title={
-          <Box>
-            <Title order={4} component="div">
-              Danh sách phương tiện theo loại
-            </Title>
-          </Box>
-        }
-        centered
-        radius="lg"
-        size="lg"
-      >
-        <Flex direction="column" gap="xs" mt="sm">
-          {dashboard?.danhSachPhuongTienDangKiemThangHienTai?.map(
-            (item: any, idx: number) => (
-              <Flex
-                key={idx}
-                style={{
-                  width: "100%",
-                  justifyContent: "flex-start",
-                }}
-              >
-                <Box
-                  style={{
-                    width: 15,
-                    height: 15,
-                    // borderRadius: "50%",
-                    backgroundColor: item.color,
-                    marginRight: 15,
-                    marginTop: 5,
-                  }}
-                />
-                <span>
-                  <Text size="sm" c="#353636f5" mr={6}>
-                    {item.soLuotDangKiem}
-                    {" Xe"}
-                  </Text>
-                  <Text size="sm" c="#6E7CF6">
-                    {item.lptTen}
-                  </Text>
-                </span>
-              </Flex>
-            ),
-          )}
-        </Flex>
-      </Modal>
-    </Stack>
+      ),
+    )}
+  </Flex>
+      </Modal >
+=======
+        {/* Bottom-Row: Stranger Detections & Intrusion Alerts */}
+        <Grid gutter="xl" align="stretch">
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <StrangerDetectionChart data={strangerData} />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <IntrusionAlertsChart />
+          </Grid.Col>
+        </Grid>
+      </Stack>
+>>>>>>> 11f35a4 (Hoàn thành giao diện trang dashboard)
+    </Stack >
   );
 }

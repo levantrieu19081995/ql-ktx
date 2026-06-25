@@ -1,6 +1,6 @@
-// src/app/[locale]/layout.tsx
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
 import "@/styles/mantine-overrides.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
