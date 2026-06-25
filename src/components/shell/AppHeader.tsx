@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useLocale } from "next-intl";
 import { signOut } from "next-auth/react";
 import { IconLogout } from "@tabler/icons-react";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/CTU_logo.png";
 import LocaleSwitcher from "./LocaleSwitcher";
 import { useUser } from "@/context/UserContext";
 import { fetchConfigSystem } from "@/services/setting/settingSystemInfoService";
@@ -192,8 +192,8 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           }}
         >
           <Image
-            src={logoConfig ? logoConfig : logo}
-            alt="Đăng kiểm việt Nam"
+            src={logo}
+            alt="Quản lý ký túc xá"
             width={120}
             height={120}
             priority
@@ -222,10 +222,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             whiteSpace: "normal", // cho phép xuống hàng
           }}
         >
-          {firstPart}{" "}
-          <Text span fw={900} c={BRAND_RED} style={{ fontSize: "inherit" }}>
-            {secondPart}
-          </Text>
+          QUẢN LÝ KÝ TÚC XÁ
         </Text>
       </Box>
 
