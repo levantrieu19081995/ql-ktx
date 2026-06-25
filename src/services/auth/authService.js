@@ -3,14 +3,37 @@ import axios from "axios";
 
 import API_URLS from "@/constants/apiUrls";
 
+const AUTH_TIMEOUT_MS = 8000;
+
+function buildApiUrl(baseUrl, path) {
+  return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+}
+
+function getAuthErrorMessage(error) {
+  if (error.code === "ECONNABORTED") {
+    return "Không kết nối được máy chủ đăng nhập. Vui lòng thử lại sau.";
+  }
+
+  if (!error.response) {
+    return "Không kết nối được máy chủ đăng nhập. Kiểm tra lại địa chỉ API hoặc mạng.";
+  }
+
+  return (
+    error.response?.data?.errors?.[0]?.message ||
+    error.response?.data?.message ||
+    "Đăng nhập thất bại"
+  );
+}
+
 export async function refreshTokenAPI(refreshToken) {
   try {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const response = await axios.post(
-      `${API_BASE_URL}${API_URLS.auth.refreshToken}`,
+      buildApiUrl(API_BASE_URL, API_URLS.auth.refreshToken),
       { refreshToken },
+      { timeout: AUTH_TIMEOUT_MS },
     );
 
     console.log("refreshTokenAPI response :>> ", response.data);
@@ -29,7 +52,7 @@ export async function verifyCredentialsAPI({ username, password }) {
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
     console.log(
       "verifyCredentialsAPI API_BASE_URL :>> ",
-      API_BASE_URL + API_URLS.auth.authToken,
+      buildApiUrl(API_BASE_URL, API_URLS.auth.authToken),
     );
     const payload = {
       captcha: {
@@ -43,12 +66,13 @@ export async function verifyCredentialsAPI({ username, password }) {
     };
 
     const response = await axios.post(
-      `${API_BASE_URL}${API_URLS.auth.authToken}`,
+      buildApiUrl(API_BASE_URL, API_URLS.auth.authToken),
       payload,
       {
         headers: {
           "Content-Type": "application/json",
         },
+        timeout: AUTH_TIMEOUT_MS,
       },
     );
 
@@ -59,7 +83,7 @@ export async function verifyCredentialsAPI({ username, password }) {
       "Error verifying credentials:",
       error.response?.data || error.message,
     );
-    throw error;
+    throw new Error(getAuthErrorMessage(error));
   }
 }
 
@@ -70,11 +94,12 @@ export async function fetchUserAPI(accessToken) {
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const response = await axios.get(
-      `${API_BASE_URL}${API_URLS.account.inforUser}`,
+      buildApiUrl(API_BASE_URL, API_URLS.account.inforUser),
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        timeout: AUTH_TIMEOUT_MS,
       },
     );
 
@@ -99,12 +124,13 @@ export async function fetchUserPermissionsAPI(
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
-    const url = `${API_BASE_URL}${API_URLS.permission.permissionsByAccountLimit}?acocuntId=${acocuntId}&organizationId=${organizationId}`;
+    const url = `${buildApiUrl(API_BASE_URL, API_URLS.permission.permissionsByAccountLimit)}?acocuntId=${acocuntId}&organizationId=${organizationId}`;
     const response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: "*/*",
       },
+      timeout: AUTH_TIMEOUT_MS,
     });
 
     return response.data.payload;

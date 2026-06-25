@@ -176,10 +176,15 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             // src={logoConfig ? logoConfig : logo}
             src={logo}
             alt="Quản lý ký túc xá"
-            width={120}
-            height={120}
+            width={110}
+            height={110}
             priority
-            style={{ borderRadius: 6, marginRight: 20 }}
+            style={{
+              borderRadius: 6,
+              marginRight: 20,
+              marginTop: 5,
+              marginBottom: 5,
+            }}
           />
         </Link>
       </Group>
