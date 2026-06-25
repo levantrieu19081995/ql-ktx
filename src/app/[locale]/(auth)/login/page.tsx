@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { Suspense } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Paper,
   Stack,
@@ -40,10 +40,20 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const getLoginErrorMessage = useCallback((code?: string | null) => {
+    if (!code) return te("generic");
+
+    try {
+      return te(code as any);
+    } catch {
+      return code;
+    }
+  }, [te]);
+
   useEffect(() => {
     const qErr = search?.get("error");
-    if (qErr) setError(te(qErr as any) || te("generic"));
-  }, [search, te]);
+    if (qErr) setError(getLoginErrorMessage(qErr));
+  }, [getLoginErrorMessage, search]);
 
   const whiteCard = useMemo(
     () => ({
@@ -61,17 +71,22 @@ function LoginContent() {
     setLoading(true);
     setError(null);
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      callbackUrl: from,
-      username,
-      password,
-    });
+    try {
+      const res = await signIn("credentials", {
+        redirect: false,
+        callbackUrl: from,
+        username,
+        password,
+      });
 
-    setLoading(false);
-    if (!res) return setError(te("generic"));
-    if (res.error) return setError((res.error as any) || te("generic"));
-    router.replace(res.url ?? from);
+      if (!res) return setError(te("generic"));
+      if (res.error) return setError(getLoginErrorMessage(res.error));
+      router.replace(res.url ?? from);
+    } catch (err: any) {
+      setError(err?.message || te("generic"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const clearValidity: React.FormEventHandler<HTMLInputElement> = (e) => {
