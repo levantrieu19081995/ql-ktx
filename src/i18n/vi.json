@@ -64,6 +64,10 @@
     "newVersion": "Chức năng mới của phiên bản",
     "close": "Đóng",
     "historyMenu": "Lịch sử ra vào",
+    "history-log": "Lịch sử",
+    "history-statistics": "Thống kê",
+    "history-staff": "Cán bộ",
+    "history-student": "Sinh viên",
     "warningsMenu": "Cảnh báo người lạ",
     "unit": "Đơn vị"
   },
@@ -216,6 +220,7 @@
       "dormitory": "KTX:",
       "time": "Thời gian:",
       "room": "Phòng:",
+      "device": "Thiết bị:",
       "status": "Trạng thái:",
       "feedbackBtn": "Phản hồi sai thông tin"
     },

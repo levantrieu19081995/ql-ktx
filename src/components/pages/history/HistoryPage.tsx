@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Portal, Notification, Modal, Stack, Text, Group, Button, Box } from "@mantine/core";
+import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import {
   IconAlertTriangle,
@@ -13,6 +13,8 @@ import {
   IconUserMinus,
   IconCheck,
   IconX,
+  IconSearch,
+  IconRefresh,
 } from "@tabler/icons-react";
 import {
   BarChart,
@@ -33,6 +35,7 @@ import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
 import type { LoaiTabHienThi } from "./BangLichSu";
+
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
 
@@ -57,9 +60,13 @@ const duLieuTopSinhVien = [
   { mssv: "TM565488", hoVaTen: "Trịnh Thị Mỹ Ái", luotRaVao: 33 },
 ];
 
-export default function HistoryPage() {
+interface HistoryPageProps {
+  activeTab?: LoaiTabChinh;
+}
+
+export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps) {
   const t = useTranslations("History");
-  const [tabActive, datTabActive] = useState<LoaiTabChinh>("LICH_SU");
+  const [tabActive, datTabActive] = useState<LoaiTabChinh>(activeTab);
   const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
   const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
   const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
@@ -84,6 +91,17 @@ export default function HistoryPage() {
 
   const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(null);
   const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
+
+
+  useEffect(() => {
+    datTabActive(activeTab);
+    datLichSuDuocChon(null);
+    const targetMaNhom = activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1";
+    setBoLoc((prev) => {
+      if (prev.maNhom === targetMaNhom) return prev;
+      return { ...prev, maNhom: targetMaNhom };
+    });
+  }, [activeTab]);
 
   const hienThongBao = (tinNhan: string, kieu: "success" | "error" = "success") => {
     setThongBao({ tinNhan, kieu });
@@ -131,11 +149,7 @@ export default function HistoryPage() {
     taiDuLieu();
   }, [boLoc]);
 
-  useEffect(() => {
-    if (danhSachLichSu.length > 0 && !lichSuDuocChon) {
-      datLichSuDuocChon(danhSachLichSu[0]);
-    }
-  }, [danhSachLichSu, lichSuDuocChon]);
+  // Removed auto-select useEffect to prevent drawer from opening automatically on load
 
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
     if (tabActive === "CAN_BO") {
@@ -224,13 +238,6 @@ export default function HistoryPage() {
     }
   };
 
-  const danhSachTabs = useMemo(() => [
-    { key: "LICH_SU" as const, nhan: t("tabs.log"), icon: <IconHistory size={16} /> },
-    { key: "THONG_KE" as const, nhan: t("tabs.statistics"), icon: <IconChartBar size={16} /> },
-    { key: "CAN_BO" as const, nhan: t("tabs.staff"), icon: <IconUser size={16} className="text-blue-500" /> },
-    { key: "SINH_VIEN" as const, nhan: t("tabs.student"), icon: <IconUserMinus size={16} className="text-emerald-500" /> },
-  ], [t]);
-
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
@@ -238,44 +245,18 @@ export default function HistoryPage() {
         {t("title")}
       </h2>
 
-      {/* THANH TABS ĐIỀU HƯỚNG DẠNG PILLS */}
-      <div className="tabs-bar">
-        {danhSachTabs.map((tab) => {
-          const laActive = tabActive === tab.key;
-          return (
-            <button
-              key={tab.key}
-              id={`tab-${tab.key.toLowerCase()}`}
-              onClick={() => {
-                datTabActive(tab.key);
-                datLichSuDuocChon(null);
-                // Tự động đặt bộ lọc maNhom khi chuyển tab Cán bộ / Sinh viên
-                if (tab.key === "CAN_BO") {
-                  setBoLoc((prev) => ({ ...prev, maNhom: "0" }));
-                } else if (tab.key === "SINH_VIEN") {
-                  setBoLoc((prev) => ({ ...prev, maNhom: "1" }));
-                } else {
-                  setBoLoc((prev) => ({ ...prev, maNhom: "-1" }));
-                }
-              }}
-              className={`tab-btn ${laActive ? "tab-btn-active" : ""}`}
-            >
-              {tab.nhan}
-            </button>
-          );
-        })}
-      </div>
-
       {/* BỘ LỌC */}
-      <BoLocLichSu
-        boLoc={boLoc}
-        datBoLoc={datBoLoc}
-        datLaiBoLoc={datLaiBoLoc}
-        khiTimKiem={xuLyTimKiem}
-        khiXuatExcel={xuLyXuatExcel}
-        khiXuatPdf={xuLyXuatPdf}
-        khiThemDuLieu={xuLyThemDuLieu}
-      />
+      {tabActive !== "THONG_KE" && (
+        <BoLocLichSu
+          boLoc={boLoc}
+          datBoLoc={datBoLoc}
+          datLaiBoLoc={datLaiBoLoc}
+          khiTimKiem={xuLyTimKiem}
+          khiXuatExcel={xuLyXuatExcel}
+          khiXuatPdf={xuLyXuatPdf}
+          khiThemDuLieu={xuLyThemDuLieu}
+        />
+      )}
 
       {/* TAB: LỊCH SỬ | CÓ MẶT | VẮNG MẶT */}
       {(tabActive === "LICH_SU" || tabActive === "CAN_BO" || tabActive === "SINH_VIEN") && (
@@ -291,18 +272,9 @@ export default function HistoryPage() {
               datLichSuDuocChon={datLichSuDuocChon}
             />
           </div>
-
-          {/* Cột phải: Thông tin chi tiết */}
-          <div className="detail-card-col">
-            <ChiTietLichSuCard
-              lichSuDuocChon={lichSuDuocChon}
-              loaiTab={loaiTabHienThi}
-              khiDong={xuLyDongChiTiet}
-              khiPhanHoi={xuLyPhanHoiSaiThongTin}
-            />
-          </div>
         </div>
       )}
+
 
       {/* TAB: THỐNG KÊ */}
       {tabActive === "THONG_KE" && (
@@ -481,6 +453,24 @@ export default function HistoryPage() {
           </Group>
         </Stack>
       </Modal>
+
+      {/* DRAWER CHI TIẾT LỊCH SỬ */}
+      <Drawer
+        opened={!!lichSuDuocChon}
+        onClose={xuLyDongChiTiet}
+        title={<span style={{ fontWeight: 700, fontSize: 16, color: '#1f5ca9' }}>{t('card.detailTitle')}</span>}
+        position="right"
+        size={400}
+      >
+        <ChiTietLichSuCard
+          lichSuDuocChon={lichSuDuocChon}
+          loaiTab={loaiTabHienThi}
+          khiDong={xuLyDongChiTiet}
+          khiPhanHoi={xuLyPhanHoiSaiThongTin}
+        />
+      </Drawer>
+
+
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
     </Box>
   );

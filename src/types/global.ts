@@ -51,3 +51,27 @@ export interface DanhMucLoaiPhuongTienItem {
 export interface DanhMucLoaiPhuongTienUpdate {
   [key: string]: any;
 }
+
+export interface HoSoPhiDichVuQuery {
+  page?: number;
+  pageSize?: number;
+  userIdTiepNhan?: string;
+  hsId?: number | string;
+}
+
+export interface HoSoPhiDichVuCreate {
+  hsId?: string | number;
+  pdvId?: string | number;
+  phiThucTe?: number | string;
+  tenPhi?: string | number;
+  lanThu?: string | number;
+  accountGuidThanhToan?: string | number;
+  loaiPhiId?: number | string;
+  trangThaiThanhToan?: boolean | number | string;
+  hinhThucThanhToan?: boolean | number | string;
+  trangThaiNo?: boolean;
+}
+
+export interface PhiDichVuItem {
+  [key: string]: any;
+}

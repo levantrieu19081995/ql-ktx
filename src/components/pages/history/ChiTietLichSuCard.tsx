@@ -58,13 +58,12 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
     // Lấy nhãn và màu sắc trạng thái theo tab
     const { nhan: nhanTrangThai, mauSac } = layNhanTrangThai(lichSuDuocChon, loaiTab, t);
 
+    const laCanBo = loaiTab === 'CAN_BO' ||
+        lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes('cán bộ') ||
+        lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes('can bo');
+
     return (
         <div className="detail-card">
-            {/* Tiêu đề */}
-            <h3 className="detail-card-title">
-                {t('card.detailTitle')}
-            </h3>
-
             {/* Ảnh chân dung lớn */}
             <div className="image-container">
                 <div className="image-wrapper">
@@ -94,13 +93,18 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
                 </div>
 
                 <div className="info-row">
-                    <span className="info-label">{t('card.time')}</span>
-                    <span className="info-value">{thoiGianDinhDang}</span>
+                    <span className="info-label">{laCanBo ? `${t('table.unit')}:` : t('card.room')}</span>
+                    <span className="info-value">{lichSuDuocChon.tenPhong || 'N/A'}</span>
                 </div>
 
                 <div className="info-row">
-                    <span className="info-label">{t('card.room')}</span>
-                    <span className="info-value">{lichSuDuocChon.tenPhong}</span>
+                    <span className="info-label">{t('card.device')}</span>
+                    <span className="info-value">{lichSuDuocChon.thietBi || 'N/A'}</span>
+                </div>
+
+                <div className="info-row">
+                    <span className="info-label">{t('card.time')}</span>
+                    <span className="info-value">{thoiGianDinhDang}</span>
                 </div>
 
                 <div className="info-row">
@@ -191,8 +195,8 @@ const styles = `
 .portrait-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: top;
+    object-fit: contain;
+    object-position: center;
 }
 
 .info-list {

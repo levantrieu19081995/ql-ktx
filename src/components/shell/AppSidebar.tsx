@@ -51,6 +51,8 @@ import {
   IconCraneOff,
   IconHistory,
   IconAlertTriangle,
+  IconChartBar,
+  IconUserMinus,
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -94,7 +96,32 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
-    { icon: <IconHistory />, label: t("historyMenu"), href: "/history" },
+    {
+      icon: <IconHistory />,
+      label: t("historyMenu"),
+      children: [
+        {
+          label: t("history-log"),
+          href: "/history/log",
+          icon: <IconHistory size={16} />,
+        },
+        {
+          label: t("history-statistics"),
+          href: "/history/statistics",
+          icon: <IconChartBar size={16} />,
+        },
+        {
+          label: t("history-staff"),
+          href: "/history/staff",
+          icon: <IconUser size={16} className="text-blue-500" />,
+        },
+        {
+          label: t("history-student"),
+          href: "/history/student",
+          icon: <IconUserMinus size={16} className="text-emerald-500" />,
+        },
+      ],
+    },
     { icon: <IconAlertTriangle />, label: t("warningsMenu"), href: "/warnings" },
     { icon: <IconCar />, label: t("tollManagement"), href: "/toll-management" },
 
@@ -182,6 +209,17 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       onClick: () => setVersionInfoOpen(true),
     },
   ];
+
+  // Automatically open the parent menu if a child is active
+  useEffect(() => {
+    const currentParent = items.find((item) =>
+      item.children?.some((child: any) => pathname.startsWith(child.href))
+    );
+    if (currentParent && openParent !== currentParent.label) {
+      setOpenParent(currentParent.label);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const doLogout = () => {
     setConfirmOpen(false);
@@ -357,7 +395,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
 
     if (!href) return false;
     const alwaysVisible = ["/dashboard", "/history", "/warnings"];
-    if (alwaysVisible.includes(href)) return true;
+    if (alwaysVisible.some((v) => href === v || href.startsWith(v + "/"))) return true;
 
     const found = permissions.find((p: any) => {
       const slug = (p.dmcnSlug || "").toLowerCase().trim();

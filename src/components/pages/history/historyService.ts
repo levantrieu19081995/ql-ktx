@@ -1,6 +1,7 @@
 import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 
+
 const AUTH_HEADER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
 const BASE_URL = 'http://172.16.20.177:53009';
 
@@ -70,6 +71,7 @@ export const dichVuDanhMucNhom = {
 // --- ACCESS HISTORY SERVICE ---
 
 export const dichVuLichSuRaVao = {
+
   layDanhSachLichSu: async (boLoc?: {
     tuNgay?: string;
     denNgay?: string;
@@ -171,7 +173,7 @@ export const dichVuLichSuRaVao = {
     });
 
     const results2D = await Promise.all(apiResultsPromises);
-    let allApiItems = results2D.flat();
+    const allApiItems = results2D.flat();
 
     // 4. Merge with local custom records (added via UI in-session)
     let mergedItems = [...danhSachLichSuRaVaoCucBo, ...allApiItems];
@@ -202,6 +204,8 @@ export const dichVuLichSuRaVao = {
     // 6. Sort results descending by time check
     return mergedItems.sort((a, b) => dayjs(b.thoiGian).unix() - dayjs(a.thoiGian).unix());
   },
+
+
 
   taoBanGhiLichSu: async (duLieuLichSu: Omit<HistoryItem, 'id' | 'thoiGian'>): Promise<HistoryItem> => {
     await moPhongDoTre(150);

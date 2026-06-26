@@ -14,6 +14,6 @@ const HistoryPage = dynamic(
     }
 );
 
-export default function ClientPage() {
-    return <HistoryPage />;
+export default function ClientPage({ tab }: { tab?: "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN" }) {
+    return <HistoryPage activeTab={tab} />;
 }

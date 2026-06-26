@@ -35,6 +35,10 @@ export default async function RootLayout({ children, params }: Props) {
         <MantineProvider
           defaultColorScheme="light"
           theme={{
+            fontFamily: "var(--font-readex-pro), sans-serif",
+            headings: {
+              fontFamily: "var(--font-k2d), sans-serif",
+            },
             components: {
               Drawer: {
                 defaultProps: {

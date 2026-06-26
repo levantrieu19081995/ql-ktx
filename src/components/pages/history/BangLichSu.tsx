@@ -217,7 +217,7 @@ export default function BangLichSu({
                                         <Table.Td style={{ textAlign: 'center' }}>
                                             <Box style={{ display: 'flex', justifyContent: 'center' }}>
                                                 <Avatar
-                                                    src={banGhi.duongDanAnhDaiDien}
+                                                    src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
                                                     radius="sm"
                                                     size={44}
                                                     className="avatar-image"

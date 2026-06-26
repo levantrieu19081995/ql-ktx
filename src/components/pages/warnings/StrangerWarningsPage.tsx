@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Card, Group, Text, Button, Select, Table, Avatar, Badge, Loader } from '@mantine/core';
+import { Box, Card, Group, Text, Button, Select, Table, Avatar, Badge, Loader, Drawer, Stack } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useTranslations } from 'next-intl';
 import {
@@ -16,7 +16,9 @@ import {
 } from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { HistoryItem } from '../../../types/type-history';
-import { dichVuLichSuRaVao, dichVuDanhMucKhu, KhuItem } from '../history/historyService';
+import { dichVuDanhMucKhu, KhuItem } from '../history/historyService';
+import { dichVuCanhBaoNguoiLa } from './warningService';
+import CustomPagination from '@/components/common/CustomPagination';
 
 export default function StrangerWarningsPage() {
     const t = useTranslations('History');
@@ -24,16 +26,20 @@ export default function StrangerWarningsPage() {
     const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
     const [danhSachKhu, setDanhSachKhu] = useState<KhuItem[]>([]);
     const [dangLieu, datDangLieu] = useState<'GRID' | 'TABLE'>('GRID');
+    const [canhBaoDuocChon, datCanhBaoDuocChon] = useState<HistoryItem | null>(null);
 
     const [boLoc, setBoLoc] = useState({
-        tuNgay: '',
-        denNgay: '',
+        tuNgay: '2026-06-01',
+        denNgay: '2026-06-06',
         maKtx: '-1',
     });
 
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
+
     useEffect(() => {
         dichVuDanhMucKhu.layDanhSach().then(setDanhSachKhu);
-        taiDuLieu();
     }, []);
 
     const optionsKhu = [
@@ -41,23 +47,18 @@ export default function StrangerWarningsPage() {
         ...danhSachKhu.map((k) => ({ value: k.maKhu, label: k.tenKhu }))
     ];
 
-    const taiDuLieu = async () => {
+    const taiDuLieu = async (trang = page, kichThuoc = pageSize) => {
         setDangTai(true);
         try {
-            const data = await dichVuLichSuRaVao.layDanhSachLichSu({
+            const data = await dichVuCanhBaoNguoiLa.layDanhSachCanhBaoNguoiLa({
                 tuNgay: boLoc.tuNgay,
                 denNgay: boLoc.denNgay,
-                maKtx: boLoc.maKtx === '-1' ? undefined : boLoc.maKtx,
+                maKtx: boLoc.maKtx,
+                page: trang,
+                pageSize: kichThuoc,
             });
-
-            // Lọc chỉ lấy người lạ
-            const strangers = data.filter(
-                (h) =>
-                    h.loaiDoiTuong?.toLowerCase().includes('người lạ') ||
-                    h.loaiDoiTuong?.toLowerCase().includes('nguoi la') ||
-                    h.loaiDoiTuong?.toLowerCase().includes('stranger')
-            );
-            setDanhSachCanhBao(strangers);
+            setDanhSachCanhBao(data.items);
+            setTotalItems(data.totalElements);
         } catch (err) {
             console.error('Lỗi khi tải cảnh báo:', err);
         } finally {
@@ -67,15 +68,26 @@ export default function StrangerWarningsPage() {
 
     const datLaiBoLoc = () => {
         setBoLoc({
-            tuNgay: '',
-            denNgay: '',
+            tuNgay: '2026-06-01',
+            denNgay: '2026-06-06',
             maKtx: '-1',
         });
+        setPage(1);
     };
 
-    // Auto load when filters change
+    // Auto load when page or pageSize changes
     useEffect(() => {
-        taiDuLieu();
+        taiDuLieu(page, pageSize);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, pageSize]);
+
+    // Reset page and reload when filters change
+    useEffect(() => {
+        setPage(1);
+        if (page === 1) {
+            taiDuLieu(1, pageSize);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx]);
 
     return (
@@ -96,7 +108,7 @@ export default function StrangerWarningsPage() {
                 <Group gap="xs">
                     <Button
                         variant={dangLieu === 'GRID' ? 'filled' : 'outline'}
-                        color="red"
+                        color="blue"
                         onClick={() => datDangLieu('GRID')}
                         className="view-toggle-btn"
                     >
@@ -104,7 +116,7 @@ export default function StrangerWarningsPage() {
                     </Button>
                     <Button
                         variant={dangLieu === 'TABLE' ? 'filled' : 'outline'}
-                        color="red"
+                        color="blue"
                         onClick={() => datDangLieu('TABLE')}
                         className="view-toggle-btn"
                     >
@@ -164,7 +176,7 @@ export default function StrangerWarningsPage() {
                 </div>
 
                 <div className="filter-actions">
-                    <Button onClick={taiDuLieu} color="red" leftSection={<IconSearch size={15} />} className="btn-alert-search">
+                    <Button onClick={() => taiDuLieu(1)} color="blue" leftSection={<IconSearch size={15} />} className="btn-alert-search">
                         Tìm kiếm
                     </Button>
                     <Button variant="subtle" color="gray" onClick={datLaiBoLoc} leftSection={<IconRefresh size={15} />}>
@@ -176,7 +188,7 @@ export default function StrangerWarningsPage() {
             {/* HIỂN THỊ DỮ LIỆU */}
             {dangTai ? (
                 <div className="loader-box">
-                    <Loader color="red" size="md" />
+                    <Loader color="blue" size="md" />
                     <Text size="sm" c="dimmed" mt="sm">Đang quét dữ liệu lịch sử...</Text>
                 </div>
             ) : danhSachCanhBao.length === 0 ? (
@@ -189,7 +201,14 @@ export default function StrangerWarningsPage() {
                 /* HIỂN THỊ DẠNG LƯỚI CARD FEED */
                 <div className="stranger-grid">
                     {danhSachCanhBao.map((banGhi) => (
-                        <Card key={banGhi.id} className="stranger-card" radius="lg" withBorder>
+                        <Card
+                            key={banGhi.id}
+                            className="stranger-card"
+                            radius="lg"
+                            withBorder
+                            onClick={() => datCanhBaoDuocChon(banGhi)}
+                            style={{ cursor: 'pointer' }}
+                        >
                             {/* Hình chụp */}
                             <div className="image-wrapper">
                                 <img
@@ -200,7 +219,7 @@ export default function StrangerWarningsPage() {
                                         (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
                                     }}
                                 />
-                                <Badge color="red" variant="filled" className="warning-badge">
+                                <Badge color="cyan" variant="filled" className="warning-badge">
                                     CẢNH BÁO XÂM NHẬP
                                 </Badge>
                             </div>
@@ -258,7 +277,12 @@ export default function StrangerWarningsPage() {
                         </Table.Thead>
                         <Table.Tbody>
                             {danhSachCanhBao.map((banGhi, index) => (
-                                <Table.Tr key={banGhi.id} className="table-tr">
+                                <Table.Tr
+                                    key={banGhi.id}
+                                    className="table-tr"
+                                    onClick={() => datCanhBaoDuocChon(banGhi)}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <Table.Td style={{ textAlign: 'center' }} className="td-stt">
                                         {index + 1}
                                     </Table.Td>
@@ -282,7 +306,7 @@ export default function StrangerWarningsPage() {
                                         {banGhi.thietBi}
                                     </Table.Td>
                                     <Table.Td className="td-ktx">
-                                        <Badge color="red" variant="light" size="md">
+                                        <Badge color="blue" variant="light" size="md">
                                             {banGhi.tenKtx}
                                         </Badge>
                                     </Table.Td>
@@ -292,6 +316,139 @@ export default function StrangerWarningsPage() {
                     </Table>
                 </div>
             )}
+
+            {/* PHÂN TRANG */}
+            <Box mt="md" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <CustomPagination
+                    totalItems={totalItems}
+                    page={page}
+                    pageSize={pageSize}
+                    setPage={setPage}
+                    setPageSize={setPageSize}
+                />
+            </Box>
+
+            {/* DRAWER CHI TIẾT CẢNH BÁO */}
+            <Drawer
+                opened={!!canhBaoDuocChon}
+                onClose={() => datCanhBaoDuocChon(null)}
+                title={
+                    <span style={{ fontWeight: 800, fontSize: 16, color: '#1f5ca9', fontFamily: 'var(--font-k2d), sans-serif', textTransform: 'uppercase' }}>
+                        Chi tiết cảnh báo người lạ
+                    </span>
+                }
+                position="right"
+                size={400}
+            >
+                {canhBaoDuocChon && (
+                    <Stack gap="lg" p="sm" style={{ fontFamily: 'var(--font-readex-pro), sans-serif' }}>
+                        {/* Ảnh chụp người lạ */}
+                        <Box
+                            style={{
+                                width: '100%',
+                                height: 260,
+                                borderRadius: 8,
+                                border: '1px solid #e2e8f0',
+                                backgroundColor: '#f8fafc',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            <img
+                                src={canhBaoDuocChon.duongDanAnhChup || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}
+                                alt="Stranger Intrusion"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        </Box>
+
+                        {/* Danh sách thông tin tối giản, dễ nhìn */}
+                        <Stack gap="sm" mt="xs">
+                            {/* Đối tượng */}
+                            <Box 
+                                style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #f1f5f9', 
+                                    paddingBottom: 12 
+                                }}
+                            >
+                                <Text size="sm" c="dimmed" fw={600}>ĐỐI TƯỢNG</Text>
+                                <Badge color="cyan" variant="filled">Người lạ</Badge>
+                            </Box>
+
+                            {/* Giờ phát hiện */}
+                            <Box 
+                                style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #f1f5f9', 
+                                    paddingBottom: 12 
+                                }}
+                            >
+                                <Text size="sm" c="dimmed" fw={600}>GIỜ PHÁT HIỆN</Text>
+                                <Text size="sm" fw={700} style={{ color: '#1e293b' }}>
+                                    {dayjs(canhBaoDuocChon.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
+                                </Text>
+                            </Box>
+
+                            {/* Camera phát hiện */}
+                            <Box 
+                                style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #f1f5f9', 
+                                    paddingBottom: 12 
+                                }}
+                            >
+                                <Text size="sm" c="dimmed" fw={600}>CAMERA PHÁT HIỆN</Text>
+                                <Text size="sm" fw={700} style={{ color: '#1e293b' }}>
+                                    {canhBaoDuocChon.thietBi || 'N/A'}
+                                </Text>
+                            </Box>
+
+                            {/* Khu vực phát hiện */}
+                            <Box 
+                                style={{ 
+                                    display: 'flex', 
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #f1f5f9', 
+                                    paddingBottom: 12 
+                                }}
+                            >
+                                <Text size="sm" c="dimmed" fw={600}>KHU VỰC PHÁT HIỆN</Text>
+                                <Text size="sm" fw={700} style={{ color: '#1e293b' }}>
+                                    {canhBaoDuocChon.tenKtx || 'N/A'}
+                                </Text>
+                            </Box>
+                        </Stack>
+
+                        <Button
+                            color="blue"
+                            onClick={() => datCanhBaoDuocChon(null)}
+                            mt="lg"
+                            fullWidth
+                            size="md"
+                            radius="md"
+                            style={{
+                                backgroundColor: '#1f5ca9',
+                                fontWeight: 700
+                            }}
+                        >
+                            Đóng cửa sổ
+                        </Button>
+                    </Stack>
+                )}
+            </Drawer>
 
             <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
         </Box>
@@ -303,7 +460,7 @@ const pageStyles = `
     padding: 1.5rem;
     min-height: 100vh;
     background-color: #fcfdff;
-    font-family: var(--font-k2d), sans-serif;
+    font-family: var(--font-readex-pro), sans-serif;
 }
 
 .alert-header {
@@ -322,16 +479,16 @@ const pageStyles = `
 }
 
 .pulse-alert-icon {
-    background-color: #fef2f2;
-    border: 1px solid #fee2e2;
-    color: #ef4444;
+    background-color: #e0f2fe;
+    border: 1px solid #bae6fd;
+    color: #00afef;
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    box-shadow: 0 0 0 0 rgba(0, 175, 239, 0.4);
     animation: alertPulse 1.5s infinite;
 }
 
@@ -339,7 +496,7 @@ const pageStyles = `
     margin: 0;
     font-size: 1.5rem;
     font-weight: 800;
-    color: #991b1b;
+    color: #1f5ca9;
     letter-spacing: -0.02em;
 }
 
@@ -411,7 +568,7 @@ const pageStyles = `
 
 .btn-alert-search {
     height: 38px !important;
-    background-color: #be123c !important;
+    background-color: #1f5ca9 !important;
     color: #ffffff !important;
     font-weight: 600 !important;
     border-radius: 0.5rem !important;
@@ -420,7 +577,7 @@ const pageStyles = `
 }
 
 .btn-alert-search:hover {
-    background-color: #9f1239 !important;
+    background-color: #154580 !important;
 }
 
 .loader-box {
@@ -481,8 +638,8 @@ const pageStyles = `
 
 .stranger-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(153, 27, 27, 0.05), 0 4px 6px -2px rgba(153, 27, 27, 0.03);
-    border-color: #fca5a5;
+    box-shadow: 0 10px 15px -3px rgba(31, 92, 169, 0.05), 0 4px 6px -2px rgba(31, 92, 169, 0.03);
+    border-color: #93c5fd;
 }
 
 .image-wrapper {
@@ -537,8 +694,8 @@ const pageStyles = `
 }
 
 .icon-red {
-    background-color: #fef2f2;
-    color: #ef4444;
+    background-color: #e0f2fe;
+    color: #00afef;
 }
 
 .icon-blue {
@@ -589,7 +746,7 @@ const pageStyles = `
 }
 
 .table-tr:hover {
-    background-color: #fef2f2;
+    background-color: #f0f7ff;
 }
 
 .td-stt {
@@ -598,13 +755,13 @@ const pageStyles = `
 }
 
 .avatar-warning {
-    border: 2px solid #fee2e2;
+    border: 2px solid #bfdbfe;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .td-highlight {
     font-weight: 700;
-    color: #991b1b;
+    color: #1f5ca9;
 }
 
 .td-camera {
@@ -618,13 +775,13 @@ const pageStyles = `
 
 @keyframes alertPulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+        box-shadow: 0 0 0 0 rgba(0, 175, 239, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        box-shadow: 0 0 0 10px rgba(0, 175, 239, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        box-shadow: 0 0 0 0 rgba(0, 175, 239, 0);
     }
 }
 `;

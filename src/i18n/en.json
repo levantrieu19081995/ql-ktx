@@ -64,6 +64,10 @@
     "newVersion": "New Features in the Version",
     "close": "Close",
     "historyMenu": "Access History",
+    "history-log": "History",
+    "history-statistics": "Statistics",
+    "history-staff": "Staff",
+    "history-student": "Students",
     "warningsMenu": "Stranger Warnings",
     "unit": "Unit"
   },
@@ -219,6 +223,7 @@
       "dormitory": "Dormitory:",
       "time": "Time:",
       "room": "Room:",
+      "device": "Device:",
       "status": "Status:",
       "feedbackBtn": "Report Incorrect Info"
     },
