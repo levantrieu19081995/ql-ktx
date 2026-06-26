@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react-hooks/rules-of-hooks */
 // src/components/common/tables/OwnerListTable.tsx
 "use client";
 
@@ -116,27 +115,27 @@ export default function OwnerListTable({
   >([]);
 
   async function detailChuPhuongTien(item: ChuPhuongTien): Promise<void> {
-    const detail = await getDetailChuPhuongTienById(Number(item.ttcptId));
-    const data = detail.payload;
-    console.log("[RUN_LOG] ===>  detailChuPhuongTien : ", item);
+    // const detail = await getDetailChuPhuongTienById(Number(item.ttcptId));
+    // const data = detail.payload;
+    // console.log("[RUN_LOG] ===>  detailChuPhuongTien : ", item);
 
-    if (!data) return;
+    // if (!data) return;
 
-    setSelectedChuSoHuu(data as ChuPhuongTien);
+    // setSelectedChuSoHuu(data as ChuPhuongTien);
     setDrawerDetailChuSoHuuOpened(true);
 
-    // NEW: set sẵn payload chủ sở hữu (khi chưa tick xe nào)
-    setResultThongTinPhiDangKiem(buildOwnerOnlyResult(data as ChuPhuongTien));
+    // // NEW: set sẵn payload chủ sở hữu (khi chưa tick xe nào)
+    // setResultThongTinPhiDangKiem(buildOwnerOnlyResult(data as ChuPhuongTien));
 
-    setEditChuSoHuuValue({
-      ttcptTen: data.ttcptTen || "",
-      ttcptDiachi: data.ttcptDiachi || "",
-      ttcptMasothue: data.ttcptMasothue || "",
-      ttcptCccd: data.ttcptCccd || "",
-      ttcptIsDoanhNghiep: data.ttcptIsDoanhNghiep || 0,
-      ttcptSodienthoai: data.ttcptSodienthoai || "",
-      ttId: Number(data.ttId) || 1,
-    });
+    // setEditChuSoHuuValue({
+    //   ttcptTen: data.ttcptTen || "",
+    //   ttcptDiachi: data.ttcptDiachi || "",
+    //   ttcptMasothue: data.ttcptMasothue || "",
+    //   ttcptCccd: data.ttcptCccd || "",
+    //   ttcptIsDoanhNghiep: data.ttcptIsDoanhNghiep || 0,
+    //   ttcptSodienthoai: data.ttcptSodienthoai || "",
+    //   ttId: Number(data.ttId) || 1,
+    // });
   }
 
   const handleSaveEditChuSoHuu = async () => {
@@ -148,27 +147,27 @@ export default function OwnerListTable({
         editChuSoHuuValue,
       );
 
-      if (res?.status === "OK" && res?.payload) {
-        const updated = res.payload;
-        showNoti(
-          "success",
-          `Đã cập nhật thông tin cho "${updated.ttcptTen}" thành công!`,
-        );
+      // if (res?.status === "OK" && res?.payload) {
+      //   const updated = res.payload;
+      //   showNoti(
+      //     "success",
+      //     `Đã cập nhật thông tin cho "${updated.ttcptTen}" thành công!`,
+      //   );
 
-        if (result?.ttcptId === updated.ttcptId) {
-          setResult((prev: any) => ({
-            ...prev,
-            tenChuXe: updated.ttcptTen,
-            ttcptMasothue: updated.ttcptMasothue,
-            ttcptSodienthoai: updated.ttcptSodienthoai,
-            ttcptId: updated.ttcptId,
-          }));
-        }
+      //   if (result?.ttcptId === updated.ttcptId) {
+      //     setResult((prev: any) => ({
+      //       ...prev,
+      //       tenChuXe: updated.ttcptTen,
+      //       ttcptMasothue: updated.ttcptMasothue,
+      //       ttcptSodienthoai: updated.ttcptSodienthoai,
+      //       ttcptId: updated.ttcptId,
+      //     }));
+      //   }
 
-        onFind?.();
-      } else {
-        showNoti("warning", "Không thể cập nhật thông tin.");
-      }
+      //   onFind?.();
+      // } else {
+      //   showNoti("warning", "Không thể cập nhật thông tin.");
+      // }
 
       setIsEditingChuSoHuu(false);
       detailChuPhuongTien(selectedChuSoHuu);
@@ -369,7 +368,7 @@ export default function OwnerListTable({
 
     const xeFound =
       selectedChuSoHuu.dsThongtinPhuongtien?.find(
-        (x) => x.ttptId === savedXeId,
+        (x: any) => x.ttptId === savedXeId,
       ) ?? null;
 
     if (!xeFound) {
@@ -444,9 +443,9 @@ export default function OwnerListTable({
                         <Table.Td>{item.ttcptTen}</Table.Td>
 
                         <Table.Td>
-                          {(() => {
+                          {/* {(() => {
                             const status = STATUS_CHU_SO_HUU.find(
-                              (s) => s.key === item.ttcptIsDoanhNghiep,
+                              (sany) => s.key === item.ttcptIsDoanhNghiep,
                             );
                             return status ? (
                               <Badge color={status.color} variant="light">
@@ -455,7 +454,7 @@ export default function OwnerListTable({
                             ) : (
                               <Center c="dimmed">–</Center>
                             );
-                          })()}
+                          })()} */}
                         </Table.Td>
 
                         <Table.Td style={{ textAlign: "center" }}>
@@ -468,7 +467,7 @@ export default function OwnerListTable({
                             <Group gap={6} wrap="wrap">
                               {item.dsThongtinPhuongtien
                                 .slice(0, 2)
-                                .map((xe) => (
+                                .map((xe: any) => (
                                   <Badge
                                     key={xe.ttptId}
                                     variant="outline"

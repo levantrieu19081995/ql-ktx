@@ -29,7 +29,7 @@ import {
   IconPalette,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { ViewConfigData } from "@/types/global";
+// import { ViewConfigData } from "@/types/global";
 import {
   fetchConfigSystem,
   updateConfigSystem,
@@ -63,7 +63,7 @@ export default function SettingSystemInfo({
   const [errors, setErrors] = useState<
     Partial<Record<keyof CompanySettings, string>>
   >({});
-  const [config, setConfig] = useState<ViewConfigData | null>(null);
+  const [config, setConfig] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const fallbackLogo = "/images/logo.png";
   // ----------------------------- LOGO HANDLERS -----------------------------

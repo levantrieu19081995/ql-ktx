@@ -1,301 +1,368 @@
-'use client';
+/* eslint-disable @next/next/no-img-element */
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Card, Group, Text, Button, Select, Table, Avatar, Badge, Loader } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
-import { useTranslations } from 'next-intl';
+import React, { useState, useEffect, useMemo } from "react";
 import {
-    IconAlertTriangle,
-    IconSearch,
-    IconRefresh,
-    IconLayoutGrid,
-    IconList,
-    IconCamera,
-    IconMapPin,
-    IconClock,
-} from '@tabler/icons-react';
-import dayjs from 'dayjs';
-import { HistoryItem } from '../../../types/type-history';
-import { dichVuLichSuRaVao, dichVuDanhMucKhu, KhuItem } from '../history/historyService';
+  Box,
+  Card,
+  Group,
+  Text,
+  Button,
+  Select,
+  Table,
+  Avatar,
+  Badge,
+  Loader,
+} from "@mantine/core";
+import { DateInput } from "@mantine/dates";
+import { useTranslations } from "next-intl";
+import {
+  IconAlertTriangle,
+  IconSearch,
+  IconRefresh,
+  IconLayoutGrid,
+  IconList,
+  IconCamera,
+  IconMapPin,
+  IconClock,
+} from "@tabler/icons-react";
+import dayjs from "dayjs";
+import { HistoryItem } from "../../../types/type-history";
+import {
+  dichVuLichSuRaVao,
+  dichVuDanhMucKhu,
+  KhuItem,
+} from "../history/historyService";
 
 export default function StrangerWarningsPage() {
-    const t = useTranslations('History');
-    const [dangTai, setDangTai] = useState(false);
-    const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
-    const [danhSachKhu, setDanhSachKhu] = useState<KhuItem[]>([]);
-    const [dangLieu, datDangLieu] = useState<'GRID' | 'TABLE'>('GRID');
+  const t = useTranslations("History");
+  const [dangTai, setDangTai] = useState(false);
+  const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
+  const [danhSachKhu, setDanhSachKhu] = useState<KhuItem[]>([]);
+  const [dangLieu, datDangLieu] = useState<"GRID" | "TABLE">("GRID");
 
-    const [boLoc, setBoLoc] = useState({
-        tuNgay: '',
-        denNgay: '',
-        maKtx: '-1',
+  const [boLoc, setBoLoc] = useState({
+    tuNgay: "",
+    denNgay: "",
+    maKtx: "-1",
+  });
+
+  useEffect(() => {
+    dichVuDanhMucKhu.layDanhSach().then(setDanhSachKhu);
+    taiDuLieu();
+  }, []);
+
+  const optionsKhu = [
+    { value: "-1", label: t("filter.all") },
+    ...danhSachKhu.map((k) => ({ value: k.maKhu, label: k.tenKhu })),
+  ];
+
+  const taiDuLieu = async () => {
+    setDangTai(true);
+    try {
+      const data = await dichVuLichSuRaVao.layDanhSachLichSu({
+        tuNgay: boLoc.tuNgay,
+        denNgay: boLoc.denNgay,
+        maKtx: boLoc.maKtx === "-1" ? undefined : boLoc.maKtx,
+      });
+
+      // Lọc chỉ lấy người lạ
+      const strangers = data.filter(
+        (h) =>
+          h.loaiDoiTuong?.toLowerCase().includes("người lạ") ||
+          h.loaiDoiTuong?.toLowerCase().includes("nguoi la") ||
+          h.loaiDoiTuong?.toLowerCase().includes("stranger"),
+      );
+      setDanhSachCanhBao(strangers);
+    } catch (err) {
+      console.error("Lỗi khi tải cảnh báo:", err);
+    } finally {
+      setDangTai(false);
+    }
+  };
+
+  const datLaiBoLoc = () => {
+    setBoLoc({
+      tuNgay: "",
+      denNgay: "",
+      maKtx: "-1",
     });
+  };
 
-    useEffect(() => {
-        dichVuDanhMucKhu.layDanhSach().then(setDanhSachKhu);
-        taiDuLieu();
-    }, []);
+  // Auto load when filters change
+  useEffect(() => {
+    taiDuLieu();
+  }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx]);
 
-    const optionsKhu = [
-        { value: '-1', label: t('filter.all') },
-        ...danhSachKhu.map((k) => ({ value: k.maKhu, label: k.tenKhu }))
-    ];
+  return (
+    <Box className="stranger-page-container">
+      {/* TIÊU ĐỀ HỆ THỐNG CẢNH BÁO */}
+      <div className="alert-header">
+        <div className="alert-title-wrapper">
+          <div className="pulse-alert-icon">
+            <IconAlertTriangle size={24} />
+          </div>
+          <div>
+            <h2 className="alert-title">HỆ THỐNG CẢNH BÁO NGƯỜI LẠ</h2>
+            <p className="alert-subtitle">
+              Giám sát và phát hiện xâm nhập trái phép thời gian thực
+            </p>
+          </div>
+        </div>
 
-    const taiDuLieu = async () => {
-        setDangTai(true);
-        try {
-            const data = await dichVuLichSuRaVao.layDanhSachLichSu({
-                tuNgay: boLoc.tuNgay,
-                denNgay: boLoc.denNgay,
-                maKtx: boLoc.maKtx === '-1' ? undefined : boLoc.maKtx,
-            });
+        {/* Chế độ xem */}
+        <Group gap="xs">
+          <Button
+            variant={dangLieu === "GRID" ? "filled" : "outline"}
+            color="red"
+            onClick={() => datDangLieu("GRID")}
+            className="view-toggle-btn"
+          >
+            <IconLayoutGrid size={16} style={{ marginRight: 6 }} /> Grid Feed
+          </Button>
+          <Button
+            variant={dangLieu === "TABLE" ? "filled" : "outline"}
+            color="red"
+            onClick={() => datDangLieu("TABLE")}
+            className="view-toggle-btn"
+          >
+            <IconList size={16} style={{ marginRight: 6 }} /> Table List
+          </Button>
+        </Group>
+      </div>
 
-            // Lọc chỉ lấy người lạ
-            const strangers = data.filter(
-                (h) =>
-                    h.loaiDoiTuong?.toLowerCase().includes('người lạ') ||
-                    h.loaiDoiTuong?.toLowerCase().includes('nguoi la') ||
-                    h.loaiDoiTuong?.toLowerCase().includes('stranger')
-            );
-            setDanhSachCanhBao(strangers);
-        } catch (err) {
-            console.error('Lỗi khi tải cảnh báo:', err);
-        } finally {
-            setDangTai(false);
-        }
-    };
+      {/* BỘ LỌC CẢNH BÁO */}
+      <div className="alert-filter-bar">
+        <div className="filter-grid">
+          {/* Từ ngày */}
+          <div className="filter-col">
+            <label className="filter-label">TỪ NGÀY</label>
+            <DateInput
+              placeholder="mm/dd/yyyy"
+              valueFormat="DD/MM/YYYY"
+              value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
+              onChange={(ngay) =>
+                setBoLoc((prev) => ({
+                  ...prev,
+                  tuNgay: ngay ? dayjs(ngay).format("YYYY-MM-DD") : "",
+                }))
+              }
+              size="sm"
+              radius="md"
+              styles={{ input: { height: "38px", borderColor: "#f1f5f9" } }}
+            />
+          </div>
 
-    const datLaiBoLoc = () => {
-        setBoLoc({
-            tuNgay: '',
-            denNgay: '',
-            maKtx: '-1',
-        });
-    };
+          {/* Đến ngày */}
+          <div className="filter-col">
+            <label className="filter-label">ĐẾN NGÀY</label>
+            <DateInput
+              placeholder="mm/dd/yyyy"
+              valueFormat="DD/MM/YYYY"
+              value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
+              onChange={(ngay) =>
+                setBoLoc((prev) => ({
+                  ...prev,
+                  denNgay: ngay ? dayjs(ngay).format("YYYY-MM-DD") : "",
+                }))
+              }
+              size="sm"
+              radius="md"
+              styles={{ input: { height: "38px", borderColor: "#f1f5f9" } }}
+            />
+          </div>
 
-    // Auto load when filters change
-    useEffect(() => {
-        taiDuLieu();
-    }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx]);
+          {/* Khu KTX */}
+          <div className="filter-col">
+            <label className="filter-label">KHU KTX PHÁT HIỆN</label>
+            <Select
+              value={boLoc.maKtx}
+              onChange={(val) =>
+                setBoLoc((prev) => ({ ...prev, maKtx: val || "-1" }))
+              }
+              size="sm"
+              radius="md"
+              styles={{ input: { height: "38px", borderColor: "#f1f5f9" } }}
+              data={optionsKhu}
+              placeholder="Tất cả"
+            />
+          </div>
+        </div>
 
-    return (
-        <Box className="stranger-page-container">
-            {/* TIÊU ĐỀ HỆ THỐNG CẢNH BÁO */}
-            <div className="alert-header">
-                <div className="alert-title-wrapper">
-                    <div className="pulse-alert-icon">
-                        <IconAlertTriangle size={24} />
-                    </div>
-                    <div>
-                        <h2 className="alert-title">HỆ THỐNG CẢNH BÁO NGƯỜI LẠ</h2>
-                        <p className="alert-subtitle">Giám sát và phát hiện xâm nhập trái phép thời gian thực</p>
-                    </div>
+        <div className="filter-actions">
+          <Button
+            onClick={taiDuLieu}
+            color="red"
+            leftSection={<IconSearch size={15} />}
+            className="btn-alert-search"
+          >
+            Tìm kiếm
+          </Button>
+          <Button
+            variant="subtle"
+            color="gray"
+            onClick={datLaiBoLoc}
+            leftSection={<IconRefresh size={15} />}
+          >
+            Làm mới
+          </Button>
+        </div>
+      </div>
+
+      {/* HIỂN THỊ DỮ LIỆU */}
+      {dangTai ? (
+        <div className="loader-box">
+          <Loader color="red" size="md" />
+          <Text size="sm" c="dimmed" mt="sm">
+            Đang quét dữ liệu lịch sử...
+          </Text>
+        </div>
+      ) : danhSachCanhBao.length === 0 ? (
+        <Card className="empty-alert-card">
+          <IconAlertTriangle size={48} className="empty-icon" />
+          <Text fw={700} size="lg" mt="md" c="dimmed">
+            Không phát hiện người lạ
+          </Text>
+          <Text size="sm" c="dimmed" mt={4}>
+            Hệ thống hiện tại chưa ghi nhận sự xâm nhập nào phù hợp với bộ lọc.
+          </Text>
+        </Card>
+      ) : dangLieu === "GRID" ? (
+        /* HIỂN THỊ DẠNG LƯỚI CARD FEED */
+        <div className="stranger-grid">
+          {danhSachCanhBao.map((banGhi) => (
+            <Card
+              key={banGhi.id}
+              className="stranger-card"
+              radius="lg"
+              withBorder
+            >
+              {/* Hình chụp */}
+              <div className="image-wrapper">
+                <img
+                  src={
+                    banGhi.duongDanAnhChup ||
+                    banGhi.duongDanAnhDaiDien ||
+                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
+                  }
+                  alt="Stranger Intrusion"
+                  className="stranger-img"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400";
+                  }}
+                />
+                <Badge color="red" variant="filled" className="warning-badge">
+                  CẢNH BÁO XÂM NHẬP
+                </Badge>
+              </div>
+
+              {/* Thông tin chi tiết */}
+              <div className="card-details">
+                {/* Giờ phát hiện */}
+                <div className="detail-item">
+                  <IconClock size={16} className="detail-icon icon-red" />
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600}>
+                      GIỜ PHÁT HIỆN
+                    </Text>
+                    <Text size="sm" fw={700}>
+                      {dayjs(banGhi.thoiGian).format("DD/MM/YYYY HH:mm:ss")}
+                    </Text>
+                  </div>
                 </div>
 
-                {/* Chế độ xem */}
-                <Group gap="xs">
-                    <Button
-                        variant={dangLieu === 'GRID' ? 'filled' : 'outline'}
-                        color="red"
-                        onClick={() => datDangLieu('GRID')}
-                        className="view-toggle-btn"
-                    >
-                        <IconLayoutGrid size={16} style={{ marginRight: 6 }} /> Grid Feed
-                    </Button>
-                    <Button
-                        variant={dangLieu === 'TABLE' ? 'filled' : 'outline'}
-                        color="red"
-                        onClick={() => datDangLieu('TABLE')}
-                        className="view-toggle-btn"
-                    >
-                        <IconList size={16} style={{ marginRight: 6 }} /> Table List
-                    </Button>
-                </Group>
-            </div>
-
-            {/* BỘ LỌC CẢNH BÁO */}
-            <div className="alert-filter-bar">
-                <div className="filter-grid">
-                    {/* Từ ngày */}
-                    <div className="filter-col">
-                        <label className="filter-label">TỪ NGÀY</label>
-                        <DateInput
-                            placeholder="mm/dd/yyyy"
-                            valueFormat="DD/MM/YYYY"
-                            value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
-                            onChange={(ngay) =>
-                                setBoLoc(prev => ({ ...prev, tuNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' }))
-                            }
-                            size="sm"
-                            radius="md"
-                            styles={{ input: { height: '38px', borderColor: '#f1f5f9' } }}
-                        />
-                    </div>
-
-                    {/* Đến ngày */}
-                    <div className="filter-col">
-                        <label className="filter-label">ĐẾN NGÀY</label>
-                        <DateInput
-                            placeholder="mm/dd/yyyy"
-                            valueFormat="DD/MM/YYYY"
-                            value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
-                            onChange={(ngay) =>
-                                setBoLoc(prev => ({ ...prev, denNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' }))
-                            }
-                            size="sm"
-                            radius="md"
-                            styles={{ input: { height: '38px', borderColor: '#f1f5f9' } }}
-                        />
-                    </div>
-
-                    {/* Khu KTX */}
-                    <div className="filter-col">
-                        <label className="filter-label">KHU KTX PHÁT HIỆN</label>
-                        <Select
-                            value={boLoc.maKtx}
-                            onChange={(val) => setBoLoc(prev => ({ ...prev, maKtx: val || '-1' }))}
-                            size="sm"
-                            radius="md"
-                            styles={{ input: { height: '38px', borderColor: '#f1f5f9' } }}
-                            data={optionsKhu}
-                            placeholder="Tất cả"
-                        />
-                    </div>
+                {/* Camera phát hiện */}
+                <div className="detail-item">
+                  <IconCamera size={16} className="detail-icon icon-blue" />
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600}>
+                      CAMERA PHÁT HIỆN
+                    </Text>
+                    <Text size="sm" fw={700} className="text-truncate">
+                      {banGhi.thietBi || "N/A"}
+                    </Text>
+                  </div>
                 </div>
 
-                <div className="filter-actions">
-                    <Button onClick={taiDuLieu} color="red" leftSection={<IconSearch size={15} />} className="btn-alert-search">
-                        Tìm kiếm
-                    </Button>
-                    <Button variant="subtle" color="gray" onClick={datLaiBoLoc} leftSection={<IconRefresh size={15} />}>
-                        Làm mới
-                    </Button>
+                {/* Khu KTX phát hiện */}
+                <div className="detail-item">
+                  <IconMapPin size={16} className="detail-icon icon-emerald" />
+                  <div>
+                    <Text size="xs" c="dimmed" fw={600}>
+                      KHU KTX PHÁT HIỆN
+                    </Text>
+                    <Text size="sm" fw={700}>
+                      {banGhi.tenKtx || "N/A"}
+                    </Text>
+                  </div>
                 </div>
-            </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        /* HIỂN THỊ DẠNG BẢNG LOG TABLE */
+        <div className="table-wrapper">
+          <Table
+            highlightOnHover
+            verticalSpacing="md"
+            className="stranger-table"
+          >
+            <Table.Thead className="table-thead">
+              <Table.Tr>
+                <Table.Th style={{ width: 60, textAlign: "center" }}>
+                  STT
+                </Table.Th>
+                <Table.Th style={{ width: 120, textAlign: "center" }}>
+                  Hình ảnh
+                </Table.Th>
+                <Table.Th>Giờ phát hiện</Table.Th>
+                <Table.Th>Camera phát hiện</Table.Th>
+                <Table.Th>Khu KTX phát hiện</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {danhSachCanhBao.map((banGhi, index) => (
+                <Table.Tr key={banGhi.id} className="table-tr">
+                  <Table.Td style={{ textAlign: "center" }} className="td-stt">
+                    {index + 1}
+                  </Table.Td>
+                  <Table.Td>
+                    <Box style={{ display: "flex", justifyContent: "center" }}>
+                      <Avatar
+                        src={
+                          banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien
+                        }
+                        radius="md"
+                        size={56}
+                        className="avatar-warning"
+                        onError={(e) => {
+                          console.log("Error load image");
+                        }}
+                      />
+                    </Box>
+                  </Table.Td>
+                  <Table.Td className="td-highlight">
+                    {dayjs(banGhi.thoiGian).format("DD/MM/YYYY HH:mm:ss")}
+                  </Table.Td>
+                  <Table.Td className="td-camera">{banGhi.thietBi}</Table.Td>
+                  <Table.Td className="td-ktx">
+                    <Badge color="red" variant="light" size="md">
+                      {banGhi.tenKtx}
+                    </Badge>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </div>
+      )}
 
-            {/* HIỂN THỊ DỮ LIỆU */}
-            {dangTai ? (
-                <div className="loader-box">
-                    <Loader color="red" size="md" />
-                    <Text size="sm" c="dimmed" mt="sm">Đang quét dữ liệu lịch sử...</Text>
-                </div>
-            ) : danhSachCanhBao.length === 0 ? (
-                <Card className="empty-alert-card">
-                    <IconAlertTriangle size={48} className="empty-icon" />
-                    <Text fw={700} size="lg" mt="md" c="dimmed">Không phát hiện người lạ</Text>
-                    <Text size="sm" c="dimmed" mt={4}>Hệ thống hiện tại chưa ghi nhận sự xâm nhập nào phù hợp với bộ lọc.</Text>
-                </Card>
-            ) : dangLieu === 'GRID' ? (
-                /* HIỂN THỊ DẠNG LƯỚI CARD FEED */
-                <div className="stranger-grid">
-                    {danhSachCanhBao.map((banGhi) => (
-                        <Card key={banGhi.id} className="stranger-card" radius="lg" withBorder>
-                            {/* Hình chụp */}
-                            <div className="image-wrapper">
-                                <img
-                                    src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}
-                                    alt="Stranger Intrusion"
-                                    className="stranger-img"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400';
-                                    }}
-                                />
-                                <Badge color="red" variant="filled" className="warning-badge">
-                                    CẢNH BÁO XÂM NHẬP
-                                </Badge>
-                            </div>
-
-                            {/* Thông tin chi tiết */}
-                            <div className="card-details">
-                                {/* Giờ phát hiện */}
-                                <div className="detail-item">
-                                    <IconClock size={16} className="detail-icon icon-red" />
-                                    <div>
-                                        <Text size="xs" c="dimmed" fw={600}>GIỜ PHÁT HIỆN</Text>
-                                        <Text size="sm" fw={700}>
-                                            {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
-                                        </Text>
-                                    </div>
-                                </div>
-
-                                {/* Camera phát hiện */}
-                                <div className="detail-item">
-                                    <IconCamera size={16} className="detail-icon icon-blue" />
-                                    <div>
-                                        <Text size="xs" c="dimmed" fw={600}>CAMERA PHÁT HIỆN</Text>
-                                        <Text size="sm" fw={700} className="text-truncate">
-                                            {banGhi.thietBi || 'N/A'}
-                                        </Text>
-                                    </div>
-                                </div>
-
-                                {/* Khu KTX phát hiện */}
-                                <div className="detail-item">
-                                    <IconMapPin size={16} className="detail-icon icon-emerald" />
-                                    <div>
-                                        <Text size="xs" c="dimmed" fw={600}>KHU KTX PHÁT HIỆN</Text>
-                                        <Text size="sm" fw={700}>
-                                            {banGhi.tenKtx || 'N/A'}
-                                        </Text>
-                                    </div>
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
-                /* HIỂN THỊ DẠNG BẢNG LOG TABLE */
-                <div className="table-wrapper">
-                    <Table highlightOnHover verticalSpacing="md" className="stranger-table">
-                        <Table.Thead className="table-thead">
-                            <Table.Tr>
-                                <Table.Th style={{ width: 60, textAlign: 'center' }}>STT</Table.Th>
-                                <Table.Th style={{ width: 120, textAlign: 'center' }}>Hình ảnh</Table.Th>
-                                <Table.Th>Giờ phát hiện</Table.Th>
-                                <Table.Th>Camera phát hiện</Table.Th>
-                                <Table.Th>Khu KTX phát hiện</Table.Th>
-                            </Table.Tr>
-                        </Table.Thead>
-                        <Table.Tbody>
-                            {danhSachCanhBao.map((banGhi, index) => (
-                                <Table.Tr key={banGhi.id} className="table-tr">
-                                    <Table.Td style={{ textAlign: 'center' }} className="td-stt">
-                                        {index + 1}
-                                    </Table.Td>
-                                    <Table.Td>
-                                        <Box style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <Avatar
-                                                src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
-                                                radius="md"
-                                                size={56}
-                                                className="avatar-warning"
-                                                onError={(e) => {
-                                                    console.log('Error load image');
-                                                }}
-                                            />
-                                        </Box>
-                                    </Table.Td>
-                                    <Table.Td className="td-highlight">
-                                        {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
-                                    </Table.Td>
-                                    <Table.Td className="td-camera">
-                                        {banGhi.thietBi}
-                                    </Table.Td>
-                                    <Table.Td className="td-ktx">
-                                        <Badge color="red" variant="light" size="md">
-                                            {banGhi.tenKtx}
-                                        </Badge>
-                                    </Table.Td>
-                                </Table.Tr>
-                            ))}
-                        </Table.Tbody>
-                    </Table>
-                </div>
-            )}
-
-            <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
-        </Box>
-    );
+      <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
+    </Box>
+  );
 }
 
 const pageStyles = `

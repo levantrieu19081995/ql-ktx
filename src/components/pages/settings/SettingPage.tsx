@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { IconSettings } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { INFOR_THANHTOAN, GIA_THUPHI } from "@/constants/dataMagic";
+// import { INFOR_THANHTOAN, GIA_THUPHI } from "@/constants/dataMagic";
 
 import SettingSystemInfo from "./SettingSystemInfo";
 import SettingPreview from "./SettingPreview";
@@ -42,7 +42,7 @@ const DEFAULT_SETTINGS: CompanySettings = {
     "Nền tảng quản lý & lên lịch đăng đa kênh. Giúp đội ngũ của bạn vận hành truyền thông hiệu quả.",
   logoDataUrl: null,
 };
-type GiaThuPhi = typeof GIA_THUPHI;
+// type GiaThuPhi = typeof GIA_THUPHI;
 
 export default function SettingPage() {
   const router = useRouter();
@@ -50,9 +50,9 @@ export default function SettingPage() {
   const [values, setValues] = useState<CompanySettings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
 
-  const [paymentInfo, setPaymentInfo] = useState(INFOR_THANHTOAN);
+  // const [paymentInfo, setPaymentInfo] = useState(INFOR_THANHTOAN);
 
-  const [feeValues, setFeeValues] = useState<GiaThuPhi>(GIA_THUPHI);
+  // const [feeValues, setFeeValues] = useState<GiaThuPhi>(GIA_THUPHI);
 
   const previewColor = useMemo(
     () => values.primaryColor || "#4C6EF5",
@@ -108,7 +108,7 @@ export default function SettingPage() {
       </SimpleGrid>
 
       {/* Cấu hình thanh toán */}
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+      {/* <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
         <SettingPaymentInfo
           paymentInfo={paymentInfo}
           onChange={(key, val) => setPaymentInfo((s) => ({ ...s, [key]: val }))}
@@ -119,7 +119,7 @@ export default function SettingPage() {
           onChange={(key, val) => setFeeValues((s) => ({ ...s, [key]: val }))}
           setSaved={setSaved}
         />
-      </SimpleGrid>
+      </SimpleGrid> */}
     </Stack>
   );
 }

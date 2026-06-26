@@ -342,7 +342,7 @@ export default function OwnerDrawerDetail({
                   </Table.Thead>
 
                   <Table.Tbody>
-                    {selected.dsThongtinPhuongtien?.map((xe, idx) => (
+                    {selected.dsThongtinPhuongtien?.map((xe: any, idx: any) => (
                       <Table.Tr key={xe.ttptId}>
                         <Table.Td>
                           <BienSoComponent
@@ -355,7 +355,7 @@ export default function OwnerDrawerDetail({
                           <Flex justify="center">
                             <Checkbox
                               checked={selectedXeList.some(
-                                (x) => x.ttptId === xe.ttptId
+                                (x) => x.ttptId === xe.ttptId,
                               )}
                               onChange={() => onToggleSelectXe(xe)}
                               onClick={(e) => e.stopPropagation()}

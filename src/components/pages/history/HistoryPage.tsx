@@ -3,7 +3,16 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Portal, Notification, Modal, Stack, Text, Group, Button, Box } from "@mantine/core";
+import {
+  Portal,
+  Notification,
+  Modal,
+  Stack,
+  Text,
+  Group,
+  Button,
+  Box,
+} from "@mantine/core";
 import { useTranslations } from "next-intl";
 import {
   IconAlertTriangle,
@@ -57,12 +66,24 @@ const duLieuTopSinhVien = [
   { mssv: "TM565488", hoVaTen: "Trịnh Thị Mỹ Ái", luotRaVao: 33 },
 ];
 
-export default function HistoryPage() {
+type HistoryPageProps = {
+  tab?: LoaiTabChinh;
+};
+// export default function HistoryPage() {
+export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const t = useTranslations("History");
-  const [tabActive, datTabActive] = useState<LoaiTabChinh>("LICH_SU");
-  const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
-  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
-  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
+  // const [tabActive, datTabActive] = useState<LoaiTabChinh>("LICH_SU");
+  const [tabActive, datTabActive] = useState<LoaiTabChinh>(tab);
+  const [thongBao, setThongBao] = useState<{
+    kieu: "success" | "error";
+    tinNhan: string;
+  } | null>(null);
+  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
+    null,
+  );
+  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">(
+    "NGAY",
+  );
   const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
 
   const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
@@ -82,10 +103,15 @@ export default function HistoryPage() {
     maNhom: "-1",
   });
 
-  const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(null);
+  const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(
+    null,
+  );
   const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
 
-  const hienThongBao = (tinNhan: string, kieu: "success" | "error" = "success") => {
+  const hienThongBao = (
+    tinNhan: string,
+    kieu: "success" | "error" = "success",
+  ) => {
     setThongBao({ tinNhan, kieu });
   };
 
@@ -139,15 +165,17 @@ export default function HistoryPage() {
 
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
     if (tabActive === "CAN_BO") {
-      return danhSachLichSu.filter((h) =>
-        h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-        h.loaiDoiTuong?.toLowerCase().includes("can bo")
+      return danhSachLichSu.filter(
+        (h) =>
+          h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
+          h.loaiDoiTuong?.toLowerCase().includes("can bo"),
       );
     }
     if (tabActive === "SINH_VIEN") {
-      return danhSachLichSu.filter((h) =>
-        !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
-        !h.loaiDoiTuong?.toLowerCase().includes("can bo")
+      return danhSachLichSu.filter(
+        (h) =>
+          !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
+          !h.loaiDoiTuong?.toLowerCase().includes("can bo"),
       );
     }
     return danhSachLichSu;
@@ -171,11 +199,18 @@ export default function HistoryPage() {
       [t("filter.studentId")]: h.mssv,
       [t("table.name")]: h.hoVaTen,
       [t("table.type")]: h.loai === "IN" ? t("filter.in") : t("filter.out"),
-      [t("filter.objectType")]: h.loaiDoiTuong === "Người lạ" ? t("filter.stranger") : t("filter.student"),
+      [t("filter.objectType")]:
+        h.loaiDoiTuong === "Người lạ"
+          ? t("filter.stranger")
+          : t("filter.student"),
       [t("table.dormitory")]: h.tenKtx,
       [t("table.room")]: h.tenPhong,
     }));
-    xuatRaFileExcel(duLieuXuat, `Lich_Su_Ra_Vao_${new Date().toISOString().split("T")[0]}`, t("tabs.log"));
+    xuatRaFileExcel(
+      duLieuXuat,
+      `Lich_Su_Ra_Vao_${new Date().toISOString().split("T")[0]}`,
+      t("tabs.log"),
+    );
     hienThongBao(t("messages.exportExcelSuccess"), "success");
   };
 
@@ -191,7 +226,9 @@ export default function HistoryPage() {
     datLichSuDuocChon(null);
   };
 
-  const xuLyTaoBanGhi = async (duLieu: Omit<HistoryItem, "id" | "thoiGian">) => {
+  const xuLyTaoBanGhi = async (
+    duLieu: Omit<HistoryItem, "id" | "thoiGian">,
+  ) => {
     setDangTao(true);
     try {
       await dichVuLichSuRaVao.taoBanGhiLichSu(duLieu);
@@ -210,33 +247,52 @@ export default function HistoryPage() {
       case "LICH_SU":
         return danhSachLichSu.length;
       case "CAN_BO":
-        return danhSachLichSu.filter((h) =>
-          h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-          h.loaiDoiTuong?.toLowerCase().includes("can bo")
+        return danhSachLichSu.filter(
+          (h) =>
+            h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
+            h.loaiDoiTuong?.toLowerCase().includes("can bo"),
         ).length;
       case "SINH_VIEN":
-        return danhSachLichSu.filter((h) =>
-          !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
-          !h.loaiDoiTuong?.toLowerCase().includes("can bo")
+        return danhSachLichSu.filter(
+          (h) =>
+            !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
+            !h.loaiDoiTuong?.toLowerCase().includes("can bo"),
         ).length;
       default:
         return undefined;
     }
   };
 
-  const danhSachTabs = useMemo(() => [
-    { key: "LICH_SU" as const, nhan: t("tabs.log"), icon: <IconHistory size={16} /> },
-    { key: "THONG_KE" as const, nhan: t("tabs.statistics"), icon: <IconChartBar size={16} /> },
-    { key: "CAN_BO" as const, nhan: t("tabs.staff"), icon: <IconUser size={16} className="text-blue-500" /> },
-    { key: "SINH_VIEN" as const, nhan: t("tabs.student"), icon: <IconUserMinus size={16} className="text-emerald-500" /> },
-  ], [t]);
+  const danhSachTabs = useMemo(
+    () => [
+      {
+        key: "LICH_SU" as const,
+        nhan: t("tabs.log"),
+        icon: <IconHistory size={16} />,
+      },
+      {
+        key: "THONG_KE" as const,
+        nhan: t("tabs.statistics"),
+        icon: <IconChartBar size={16} />,
+      },
+      {
+        key: "CAN_BO" as const,
+        nhan: t("tabs.staff"),
+        icon: <IconUser size={16} className="text-blue-500" />,
+      },
+      {
+        key: "SINH_VIEN" as const,
+        nhan: t("tabs.student"),
+        icon: <IconUserMinus size={16} className="text-emerald-500" />,
+      },
+    ],
+    [t],
+  );
 
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
-      <h2 className="history-title">
-        {t("title")}
-      </h2>
+      <h2 className="history-title">{t("title")}</h2>
 
       {/* THANH TABS ĐIỀU HƯỚNG DẠNG PILLS */}
       <div className="tabs-bar">
@@ -278,7 +334,9 @@ export default function HistoryPage() {
       />
 
       {/* TAB: LỊCH SỬ | CÓ MẶT | VẮNG MẶT */}
-      {(tabActive === "LICH_SU" || tabActive === "CAN_BO" || tabActive === "SINH_VIEN") && (
+      {(tabActive === "LICH_SU" ||
+        tabActive === "CAN_BO" ||
+        tabActive === "SINH_VIEN") && (
         <div key={tabActive} className="page-layout">
           {/* Cột trái: Bảng dữ liệu */}
           <div className="main-content-col">
@@ -332,7 +390,11 @@ export default function HistoryPage() {
                     onClick={() => datLoaiThoiGian(loai)}
                     className={`chart-filter-btn ${loaiThoiGian === loai ? "chart-filter-btn-active" : ""}`}
                   >
-                    {loai === "NGAY" ? t("statistics.day") : loai === "THANG" ? t("statistics.month") : t("statistics.year")}
+                    {loai === "NGAY"
+                      ? t("statistics.day")
+                      : loai === "THANG"
+                        ? t("statistics.month")
+                        : t("statistics.year")}
                   </button>
                 ))}
 
@@ -352,13 +414,32 @@ export default function HistoryPage() {
             <div className="chart-container">
               {loaiBieuDo === "THOI_GIAN" ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={duLieuBieuDoThoiGian} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+                  <BarChart
+                    data={duLieuBieuDoThoiGian}
+                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="ngay" tick={{ fontSize: 11 }} stroke="#9ca3af" />
+                    <XAxis
+                      dataKey="ngay"
+                      tick={{ fontSize: 11 }}
+                      stroke="#9ca3af"
+                    />
                     <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                    <Tooltip formatter={(value) => [value, t("statistics.turn")]} />
-                    <Bar dataKey="luotVao" fill="#10b981" radius={[3, 3, 0, 0]} name={t("statistics.inbound")} />
-                    <Bar dataKey="luotRa" fill="#3b82f6" radius={[3, 3, 0, 0]} name={t("statistics.outbound")} />
+                    <Tooltip
+                      formatter={(value) => [value, t("statistics.turn")]}
+                    />
+                    <Bar
+                      dataKey="luotVao"
+                      fill="#10b981"
+                      radius={[3, 3, 0, 0]}
+                      name={t("statistics.inbound")}
+                    />
+                    <Bar
+                      dataKey="luotRa"
+                      fill="#3b82f6"
+                      radius={[3, 3, 0, 0]}
+                      name={t("statistics.outbound")}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -373,16 +454,50 @@ export default function HistoryPage() {
                     ]}
                     margin={{ top: 10, right: 50, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f5f5f5" />
-                    <XAxis type="number" domain={[0, 1400]} stroke="#9ca3af" tick={{ fontSize: 11 }} />
-                    <YAxis dataKey="name" type="category" stroke="#9ca3af" tick={{ fontSize: 11, fontWeight: 600 }} tickLine={false} axisLine={false} />
-                    <Tooltip formatter={(value) => [Number(value).toLocaleString("vi-VN"), t("statistics.turnsCount")]} />
-                    <Bar dataKey="value" fill="#00afef" barSize={18} radius={[0, 4, 4, 0]}>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      horizontal={false}
+                      stroke="#f5f5f5"
+                    />
+                    <XAxis
+                      type="number"
+                      domain={[0, 1400]}
+                      stroke="#9ca3af"
+                      tick={{ fontSize: 11 }}
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      stroke="#9ca3af"
+                      tick={{ fontSize: 11, fontWeight: 600 }}
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <Tooltip
+                      formatter={(value) => [
+                        Number(value).toLocaleString("vi-VN"),
+                        t("statistics.turnsCount"),
+                      ]}
+                    />
+                    <Bar
+                      dataKey="value"
+                      fill="#00afef"
+                      barSize={18}
+                      radius={[0, 4, 4, 0]}
+                    >
                       <LabelList
                         dataKey="value"
                         position="right"
-                        formatter={(val: any) => (val !== null && val !== undefined ? Number(val).toLocaleString("vi-VN") : "")}
-                        style={{ fontSize: 12, fontWeight: 700, fill: "#374151" }}
+                        formatter={(val: any) =>
+                          val !== null && val !== undefined
+                            ? Number(val).toLocaleString("vi-VN")
+                            : ""
+                        }
+                        style={{
+                          fontSize: 12,
+                          fontWeight: 700,
+                          fill: "#374151",
+                        }}
                         offset={8}
                       />
                     </Bar>
@@ -395,9 +510,7 @@ export default function HistoryPage() {
           {/* BẢNG TOP SINH VIÊN */}
           <div className="top-students-card">
             <div className="top-students-header">
-              <h4 className="top-students-title">
-                {t("statistics.topTitle")}
-              </h4>
+              <h4 className="top-students-title">{t("statistics.topTitle")}</h4>
               <button className="btn-text-link">
                 {t("statistics.viewAll")}
               </button>
@@ -438,9 +551,19 @@ export default function HistoryPage() {
         <Portal>
           <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
             <Notification
-              icon={thongBao.kieu === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
+              icon={
+                thongBao.kieu === "success" ? (
+                  <IconCheck size={18} />
+                ) : (
+                  <IconX size={18} />
+                )
+              }
               color={thongBao.kieu === "success" ? "teal" : "red"}
-              title={thongBao.kieu === "success" ? t("messages.success") : t("messages.error")}
+              title={
+                thongBao.kieu === "success"
+                  ? t("messages.success")
+                  : t("messages.error")
+              }
               onClose={() => setThongBao(null)}
             >
               {thongBao.tinNhan}
@@ -463,7 +586,8 @@ export default function HistoryPage() {
         <Stack gap="md">
           <Text size="sm">
             {t("feedbackModal.body")}{" "}
-            <span className="font-semibold">{xacNhanPhanHoi?.hoVaTen}</span> ({xacNhanPhanHoi?.mssv})?
+            <span className="font-semibold">{xacNhanPhanHoi?.hoVaTen}</span> (
+            {xacNhanPhanHoi?.mssv})?
           </Text>
           <Group justify="flex-end" gap="xs">
             <Button variant="default" onClick={() => setXacNhanPhanHoi(null)}>
@@ -806,4 +930,3 @@ const pageStyles = `
     font-size: 0.75rem;
 }
 `;
-

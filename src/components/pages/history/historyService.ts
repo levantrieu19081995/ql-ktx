@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 

@@ -18,9 +18,9 @@ import { IconCheck } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchConfigPayment } from "@/services/setting/settinPaymentInfoService";
-import { HoSoPhiDichVuQuery } from "@/types/global";
+// import { HoSoPhiDichVuQuery } from "@/types/global";
 import { useUser } from "@/context/UserContext";
-import { fetchListHoSoPhiDichVu } from "@/services/ho-so-phu-dich-vu/hoSoPhiDichVuService";
+// import { fetchListHoSoPhiDichVu } from "@/services/ho-so-phu-dich-vu/hoSoPhiDichVuService";
 import dayjs from "dayjs";
 import { useLocale } from "next-intl";
 
@@ -44,7 +44,7 @@ export default function CompleteSection({
 
   const tongTien = listPhi.reduce(
     (sum: number, item: any) => sum + (item.phiThucTe || 0),
-    0
+    0,
   );
 
   // Fallback tài khoản thụ hưởng mặc định
@@ -72,21 +72,23 @@ export default function CompleteSection({
     if (!result?.hsId) return;
     setLoading(true);
     try {
-      const params: HoSoPhiDichVuQuery = {
+      // const params: HoSoPhiDichVuQuery = {
+      const params: any = {
         page: 1,
         pageSize: 500,
         userIdTiepNhan: String(user?.guid),
         hsId: result.hsId,
       };
 
-      const response = await fetchListHoSoPhiDichVu(params);
-
-      if (response?.status === "OK") {
-        const list = response.payload?.items || [];
-        setListPhi(list);
-      } else {
-        setListPhi([]);
-      }
+      // const response = await fetchListHoSoPhiDichVu(params);
+      const response = null;
+      setListPhi([]);
+      // if (response?.status === "OK") {
+      //   const list = response.payload?.items || [];
+      //   setListPhi(list);
+      // } else {
+      //   setListPhi([]);
+      // }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách hồ sơ phí dịch vụ:", error);
       setListPhi([]);
@@ -122,7 +124,7 @@ export default function CompleteSection({
 
           return acc;
         },
-        {}
+        {},
       );
       setPayment(filteredData);
     } catch (error) {

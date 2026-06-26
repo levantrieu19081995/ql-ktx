@@ -1,12 +1,11 @@
 /* eslint-disable react/jsx-key */
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import {
-  GetThongKeChiTietPhiDichVu,
-  GetThongKeDashBoard,
-  GetThongKePhiDichVu,
-} from "@/services/thong-ke/thongKeService";
+// import {
+//   GetThongKeChiTietPhiDichVu,
+//   GetThongKeDashBoard,
+//   GetThongKePhiDichVu,
+// } from "@/services/thong-ke/thongKeService";
 import {
   Box,
   Card,
@@ -47,7 +46,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { Skeleton } from "@mantine/core";
 import "@mantine/dates/styles.css";
 import DateFilterInput from "@/components/common/DateRangeFilter";
-import { ThongKePhiDichVuItem } from "@/types/global";
+// import { ThongKePhiDichVuItem } from "@/types/global";
 import CustomPagination from "@/components/common/CustomPagination";
 import BienSoComponent from "./BienSoComponent";
 import DateButtonPicker from "./DateButtonPicker";
@@ -116,9 +115,10 @@ export default function DashboardPage() {
   const isMobile = useMediaQuery("(max-width: 768px)");
   //--- useState ------
   const [dashboard, setDashboard] = useState<any>(null);
-  const [dataPhiDichVu, setDataPhiDichVu] = useState<ThongKePhiDichVuItem[]>(
-    [],
-  );
+  // const [dataPhiDichVu, setDataPhiDichVu] = useState<ThongKePhiDichVuItem[]>(
+  //   [],
+  // );
+  const [dataPhiDichVu, setDataPhiDichVu] = useState<any[]>([]);
   const [selectedPhiDichVu, setSelectedPhiDichVu] = useState<any>(null);
   const [opened, setOpened] = useState(false);
   const [openedListXe, setOpenedListXe] = useState(false);
@@ -128,15 +128,17 @@ export default function DashboardPage() {
   // --- Thêm useState cho paginate ---
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
-  const [paginatedData, setPaginatedData] = useState<ThongKePhiDichVuItem[]>(
-    [],
-  );
+  // const [paginatedData, setPaginatedData] = useState<ThongKePhiDichVuItem[]>(
+  //   [],
+  // );
+  const [paginatedData, setPaginatedData] = useState<any[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
   // --- Hàm xử lý cắt dữ liệu full thành paginated ---
   const handlePaginate = (
-    fullData: ThongKePhiDichVuItem[],
+    // fullData: ThongKePhiDichVuItem[],
+    fullData: any[],
     page: number,
     pageSize: number,
   ) => {
@@ -672,7 +674,8 @@ export default function DashboardPage() {
               }}
             >
               <Button
-                onClick={handleFetchThongKe}
+                // onClick={handleFetchThongKe}
+                onClick={() => {}}
                 leftSection={<IconSearch size={16} />}
                 size="md"
                 radius="lg"
@@ -895,7 +898,8 @@ export default function DashboardPage() {
               totalPages={totalPages}
               setPage={setPage}
               setPageSize={setPageSize}
-              fetchChiTietPhiDichVu={fetchChiTietPhiDichVu}
+              // fetchChiTietPhiDichVu={fetchChiTietPhiDichVu}
+              fetchChiTietPhiDichVu={() => {}}
               fetchData={_fetchListHoSoDangKiem}
             />
           )}

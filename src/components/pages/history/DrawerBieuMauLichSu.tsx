@@ -1,17 +1,25 @@
-'use client';
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
 
-import React, { useEffect } from 'react';
-import { Button, TextInput, Select, Textarea, Drawer, Stack } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useTranslations } from 'next-intl';
-import { IconChevronDown } from '@tabler/icons-react';
-import { LUA_CHON_KTX } from './history.mock';
-import { HistoryItem } from '../../../types/type-history';
+import React, { useEffect } from "react";
+import {
+  Button,
+  TextInput,
+  Select,
+  Textarea,
+  Drawer,
+  Stack,
+} from "@mantine/core";
+import { useForm } from "@mantine/form";
+import { useTranslations } from "next-intl";
+import { IconChevronDown } from "@tabler/icons-react";
+import { LUA_CHON_KTX } from "./history.mock";
+import { HistoryItem } from "../../../types/type-history";
 
 interface ThuocTinhDrawerBieuMauLichSu {
   open: boolean;
   onClose: () => void;
-  onSave: (duLieu: Omit<HistoryItem, 'id' | 'thoiGian'>) => Promise<void>;
+  onSave: (duLieu: Omit<HistoryItem, "id" | "thoiGian">) => Promise<void>;
   dangTao: boolean;
 }
 
@@ -25,25 +33,27 @@ export const DrawerBieuMauLichSu: React.FC<ThuocTinhDrawerBieuMauLichSu> = ({
   onSave,
   dangTao,
 }) => {
-  const t = useTranslations('History');
+  const t = useTranslations("History");
 
   const form = useForm({
     initialValues: {
-      mssv: '',
-      hoVaTen: '',
-      maKtx: '',
-      maPhong: '',
-      loai: 'IN',
-      thietBi: 'Cổng chính - Cam 01',
-      ghiChu: '',
+      mssv: "",
+      hoVaTen: "",
+      maKtx: "",
+      maPhong: "",
+      loai: "IN",
+      thietBi: "Cổng chính - Cam 01",
+      ghiChu: "",
     },
     validate: {
-      mssv: (value) => (value.length < 8 ? t('drawer.validateStudentId') : null),
-      hoVaTen: (value) => (value.length < 3 ? t('drawer.validateFullName') : null),
-      maKtx: (value) => (!value ? t('drawer.validateDorm') : null),
-      maPhong: (value) => (!value ? t('drawer.validateRoom') : null),
-      loai: (value) => (!value ? t('drawer.validateAction') : null),
-      thietBi: (value) => (!value ? t('drawer.validateDevice') : null),
+      mssv: (value) =>
+        value.length < 8 ? t("drawer.validateStudentId") : null,
+      hoVaTen: (value) =>
+        value.length < 3 ? t("drawer.validateFullName") : null,
+      maKtx: (value) => (!value ? t("drawer.validateDorm") : null),
+      maPhong: (value) => (!value ? t("drawer.validateRoom") : null),
+      loai: (value) => (!value ? t("drawer.validateAction") : null),
+      thietBi: (value) => (!value ? t("drawer.validateDevice") : null),
     },
   });
 
@@ -55,7 +65,9 @@ export const DrawerBieuMauLichSu: React.FC<ThuocTinhDrawerBieuMauLichSu> = ({
 
   const xuLyGuiBieuMau = async (values: typeof form.values) => {
     try {
-      const thongTinKtx = LUA_CHON_KTX.find((tuyChon) => tuyChon.value === values.maKtx);
+      const thongTinKtx = LUA_CHON_KTX.find(
+        (tuyChon) => tuyChon.value === values.maKtx,
+      );
 
       await onSave({
         mssv: values.mssv,
@@ -64,10 +76,11 @@ export const DrawerBieuMauLichSu: React.FC<ThuocTinhDrawerBieuMauLichSu> = ({
         tenKtx: thongTinKtx?.label ?? values.maKtx,
         maPhong: values.maPhong,
         tenPhong: `Phòng ${values.maPhong}`,
-        loai: values.loai as 'IN' | 'OUT',
+        loai: values.loai as "IN" | "OUT",
         thietBi: values.thietBi,
         ghiChu: values.ghiChu,
-        duongDanAnhDaiDien: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150',
+        duongDanAnhDaiDien:
+          "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150",
       });
       onClose();
     } catch {
@@ -75,15 +88,17 @@ export const DrawerBieuMauLichSu: React.FC<ThuocTinhDrawerBieuMauLichSu> = ({
     }
   };
 
-  const customChevron = <IconChevronDown size={16} className="text-zinc-400 pointer-events-none" />;
+  const customChevron = (
+    <IconChevronDown size={16} className="text-zinc-400 pointer-events-none" />
+  );
 
   // Translate options dynamically
   const localizedKtxOptions = LUA_CHON_KTX.map((option) => {
     let localizedLabel = option.label;
-    if (option.value === 'A') localizedLabel = t('filter.dormA');
-    else if (option.value === 'B') localizedLabel = t('filter.dormB');
-    else if (option.value === 'C') localizedLabel = t('filter.dormC');
-    else if (option.value === 'D') localizedLabel = t('filter.dormD');
+    if (option.value === "A") localizedLabel = t("filter.dormA");
+    else if (option.value === "B") localizedLabel = t("filter.dormB");
+    else if (option.value === "C") localizedLabel = t("filter.dormC");
+    else if (option.value === "D") localizedLabel = t("filter.dormD");
     return { ...option, label: localizedLabel };
   });
 
@@ -91,97 +106,93 @@ export const DrawerBieuMauLichSu: React.FC<ThuocTinhDrawerBieuMauLichSu> = ({
     <Drawer
       opened={open}
       onClose={onClose}
-      title={<span className="drawer-title">{t('drawer.createTitle')}</span>}
+      title={<span className="drawer-title">{t("drawer.createTitle")}</span>}
       position="right"
       size={500}
       styles={{
         header: {
-          borderBottom: '1px solid #f0f0f0',
-          padding: '16px 24px',
-          backgroundColor: '#fdfdfd',
+          borderBottom: "1px solid #f0f0f0",
+          padding: "16px 24px",
+          backgroundColor: "#fdfdfd",
         },
         body: {
-          padding: '24px',
+          padding: "24px",
         },
       }}
     >
       <Stack gap="md" className="drawer-body-container">
         <form onSubmit={form.onSubmit(xuLyGuiBieuMau)} className="drawer-form">
           <TextInput
-            label={t('drawer.studentIdLabel')}
-            placeholder={t('drawer.studentIdPlaceholder')}
+            label={t("drawer.studentIdLabel")}
+            placeholder={t("drawer.studentIdPlaceholder")}
             required
-            {...form.getInputProps('mssv')}
+            {...form.getInputProps("mssv")}
           />
 
           <TextInput
-            label={t('drawer.fullNameLabel')}
-            placeholder={t('drawer.fullNamePlaceholder')}
+            label={t("drawer.fullNameLabel")}
+            placeholder={t("drawer.fullNamePlaceholder")}
             required
-            {...form.getInputProps('hoVaTen')}
+            {...form.getInputProps("hoVaTen")}
           />
 
           <div className="grid-2-cols">
             <Select
-              label={t('drawer.dormLabel')}
-              placeholder={t('drawer.dormPlaceholder')}
+              label={t("drawer.dormLabel")}
+              placeholder={t("drawer.dormPlaceholder")}
               data={localizedKtxOptions}
               required
               rightSection={customChevron}
-              {...form.getInputProps('maKtx')}
+              {...form.getInputProps("maKtx")}
             />
 
             <TextInput
-              label={t('drawer.roomLabel')}
-              placeholder={t('drawer.roomPlaceholder')}
+              label={t("drawer.roomLabel")}
+              placeholder={t("drawer.roomPlaceholder")}
               required
-              {...form.getInputProps('maPhong')}
+              {...form.getInputProps("maPhong")}
             />
           </div>
 
           <div className="grid-2-cols">
             <Select
-              label={t('drawer.actionLabel')}
-              placeholder={t('drawer.actionPlaceholder')}
+              label={t("drawer.actionLabel")}
+              placeholder={t("drawer.actionPlaceholder")}
               data={[
-                { value: 'IN', label: t('drawer.actionIn') },
-                { value: 'OUT', label: t('drawer.actionOut') },
+                { value: "IN", label: t("drawer.actionIn") },
+                { value: "OUT", label: t("drawer.actionOut") },
               ]}
               required
               rightSection={customChevron}
-              {...form.getInputProps('loai')}
+              {...form.getInputProps("loai")}
             />
 
             <TextInput
-              label={t('drawer.deviceLabel')}
-              placeholder={t('drawer.devicePlaceholder')}
+              label={t("drawer.deviceLabel")}
+              placeholder={t("drawer.devicePlaceholder")}
               required
-              {...form.getInputProps('thietBi')}
+              {...form.getInputProps("thietBi")}
             />
           </div>
 
           <Textarea
-            label={t('drawer.noteLabel')}
-            placeholder={t('drawer.notePlaceholder')}
+            label={t("drawer.noteLabel")}
+            placeholder={t("drawer.notePlaceholder")}
             rows={3}
-            {...form.getInputProps('ghiChu')}
+            {...form.getInputProps("ghiChu")}
           />
 
           <div className="btn-group-right">
-            <Button
-              variant="default"
-              onClick={onClose}
-              className="btn-cancel"
-            >
-              {t('drawer.cancelBtn')}
+            <Button variant="default" onClick={onClose} className="btn-cancel">
+              {t("drawer.cancelBtn")}
             </Button>
             <Button
               type="submit"
               loading={dangTao}
               className="btn-submit"
-              style={{ backgroundColor: '#1f5ca9' }}
+              style={{ backgroundColor: "#1f5ca9" }}
             >
-              {t('drawer.saveBtn')}
+              {t("drawer.saveBtn")}
             </Button>
           </div>
         </form>

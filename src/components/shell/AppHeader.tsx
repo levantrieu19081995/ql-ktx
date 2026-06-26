@@ -21,7 +21,7 @@ import LocaleSwitcher from "./LocaleSwitcher";
 import { useUser } from "@/context/UserContext";
 import { fetchConfigSystem } from "@/services/setting/settingSystemInfoService";
 import { useEffect, useState } from "react";
-import { ConfigSystemRequest } from "@/types/global";
+// import { ConfigSystemRequest } from "@/types/global";
 
 import { useSession } from "next-auth/react";
 import { fetchUserAPI } from "@/services/auth/authService";
@@ -71,14 +71,15 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
   const getConfigAppDetails = async () => {
     try {
       // Đặt params để lấy cả app.name và app.logo
-      const params: ConfigSystemRequest = { group: "app", keyword: "*" }; // Lấy tất cả key trong group "app"
+      // const params: ConfigSystemRequest = { group: "app", keyword: "*" }; // Lấy tất cả key trong group "app"
+      const params: any = { group: "app", keyword: "*" }; // Lấy tất cả key trong group "app"
 
       // Gọi API để lấy dữ liệu
       const configData = await fetchConfigSystem(params);
       console.log("[RUN_LOG] ===> AppHeader  configData: ", configData);
 
       // Lọc và xử lý dữ liệu từ API để lấy app.name và app.logo
-      const filteredData = configData.payload.reduce((acc: any, item) => {
+      const filteredData = configData.payload.reduce((acc: any, item: any) => {
         if (item.config.key === "app.name") {
           acc.name = item.value; // Lưu giá trị app.name
         }
