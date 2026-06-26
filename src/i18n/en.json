@@ -23,7 +23,9 @@
       "minPassword": "Password must be at least {count} characters"
     }
   },
-  "Header": { "search": "Search..." },
+  "Header": {
+    "search": "Search..."
+  },
   "UserMenu": {
     "signedInAs": "Signed in as {name}"
   },
@@ -60,7 +62,10 @@
     "versionDetailsTitle": "New Version of the Application",
     "currentVersion": "Current Features",
     "newVersion": "New Features in the Version",
-    "close": "Close"
+    "close": "Close",
+    "historyMenu": "Access History",
+    "warningsMenu": "Stranger Warnings",
+    "unit": "Unit"
   },
   "Integrations": {
     "title": "Connect platforms",
@@ -81,7 +86,6 @@
   "Home": {
     "title": "Home"
   },
-
   "LocaleSwitcher": {
     "aria": "Change language to {code, select, vi {Vietnamese} en {English} other {#}}",
     "title": "Switch to {code, select, vi {Vietnamese} en {English} other {#}}"
@@ -97,28 +101,180 @@
     "message": "Please contact the administrator to request access.",
     "backHome": "Back to Home"
   },
-  "Dashboard": { "title": "Overview" },
-  "Analytics": { "title": "Analytics" },
-  "Content": { "title": "Content" },
-  "Scheduler": { "title": "Scheduler" },
-  "Settings": { "title": "Settings" },
+  "Dashboard": {
+    "title": "Overview"
+  },
+  "Analytics": {
+    "title": "Analytics"
+  },
+  "Content": {
+    "title": "Content"
+  },
+  "Scheduler": {
+    "title": "Scheduler"
+  },
+  "Settings": {
+    "title": "Settings"
+  },
   "Manage-users": {
     "title": "User Management"
   },
-  "TollManagement": { "title": "Road vehicle inspection" },
-  "ExtraFeesManagement": { "title": "Toll Other" },
+  "TollManagement": {
+    "title": "Road vehicle inspection"
+  },
+  "ExtraFeesManagement": {
+    "title": "Toll Other"
+  },
   "InlandWaterwaysFeesManagement": {
     "title": "Inland Waterway Vehicle Fee Collection"
   },
-  "Category": { "title": "Category system" },
-  "BillManagement": { "title": "Bill Management" },
-  "FeesManagement": { "title": "Fees Management" },
-  "RolesManagement": { "title": "Roles Management" },
-  "PermissionsManagement": { "title": "Permissions Management" },
-  "InstructionManual": { "title": "Instruction Manual" },
-  "InspectionFeesManagement": { "title": "Inspection ATLĐ" },
-  "SpecializedMotorbikeFeesManagement": { "title": "Specialized Motorbike" },
+  "Category": {
+    "title": "Category system"
+  },
+  "BillManagement": {
+    "title": "Bill Management"
+  },
+  "FeesManagement": {
+    "title": "Fees Management"
+  },
+  "RolesManagement": {
+    "title": "Roles Management"
+  },
+  "PermissionsManagement": {
+    "title": "Permissions Management"
+  },
+  "InstructionManual": {
+    "title": "Instruction Manual"
+  },
+  "InspectionFeesManagement": {
+    "title": "Inspection ATLĐ"
+  },
+  "SpecializedMotorbikeFeesManagement": {
+    "title": "Specialized Motorbike"
+  },
   "CertificateOfRenovationFeesManagenment": {
     "title": "Certificate of Renovation"
+  },
+  "History": {
+    "title": "ACCESS HISTORY",
+    "tabs": {
+      "log": "History",
+      "statistics": "Statistics",
+      "present": "Present Students",
+      "absent": "Absent Students",
+      "staff": "Staff",
+      "student": "Students",
+      "warnings": "Warnings"
+    },
+    "filter": {
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "studentId": "Student ID",
+      "fullName": "Full Name",
+      "dormitory": "Dormitory",
+      "group": "Group",
+      "status": "Status",
+      "action": "Action",
+      "objectType": "Object Type",
+      "search": "Search",
+      "reset": "Reset",
+      "exportExcel": "Export Excel",
+      "exportPdf": "Export PDF",
+      "addData": "Add Data",
+      "all": "All",
+      "in": "In",
+      "out": "Out",
+      "stranger": "Stranger",
+      "student": "Student",
+      "staff": "Staff",
+      "present": "Present",
+      "absent": "Absent",
+      "dormA": "Area A",
+      "dormB": "Area B",
+      "dormC": "Area C",
+      "dormD": "Area D",
+      "unpaid": "Unpaid",
+      "banned": "Banned",
+      "expand": "Expand filters",
+      "collapse": "Collapse filters"
+    },
+    "table": {
+      "no": "No.",
+      "time": "Time",
+      "fullName": "Full Name",
+      "name": "Full Name",
+      "image": "Image",
+      "type": "Type",
+      "dormitory": "Dormitory",
+      "room": "Room",
+      "unit": "Unit",
+      "noData": "No data available",
+      "loading": "Loading data...",
+      "paginationInfo": "Showing {start} - {end} of {total} records",
+      "rowsPerPage": "{count} / Page"
+    },
+    "card": {
+      "detailTitle": "Detailed Information",
+      "emptyText": "Please select a log row to view detailed information",
+      "dormitory": "Dormitory:",
+      "time": "Time:",
+      "room": "Room:",
+      "status": "Status:",
+      "feedbackBtn": "Report Incorrect Info"
+    },
+    "drawer": {
+      "createTitle": "Record New Access History",
+      "dormLabel": "Dormitory Area",
+      "dormPlaceholder": "Select area",
+      "roomLabel": "Room",
+      "roomPlaceholder": "Enter room (example: 101)",
+      "actionLabel": "Access Type",
+      "actionPlaceholder": "In or Out",
+      "actionIn": "Enter Dormitory",
+      "actionOut": "Exit Dormitory",
+      "deviceLabel": "Scanner Device",
+      "devicePlaceholder": "Enter device name",
+      "noteLabel": "Additional Note",
+      "notePlaceholder": "Enter event note if any",
+      "saveBtn": "Save Record",
+      "cancelBtn": "Cancel",
+      "studentIdLabel": "Student ID ",
+      "studentIdPlaceholder": "Enter student ID (e.g. B2003789)",
+      "fullNameLabel": "Student Full Name",
+      "fullNamePlaceholder": "Enter student full name",
+      "validateStudentId": "Student ID must be at least 8 characters",
+      "validateFullName": "Student name must be at least 3 characters",
+      "validateDorm": "Please select a Dormitory",
+      "validateRoom": "Please enter a room",
+      "validateAction": "Please select a record type",
+      "validateDevice": "Please enter a scanner device"
+    },
+    "messages": {
+      "loadError": "Failed to load access history",
+      "updated": "Search filters updated",
+      "exportExcelSuccess": "Excel exported successfully!",
+      "exportPdfSuccess": "PDF exported successfully!",
+      "success": "Success",
+      "error": "Error",
+      "reportSuccess": "Reported incorrect information successfully!"
+    },
+    "feedbackModal": {
+      "title": "Confirm Feedback",
+      "body": "Are you sure you want to report incorrect access information for",
+      "submitBtn": "Confirm Send"
+    },
+    "statistics": {
+      "chartHourly": "Daily Access Frequency Chart",
+      "chartDorm": "Access by Dormitory Chart",
+      "day": "Day",
+      "month": "Month",
+      "year": "Year",
+      "inbound": "Inbound",
+      "outbound": "Outbound",
+      "turn": "turns",
+      "turnsCount": "Turns Count",
+      "topTitle": "Top Active Students",
+      "viewAll": "View All"
+    }
   }
 }

@@ -2,11 +2,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-// import {
-//   GetThongKeChiTietPhiDichVu,
-//   GetThongKeDashBoard,
-//   GetThongKePhiDichVu,
-// } from "@/services/thong-ke/thongKeService";
+import {
+  GetThongKeChiTietPhiDichVu,
+  GetThongKeDashBoard,
+  GetThongKePhiDichVu,
+} from "@/services/thong-ke/thongKeService";
 import {
   Box,
   Card,
@@ -165,7 +165,6 @@ export default function DashboardPage() {
   //   toDate: "12/31/2025",
   //   thuTuc: "",
   // });
-
   const getToday = () => {
     const d = new Date();
     const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -265,6 +264,187 @@ export default function DashboardPage() {
   //   setOpened(true);
   // };
 
+  // -- render component local
+  // function RecentPaymentsCard() {
+  //   const getFeeColor = (value: number) => {
+  //     if (value > 1_000_000) return "grape";
+  //     if (value > 700_000) return "blue";
+  //     if (value > 400_000) return "teal";
+  //     return "gray";
+  //   };
+
+  //   return (
+  //     <>
+  //       <style>
+  //         {`
+  //       /* Ánh sáng quét qua biển kiểm soát */
+  //       @keyframes shine {
+  //         0% { left: -100%; }
+  //         100% { left: 100%; }
+  //       }
+
+  //       /* Hiệu ứng ripple click */
+  //       @keyframes ripple-effect {
+  //         to {
+  //           width: 200%;
+  //           height: 200%;
+  //           opacity: 0;
+  //         }
+  //       }
+
+  //       .ripple::after {
+  //         content: "";
+  //         position: absolute;
+  //         left: 50%;
+  //         top: 50%;
+  //         width: 0;
+  //         height: 0;
+  //         background: rgba(110, 124, 246, 0.3);
+  //         border-radius: 50%;
+  //         transform: translate(-50%, -50%);
+  //         animation: ripple-effect 0.6s ease-out;
+  //         pointer-events: none;
+  //       }
+  //     `}
+  //       </style>
+
+  //       <Card
+  //         withBorder
+  //         radius="lg"
+  //         p="lg"
+  //         style={{
+  //           background: "linear-gradient(145deg, #fdfdfd, #fafafa)",
+  //           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+  //         }}
+  //       >
+  //         <Title order={4} mb="md" style={{ color: "#222" }}>
+  //           Danh sách thu phí dịch vụ
+  //         </Title>
+
+  //         <Table
+  //           highlightOnHover
+  //           verticalSpacing="sm"
+  //           style={{ borderRadius: 12 }}
+  //         >
+  //           <Table.Thead>
+  //             <Table.Tr>
+  //               <Table.Th>Mã kiểm soát</Table.Th>
+  //               <Table.Th>Phương tiện</Table.Th>
+  //               <Table.Th>Tổng phí dịch vụ</Table.Th>
+  //               <Table.Th style={{ width: "15%", textAlign: "center" }}>
+  //                 Thao tác
+  //               </Table.Th>
+  //             </Table.Tr>
+  //           </Table.Thead>
+
+  //           <Table.Tbody>
+  //             {paginatedData.map((row, idx) => (
+  //               <Table.Tr
+  //                 key={idx}
+  //                 onClick={(e) => {
+  //                   fetchChiTietPhiDichVu(row.hsId, row);
+  //                   const tr = e.currentTarget as HTMLElement;
+  //                   tr.classList.add("ripple");
+  //                   setTimeout(() => tr.classList.remove("ripple"), 600);
+  //                 }}
+  //                 style={{
+  //                   cursor: "pointer",
+  //                   position: "relative",
+  //                   transition: "all 0.25s ease",
+  //                 }}
+  //                 onMouseEnter={(e) => {
+  //                   const tr = e.currentTarget as HTMLElement;
+  //                   tr.style.background = "rgba(230,240,255,0.5)";
+  //                   tr.style.boxShadow = "0 2px 6px rgba(0,0,0,0.08)";
+
+  //                   const plate = tr.querySelector(".plate-box") as HTMLElement;
+  //                   if (plate) {
+  //                     plate.style.transform = "scale(1.03)";
+  //                     plate.style.boxShadow =
+  //                       "0 4px 10px rgba(0,0,0,0.25), inset 0 0 3px rgba(0,0,0,0.25)";
+  //                   }
+
+  //                   const badge = tr.querySelector(
+  //                     ".detail-badge"
+  //                   ) as HTMLElement;
+  //                   if (badge)
+  //                     badge.style.boxShadow =
+  //                       "0 0 10px rgba(45, 212, 191, 0.6)";
+  //                 }}
+  //                 onMouseLeave={(e) => {
+  //                   const tr = e.currentTarget as HTMLElement;
+  //                   tr.style.background = "transparent";
+  //                   tr.style.boxShadow = "none";
+
+  //                   const plate = tr.querySelector(".plate-box") as HTMLElement;
+  //                   if (plate) {
+  //                     plate.style.transform = "scale(1)";
+  //                     plate.style.boxShadow =
+  //                       "0 2px 6px rgba(0,0,0,0.15), inset 0 0 2px rgba(0,0,0,0.25)";
+  //                   }
+
+  //                   const badge = tr.querySelector(
+  //                     ".detail-badge"
+  //                   ) as HTMLElement;
+  //                   if (badge) badge.style.boxShadow = "none";
+  //                 }}
+  //               >
+  //                 {/* Biển kiểm soát */}
+  //                 <Table.Td>
+  //                   <BienSoComponent value={row.bienKiemSoat} />
+  //                 </Table.Td>
+
+  //                 {/* Phương tiện */}
+  //                 <Table.Td>{row.lptTen}</Table.Td>
+
+  //                 {/* Tổng phí */}
+  //                 <Table.Td>
+  //                   <Badge
+  //                     variant="gradient"
+  //                     gradient={{ from: "#6E7CF6", to: "#8B5CF6", deg: 90 }}
+  //                     color={getFeeColor(row.tongPhiDichVu || 0)}
+  //                     size="lg"
+  //                     radius="sm"
+  //                     px="xs"
+  //                   >
+  //                     {row.tongPhiDichVu?.toLocaleString() ?? 0} đ
+  //                   </Badge>
+  //                 </Table.Td>
+
+  //                 {/* Thao tác */}
+  //                 <Table.Td style={{ width: "15%", textAlign: "center" }}>
+  //                   <Badge
+  //                     color="teal"
+  //                     variant="light"
+  //                     className="detail-badge"
+  //                     style={{
+  //                       transition: "all 0.25s ease",
+  //                     }}
+  //                   >
+  //                     Chi tiết
+  //                   </Badge>
+  //                 </Table.Td>
+  //               </Table.Tr>
+  //             ))}
+  //           </Table.Tbody>
+  //         </Table>
+
+  //         <Group justify="right" mt="md">
+  //           <CustomPagination
+  //             totalItems={totalItems}
+  //             totalPages={totalPages}
+  //             page={page}
+  //             pageSize={pageSize}
+  //             setPage={setPage}
+  //             setPageSize={setPageSize}
+  //             fetchData={_fetchListHoSoDangKiem}
+  //           />
+  //         </Group>
+  //       </Card>
+  //     </>
+  //   );
+  // }
+
   const pieDataDynamic =
     dashboard?.danhSachPhuongTienDangKiemThangHienTai?.map(
       (item: any, idx: number) => {
@@ -279,9 +459,9 @@ export default function DashboardPage() {
 
   const tongXe = dashboard?.tongXeDangKiemThangHienTai ?? 0;
 
-  // useEffect(() => {
-  //   handleFetchThongKe();
-  // }, []);
+  useEffect(() => {
+    // handleFetchThongKe();
+  }, []);
 
   // const handleFetchThongKe = async () => {
   //   setLoading(true);
@@ -293,9 +473,9 @@ export default function DashboardPage() {
   // };
 
   useEffect(() => {
-    if (dataPhiDichVu.length > 0) {
-      handlePaginate(dataPhiDichVu, 1, pageSize);
-    }
+    // if (dataPhiDichVu.length > 0) {
+    //   handlePaginate(dataPhiDichVu, 1, pageSize);
+    // }
   }, [dataPhiDichVu, pageSize]);
 
   const handleOpenModal = () => {
@@ -361,6 +541,87 @@ export default function DashboardPage() {
         )}
       </SimpleGrid>
 
+      {/* Bộ lọc */}
+      {/* <>
+        {loading ? (
+          <Skeleton height={80} radius="lg" />
+        ) : (
+          <Grid gutter="md" align="center">
+            <Grid.Col span={{ base: 12, md: 3 }}>
+              <Grid gutter="md" align="center">
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <DateButtonPicker
+                    label="Từ ngày"
+                    value={filtersDate.fromDate}
+                    valueFormat="DD/MM/YYYY"
+                    onChange={(date: any) =>
+                      setFiltersDate((prev) => ({ ...prev, fromDate: date }))
+                    }
+                    title="Từ ngày"
+                  />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, sm: 6 }}>
+                  <DateButtonPicker
+                    label="Đến ngày"
+                    value={filtersDate.toDate}
+                    valueFormat="DD/MM/YYYY"
+                    onChange={(date: any) =>
+                      setFiltersDate((prev) => ({ ...prev, toDate: date }))
+                    }
+                    title="Đến ngày"
+                  />
+                </Grid.Col>
+              </Grid>
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 7 }}>
+              <ThuTucSelect
+                value={filtersDate.thuTuc}
+                onChange={(v: any) =>
+                  setFiltersDate((prev) => ({ ...prev, thuTuc: v }))
+                }
+              />
+            </Grid.Col>
+
+            <Grid.Col
+              span={{ base: 12, md: 2 }}
+              style={{ display: "flex", justifyContent: "flex-end" }}
+            >
+              <Button
+                onClick={handleFetchThongKe}
+                leftSection={<IconSearch size={16} />}
+                size="md"
+                radius="lg"
+                style={{
+                  background: "linear-gradient(135deg, #6EA8FF, #4E7BFA)",
+                  boxShadow:
+                    "0px 4px 12px rgba(78, 123, 250, 0.35), inset 0px -2px 4px rgba(255,255,255,0.3)",
+                  backdropFilter: "blur(6px)",
+                  color: "white",
+                  fontWeight: 600,
+                  paddingInline: 24,
+                  transition: "0.25s ease",
+                  width: "100%",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0px 6px 18px rgba(78, 123, 250, 0.45)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow =
+                    "0px 4px 12px rgba(78, 123, 250, 0.35)";
+                }}
+              >
+                Tìm kiếm
+              </Button>
+            </Grid.Col>
+          </Grid>
+        )}
+      </> */}
+
       <>
         {loading ? (
           <Skeleton height={80} radius="lg" />
@@ -410,7 +671,7 @@ export default function DashboardPage() {
                 alignItems: "center",
               }}
             >
-              {/* <Button
+              <Button
                 onClick={handleFetchThongKe}
                 leftSection={<IconSearch size={16} />}
                 size="md"
@@ -427,7 +688,7 @@ export default function DashboardPage() {
                 }}
               >
                 Tìm kiếm
-              </Button> */}
+              </Button>
             </Box>
           </Flex>
         )}
@@ -618,7 +879,7 @@ export default function DashboardPage() {
       </Grid>
 
       {/* Danh sách */}
-      {/* <Grid gutter="xl">
+      <Grid gutter="xl">
         <Grid.Col span={{ base: 12 }}>
           {loading ? (
             <Card withBorder radius="lg" p="lg">
@@ -639,7 +900,7 @@ export default function DashboardPage() {
             />
           )}
         </Grid.Col>
-      </Grid> */}
+      </Grid>
 
       {/* Modal hiển thị chi tiết */}
       <Modal
