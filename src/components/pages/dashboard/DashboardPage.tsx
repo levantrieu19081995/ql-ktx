@@ -201,68 +201,68 @@ export default function DashboardPage() {
     return d.format("MM/DD/YYYY");
   };
 
-  const fetchThongKeDashBoard = async () => {
-    try {
-      //  Chuẩn hóa 100% trước khi gọi API
-      const tuNgay = normalizeDateForApi(filtersDate.fromDate, "01/01/2025");
-      const denNgay = normalizeDateForApi(filtersDate.toDate, "12/31/2025");
+  // const fetchThongKeDashBoard = async () => {
+  //   try {
+  //     //  Chuẩn hóa 100% trước khi gọi API
+  //     const tuNgay = normalizeDateForApi(filtersDate.fromDate, "01/01/2025");
+  //     const denNgay = normalizeDateForApi(filtersDate.toDate, "12/31/2025");
 
-      const res = await GetThongKeDashBoard({
-        tuNgay,
-        denNgay,
-      });
+  //     const res = await GetThongKeDashBoard({
+  //       tuNgay,
+  //       denNgay,
+  //     });
 
-      const payload = res.payload;
+  //     const payload = res.payload;
 
-      payload.danhSachPhuongTienDangKiemThangHienTai =
-        payload?.danhSachPhuongTienDangKiemThangHienTai?.map(
-          (item: any, idx: number) => ({
-            ...item,
-            lptTen: item.lptTen || "Không xác định",
-            color: colorsBarChar[idx % colorsBarChar.length],
-          }),
-        );
-      setDashboard(payload);
-      return res;
-    } catch (err) {
-      console.error("Fetch dashboard error:", err);
-    }
-  };
+  //     payload.danhSachPhuongTienDangKiemThangHienTai =
+  //       payload?.danhSachPhuongTienDangKiemThangHienTai?.map(
+  //         (item: any, idx: number) => ({
+  //           ...item,
+  //           lptTen: item.lptTen || "Không xác định",
+  //           color: colorsBarChar[idx % colorsBarChar.length],
+  //         }),
+  //       );
+  //     setDashboard(payload);
+  //     return res;
+  //   } catch (err) {
+  //     console.error("Fetch dashboard error:", err);
+  //   }
+  // };
 
-  const fetchThongKePhiDichVu = async () => {
-    try {
-      const tuNgay = normalizeDateForApi(filtersDate.fromDate, "01/01/2025");
-      const denNgay = normalizeDateForApi(filtersDate.toDate, "12/31/2025");
+  // const fetchThongKePhiDichVu = async () => {
+  //   try {
+  //     const tuNgay = normalizeDateForApi(filtersDate.fromDate, "01/01/2025");
+  //     const denNgay = normalizeDateForApi(filtersDate.toDate, "12/31/2025");
 
-      const res = await GetThongKePhiDichVu({
-        tuNgay: tuNgay,
-        denNgay: denNgay,
-      });
+  //     const res = await GetThongKePhiDichVu({
+  //       tuNgay: tuNgay,
+  //       denNgay: denNgay,
+  //     });
 
-      // setDataPhiDichVu(res.payload);
-      setDataPhiDichVu(res.payload || []);
-      return res;
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  //     // setDataPhiDichVu(res.payload);
+  //     setDataPhiDichVu(res.payload || []);
+  //     return res;
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
-  const fetchChiTietPhiDichVu = async (hsId: number, row: any) => {
-    const tuNgay = normalizeDateForApi(filtersDate.fromDate, "01/01/2025");
-    const denNgay = normalizeDateForApi(filtersDate.toDate, "12/31/2025");
+  // const fetchChiTietPhiDichVu = async (hsId: number, row: any) => {
+  //   const tuNgay = normalizeDateForApi(filtersDate.fromDate, "01/01/2025");
+  //   const denNgay = normalizeDateForApi(filtersDate.toDate, "12/31/2025");
 
-    const res = await GetThongKeChiTietPhiDichVu({
-      tuNgay: tuNgay,
-      denNgay: denNgay,
-      hsId,
-    });
-    const chiTiet = res.payload[0];
-    setSelectedPhiDichVu({
-      ...row,
-      danhSachPhiDichVu: chiTiet?.danhSachPhiDichVu ?? [],
-    });
-    setOpened(true);
-  };
+  //   const res = await GetThongKeChiTietPhiDichVu({
+  //     tuNgay: tuNgay,
+  //     denNgay: denNgay,
+  //     hsId,
+  //   });
+  //   const chiTiet = res.payload[0];
+  //   setSelectedPhiDichVu({
+  //     ...row,
+  //     danhSachPhiDichVu: chiTiet?.danhSachPhiDichVu ?? [],
+  //   });
+  //   setOpened(true);
+  // };
 
   // -- render component local
   // function RecentPaymentsCard() {
@@ -460,22 +460,22 @@ export default function DashboardPage() {
   const tongXe = dashboard?.tongXeDangKiemThangHienTai ?? 0;
 
   useEffect(() => {
-    handleFetchThongKe();
+    // handleFetchThongKe();
   }, []);
 
-  const handleFetchThongKe = async () => {
-    setLoading(true);
-    try {
-      await Promise.all([fetchThongKeDashBoard(), fetchThongKePhiDichVu()]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleFetchThongKe = async () => {
+  //   setLoading(true);
+  //   try {
+  //     await Promise.all([fetchThongKeDashBoard(), fetchThongKePhiDichVu()]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
-    if (dataPhiDichVu.length > 0) {
-      handlePaginate(dataPhiDichVu, 1, pageSize);
-    }
+    // if (dataPhiDichVu.length > 0) {
+    //   handlePaginate(dataPhiDichVu, 1, pageSize);
+    // }
   }, [dataPhiDichVu, pageSize]);
 
   const handleOpenModal = () => {
