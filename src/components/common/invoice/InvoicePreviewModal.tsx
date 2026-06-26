@@ -658,9 +658,9 @@ export default function InvoicePreviewModal({
                     let message = "";
                     if (onlyHas2) {
                       message =
-                        "⚠ Bạn đang xuất hóa đơn chỉ bao gồm hồ sơ đăng kiểm! ";
+                        "⚠ Bạn đang xuất hóa đơn chỉ bao gồm hồ sơ lưu trú! ";
                     } else if (onlyHas3 || noProduct) {
-                      message = "⚠ Vui lòng nên chọn thêm hồ sơ phí đăng kiểm.";
+                      message = "⚠ Vui lòng nên chọn thêm hồ sơ phí nội trú.";
                     }
 
                     return (

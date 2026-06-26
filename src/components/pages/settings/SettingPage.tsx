@@ -33,13 +33,13 @@ type CompanySettings = {
 const STORAGE_KEY = "company_settings_v1";
 
 const DEFAULT_SETTINGS: CompanySettings = {
-  title: "QUẢN LÝ ĐĂNG KIỂM",
+  title: "QUẢN LÝ KÝ TÚC XÁ",
   primaryColor: "#4C6EF5",
-  address: "Tòa nhà ABC, Quận 1, TP. HCM",
-  phone: "+84 912 345 678",
-  email: "contact@company.vn",
+  address: "Khu II, Đường 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ",
+  phone: "+84 292 3832 663",
+  email: "dhct@ctu.edu.vn",
   description:
-    "Nền tảng quản lý & lên lịch đăng đa kênh. Giúp đội ngũ của bạn vận hành truyền thông hiệu quả.",
+    "Hệ thống quản lý Ký túc xá Đại học Cần Thơ. Vận hành thông minh và theo dõi sinh viên vào ra.",
   logoDataUrl: null,
 };
 type GiaThuPhi = typeof GIA_THUPHI;

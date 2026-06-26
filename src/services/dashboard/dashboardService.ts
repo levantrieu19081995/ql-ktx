@@ -45,10 +45,48 @@ export interface StrangerItem {
   [key: string]: any;
 }
 
+export interface NguoiLaPaginateRequest {
+  page: string;
+  pageSize: string;
+  tuNgay: string;    // Format: MM/dd/yyyy
+  denNgay: string;   // Format: MM/dd/yyyy
+  maKhu: string;     // -1 = tất cả
+}
+
+export interface NguoiLaItem {
+  id?: string | number;
+  detectTime?: string;
+  thoiGian?: string;
+  image?: string;
+  imageUrl?: string;
+  maKhu?: string;
+  tenKhu?: string;
+  viTri?: string;
+  cong?: string;
+  trangThai?: string;
+  [key: string]: any;
+}
+
+export interface NguoiLaPagedResponse {
+  time?: string;
+  message?: string;
+  status?: string;
+  payload?: {
+    items?: NguoiLaItem[];
+    content?: NguoiLaItem[];
+    numberOfElements?: number;  // Actual API field
+    totalElements?: number;     // Fallback
+    totalPages?: number;
+    size?: number;
+    currentPage?: number;
+    number?: number;
+  };
+}
+
 // 1. Paginate danh sách người lạ
-export const fetchNguoiLaPaginate = async (params: PaginateRequest): Promise<PaginatedResponse<StrangerItem>> => {
+export const fetchNguoiLaPaginate = async (params: NguoiLaPaginateRequest): Promise<NguoiLaPagedResponse> => {
   try {
-    const res = await post<PaginatedResponse<StrangerItem>>("/face-detect-service/face-web-check-time/paginate-nguoi-la", params);
+    const res = await post<NguoiLaPagedResponse>("/face-detect-service/face-web-check-time/paginate-nguoi-la", params);
     return res;
   } catch (error) {
     console.error("Error fetching stranger pagination:", error);

@@ -4,14 +4,14 @@
     "followers": "{count, plural, =0 {Chưa có người theo dõi} =1 {1 người theo dõi} other {# người theo dõi}}"
   },
   "Login": {
-    "title": "Đăng nhập QUẢN LÝ ĐĂNG KIỂM",
+    "title": "Đăng nhập QUẢN LÝ KÝ TÚC XÁ",
     "welcome": "Chào mừng bạn trở lại. Vui lòng đăng nhập để tiếp tục.",
     "username": "Tài khoản",
     "password": "Mật khẩu",
     "usernamePh": "Nhập tài khoản",
     "passwordPh": "••••••••",
     "submit": "Đăng nhập",
-    "divider": "QUẢN LÝ ĐĂNG KIỂM • an internal system",
+    "divider": "QUẢN LÝ KÝ TÚC XÁ • an internal system",
     "forgot": "Quên mật khẩu? Liên hệ quản trị viên để được cấp lại.",
     "errors": {
       "CredentialsSignin": "Tài khoản hoặc mật khẩu không đúng.",
@@ -29,6 +29,11 @@
   },
   "Menu": {
     "home": "Tổng quan",
+    "statistics": "Thống kê",
+    "statInOut": "Thống kê lượt ra vào",
+    "statAbsent": "Sinh viên vắng mặt lâu ngày",
+    "statStranger": "Thống kê người lạ",
+    "statBanned": "Sinh viên bị cấm",
     "content": "Quản lý nội dung",
     "scheduler": "Lên lịch đăng",
     "analytics": "Báo cáo thống kê",
@@ -44,7 +49,7 @@
     "logoutConfirmDesc": "Bạn có chắc muốn đăng xuất khỏi tài khoản này?",
     "billManagement": "Quản lý hóa đơn",
     "feesmanagement": "Quản lý lệ phí",
-    "tollManagement": "Đăng kiểm PTCG đường bộ",
+    "tollManagement": "Tiếp nhận nội trú KTX",
     "extraFeesManagement": "Thu phí khác",
     "inlandWaterwaysFeesManagement": "Thu phí PT thủy nội địa",
     "specializedMotorbikeFeesManagement": "Xe máy chuyên dùng",
@@ -53,7 +58,7 @@
     "category": "Danh mục hệ thống",
     "reportsAndStatistics": "Báo cáo và thống kê",
     "instructionManual": "Tài liệu hướng dẫn",
-    "DocumentVehicleinspection": "Đăng kiểm PTCG đường bộ",
+    "DocumentVehicleinspection": "Tiếp nhận nội trú KTX",
     "DocumentExtraFees": "Thu phí khác",
     "VersionApp": "Phiên bản",
     "versionDetails": "Chi tiết phiên bản",
@@ -153,7 +158,7 @@
   "Content": { "title": "Quản lý nội dung" },
   "Scheduler": { "title": "Lên lịch đăng" },
   "Settings": { "title": "Cài đặt" },
-  "TollManagement": { "title": "Đăng kiểm phương tiện giao thông đường bộ" },
+  "TollManagement": { "title": "Tiếp nhận nội trú KTX" },
   "ExtraFeesManagement": { "title": "Thu phí khác" },
   "InlandWaterwaysFeesManagement": {
     "title": "Thu phí Phương tiện thuỷ nội địa"

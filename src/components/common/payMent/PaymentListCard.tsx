@@ -200,7 +200,7 @@ export default function PaymentListCard({
   return (
     <Card withBorder radius="lg" p="lg" mt="md" shadow="sm">
       <Flex justify="space-between" align="center" mb="md">
-        <Title order={5}>Danh sách thu phí đăng kiểm</Title>
+        <Title order={5}>Danh sách thu phí ký túc xá</Title>
       </Flex>
 
       <Table striped highlightOnHover withColumnBorders withRowBorders>

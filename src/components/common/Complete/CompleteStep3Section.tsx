@@ -146,16 +146,16 @@ export default function CompleteSection({
           <IconCheck size={24} />
         </ThemeIcon>
         <Title order={3} c="teal">
-          Hoàn thành tiếp nhận đăng kiểm
+          Hoàn thành tiếp nhận nội trú
         </Title>
       </Group>
 
       {/* Khối thông tin chính */}
       <Stack w="100%" maw={600} gap="md">
-        {/* Thông tin chủ phương tiện*/}
+        {/* Thông tin sinh viên*/}
         <Card shadow="sm" radius="md" withBorder>
           <Title order={5} mb="sm" c="indigo">
-            Thông tin chủ phương tiện
+            Thông tin sinh viên
           </Title>
           <Stack gap="xs">
             <Group justify="space-between">
@@ -249,7 +249,7 @@ export default function CompleteSection({
         {/* Ghi chú */}
         <Box>
           <Text c="dimmed" fz="sm" ta="center" mt="xs">
-            Cảm ơn bạn đã hoàn tất đăng kiểm. Thông tin thanh toán đã được ghi
+            Cảm ơn bạn đã hoàn tất thủ tục tiếp nhận nội trú. Thông tin thanh toán đã được ghi
             nhận.
           </Text>
         </Box>

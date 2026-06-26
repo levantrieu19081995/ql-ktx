@@ -382,7 +382,7 @@ export default function FeeStep2Section({
             }
             label={
               <div style={{ display: "flex", flexDirection: "row" }}>
-                <span>Giá đăng kiểm (trước thuế) </span>
+                <span>Phí nội trú (trước thuế) </span>
                 {phiCanEdit && (
                   <span
                     style={{

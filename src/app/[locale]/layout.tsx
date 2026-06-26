@@ -13,8 +13,8 @@ import { Suspense } from "react";
 type Props = { children: React.ReactNode; params: { locale: string } };
 
 export const metadata = {
-  title: "Quản lý đăng kiểm",
-  description: "Next.js + Mantine",
+  title: "Quản lý Ký túc xá Đại học Cần Thơ",
+  description: "Hệ thống quản lý Ký túc xá Đại học Cần Thơ",
 };
 
 export default async function RootLayout({ children, params }: Props) {

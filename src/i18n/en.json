@@ -4,14 +4,14 @@
     "followers": "{count, plural, =0 {Chưa có người theo dõi} =1 {1 người theo dõi} other {# người theo dõi}}"
   },
   "Login": {
-    "title": "Sign in to QUAN LY DANG KIEM",
+    "title": "Sign in to DORMITORY MANAGEMENT",
     "welcome": "Welcome back. Please sign in to continue.",
     "username": "Username",
     "password": "Password",
     "usernamePh": "Enter username",
     "passwordPh": "••••••••",
     "submit": "Sign in",
-    "divider": "QUAN LY DANG KIEM • an internal system",
+    "divider": "DORMITORY MANAGEMENT • an internal system",
     "forgot": "Forgot password? Contact the admin to reset.",
     "errors": {
       "CredentialsSignin": "Incorrect username or password.",
@@ -29,6 +29,11 @@
   },
   "Menu": {
     "home": "Overview",
+    "statistics": "Statistics",
+    "statInOut": "In/Out Statistics",
+    "statAbsent": "Absent Students",
+    "statStranger": "Stranger Detections",
+    "statBanned": "Banned Students",
     "content": "Content",
     "scheduler": "Scheduler",
     "analytics": "Analytics",
@@ -44,7 +49,7 @@
     "logoutConfirmDesc": "Are you sure you want to log out of this account?",
     "billManagement": "Bill Management",
     "feesmanagement": "Fees Management",
-    "tollManagement": "Road motor vehicle inspection",
+    "tollManagement": "KTX Admission",
     "extraFeesManagement": "Toll Other",
     "inlandWaterwaysFeesManagement": "Inland Waterway Vehicle Fee Collection",
     "specializedMotorbikeFeesManagement": "Specialized Motorbike",
@@ -53,7 +58,7 @@
     "category": "Category system",
     "reportsAndStatistics": "Reports And Statistics",
     "instructionManual": "Instruction Manual",
-    "DocumentVehicleinspection": "Road motor vehicle inspection",
+    "DocumentVehicleinspection": "KTX Admission Guide",
     "DocumentExtraFees": "Toll Other",
     "VersionApp": "Version",
     "versionDetails": "Version Details",
@@ -154,7 +159,7 @@
   "Manage-users": {
     "title": "User Management"
   },
-  "TollManagement": { "title": "Road vehicle inspection" },
+  "TollManagement": { "title": "KTX Admission" },
   "ExtraFeesManagement": { "title": "Toll Other" },
   "InlandWaterwaysFeesManagement": {
     "title": "Inland Waterway Vehicle Fee Collection"

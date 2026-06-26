@@ -6,8 +6,8 @@ import "../styles/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Đăng Kiểm Việt Nam",
-  description: "A platform for Dang Kiem Viet Nam",
+  title: "Quản lý Ký túc xá Đại học Cần Thơ",
+  description: "Hệ thống quản lý Ký túc xá Đại học Cần Thơ",
 };
 
 // export default function RootLayout({ children }: { children: ReactNode }) {
@@ -19,5 +19,9 @@ export const metadata = {
 // }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return children;
+  return (
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
+    </html>
+  );
 }

@@ -1,7 +1,7 @@
  
 // Thay số liệu/URL đúng với Đăng kiểm việt Nam của bạn
 import type { StaticImport } from "next/dist/shared/lib/get-img-props";
-import logoPng from "@/assets/images/logo.png";
+import logoPng from "@/assets/images/CTU_logo.png";
 type Company = {
   name: string;
   logoSrc: string | StaticImport;
@@ -14,7 +14,7 @@ type Company = {
   socials:  any; 
 };
 export const COMPANY:Company = {
-  name: "Đăng kiểm việt Nam",
+  name: "Quản lý Ký túc xá Đại học Cần Thơ",
 
   logoSrc: logoPng, 
   email: "info@ctgroupvietnam.com",

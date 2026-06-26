@@ -21,7 +21,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { IconAlertCircle, IconLock, IconUser } from "@tabler/icons-react";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/CTU_logo.png";
 
 const BRAND_BLUE = "#5AA4E7";
 const BRAND_RED = "#E2433E";
@@ -109,7 +109,7 @@ function LoginContent() {
         <Group justify="center">
           <Image
             src={logo}
-            alt="Đăng kiểm Việt Nam"
+            alt="Quản lý Ký túc xá"
             width={120}
             height={120}
             priority

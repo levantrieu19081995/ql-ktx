@@ -72,11 +72,25 @@ export default function DashboardPage() {
         let totalStrangers = 12;
         let strangerItems: any[] = [];
         try {
-          const strangerRes = await fetchNguoiLaPaginate({ page: 1, pageSize: 100 });
+          const now = new Date();
+          const mm = String(now.getMonth() + 1).padStart(2, "0");
+          const dd = String(now.getDate()).padStart(2, "0");
+          const yyyy = now.getFullYear();
+          const strangerRes = await fetchNguoiLaPaginate({
+            page: "1",
+            pageSize: "100",
+            tuNgay: `${mm}/01/${yyyy}`,
+            denNgay: `${mm}/${dd}/${yyyy}`,
+            maKhu: "-1",
+          });
           console.log("Stranger API Response:", strangerRes);
           if (strangerRes && strangerRes.payload) {
-            totalStrangers = strangerRes.payload.totalElements ?? strangerRes.payload.items?.length ?? totalStrangers;
-            strangerItems = strangerRes.payload.items || [];
+            // API thực tế trả về numberOfElements
+            totalStrangers = strangerRes.payload.numberOfElements
+              ?? strangerRes.payload.totalElements
+              ?? strangerRes.payload.items?.length
+              ?? totalStrangers;
+            strangerItems = strangerRes.payload.items ?? strangerRes.payload.content ?? [];
           }
         } catch (e) {
           console.error("Failed to fetch Stranger pagination data", e);

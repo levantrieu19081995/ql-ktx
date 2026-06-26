@@ -47,7 +47,7 @@ export default function DocumentMenu() {
           }
           c={"#0f2b52ff"}
         >
-          Hướng dẫn tiếp nhận đăng kiểm
+          Hướng dẫn tiếp nhận nội trú
         </Menu.Item>
         <Divider />
         <Menu.Item

@@ -35,7 +35,7 @@ import {
   updateConfigSystem,
 } from "@/services/setting/settingSystemInfoService";
 import { showNoti } from "@/components/common/showNoti";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/CTU_logo.png";
 import { useSessionStore } from "@/context/sessionStore";
 // ----------------------------- TYPES -----------------------------
 export type CompanySettings = {
@@ -222,7 +222,7 @@ export default function SettingSystemInfo({
           <TextInput
             withAsterisk
             label="Tên (Title)"
-            placeholder="VD: QUẢN LÝ ĐĂNG KIỂM"
+            placeholder="VD: QUẢN LÝ KÝ TÚC XÁ"
             leftSection={<IconBuildingSkyscraper size={16} />}
             value={values.title}
             onChange={(e) => onChange("title", e.currentTarget.value)}
