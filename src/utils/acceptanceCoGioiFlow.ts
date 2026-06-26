@@ -23,10 +23,10 @@ export function acceptanceCoGioiFlow(step: number, result: any): boolean {
       return true;
     }
 
-    // ===== STEP 1: Phí đăng kiểm =====
+    // ===== STEP 1: Phí ký túc xá =====
     case 1: {
       if (!list.length) {
-        showNoti("warning", "Vui lòng thêm ít nhất một phí đăng kiểm!");
+        showNoti("warning", "Vui lòng thêm ít nhất một phí ký túc xá!");
         return false;
       }
 
@@ -42,7 +42,7 @@ export function acceptanceCoGioiFlow(step: number, result: any): boolean {
       );
 
       if (hasUnpaid) {
-        showNoti("warning", "Vẫn còn phí đăng kiểm chưa thanh toán!");
+        showNoti("warning", "Vẫn còn phí ký túc xá chưa thanh toán!");
         return false;
       }
 

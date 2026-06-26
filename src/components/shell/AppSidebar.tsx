@@ -35,6 +35,11 @@ import {
   IconBook2,
   IconCategory,
   IconNote,
+  IconChartBar,
+  IconArrowsLeftRight,
+  IconUserX,
+  IconEyeExclamation,
+  IconLockFilled,
   IconShip,
   IconMotorbike,
   IconTestPipeOff,
@@ -94,8 +99,32 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
-    { icon: <IconHistory />, label: t("historyMenu"), href: "/history" },
-    { icon: <IconAlertTriangle />, label: t("warningsMenu"), href: "/warnings" },
+    {
+      icon: <IconChartBar />,
+      label: t("statistics"),
+      children: [
+        {
+          label: t("statInOut"),
+          href: "/thong-ke/luot-ra-vao",
+          icon: <IconArrowsLeftRight size={16} />,
+        },
+        {
+          label: t("statAbsent"),
+          href: "/thong-ke/vang-mat",
+          icon: <IconUserX size={16} />,
+        },
+        {
+          label: t("statStranger"),
+          href: "/thong-ke/nguoi-la",
+          icon: <IconEyeExclamation size={16} />,
+        },
+        {
+          label: t("statBanned"),
+          href: "/thong-ke/bi-cam",
+          icon: <IconLockFilled size={16} />,
+        },
+      ],
+    },
     { icon: <IconCar />, label: t("tollManagement"), href: "/toll-management" },
 
     {
@@ -355,9 +384,8 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     // menu chỉ có onClick (Version, Help, About...)
     if (item?.onClick && !href) return true;
 
-    if (!href) return false;
-    const alwaysVisible = ["/dashboard", "/history", "/warnings"];
-    if (alwaysVisible.includes(href)) return true;
+    const alwaysVisible = ["/dashboard", "/thong-ke"];
+    if (alwaysVisible.some((v) => href.startsWith(v))) return true;
 
     const found = permissions.find((p: any) => {
       const slug = (p.dmcnSlug || "").toLowerCase().trim();

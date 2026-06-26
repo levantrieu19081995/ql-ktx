@@ -21,7 +21,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { IconAlertCircle, IconLock, IconUser } from "@tabler/icons-react";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/CTU_logo.png";
 
 const BRAND_BLUE = "#5AA4E7";
 const BRAND_RED = "#E2433E";
@@ -40,15 +40,18 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getLoginErrorMessage = useCallback((code?: string | null) => {
-    if (!code) return te("generic");
+  const getLoginErrorMessage = useCallback(
+    (code?: string | null) => {
+      if (!code) return te("generic");
 
-    try {
-      return te(code as any);
-    } catch {
-      return code;
-    }
-  }, [te]);
+      try {
+        return te(code as any);
+      } catch {
+        return code;
+      }
+    },
+    [te],
+  );
 
   useEffect(() => {
     const qErr = search?.get("error");
@@ -124,7 +127,7 @@ function LoginContent() {
         <Group justify="center">
           <Image
             src={logo}
-            alt="Quản lý ký túc xá"
+            alt="Quản lý Ký túc xá"
             width={120}
             height={120}
             priority

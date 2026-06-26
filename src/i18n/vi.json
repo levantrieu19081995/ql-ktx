@@ -31,6 +31,11 @@
   },
   "Menu": {
     "home": "Tổng quan",
+    "statistics": "Thống kê",
+    "statInOut": "Thống kê lượt ra vào",
+    "statAbsent": "Sinh viên vắng mặt lâu ngày",
+    "statStranger": "Thống kê người lạ",
+    "statBanned": "Sinh viên bị cấm",
     "content": "Quản lý nội dung",
     "scheduler": "Lên lịch đăng",
     "analytics": "Báo cáo thống kê",
@@ -46,7 +51,7 @@
     "logoutConfirmDesc": "Bạn có chắc muốn đăng xuất khỏi tài khoản này?",
     "billManagement": "Quản lý hóa đơn",
     "feesmanagement": "Quản lý lệ phí",
-    "tollManagement": "Đăng kiểm PTCG đường bộ",
+    "tollManagement": "Tiếp nhận nội trú KTX",
     "extraFeesManagement": "Thu phí khác",
     "inlandWaterwaysFeesManagement": "Thu phí PT thủy nội địa",
     "specializedMotorbikeFeesManagement": "Xe máy chuyên dùng",
@@ -55,8 +60,8 @@
     "category": "Danh mục hệ thống",
     "reportsAndStatistics": "Báo cáo và thống kê",
     "instructionManual": "Tài liệu hướng dẫn",
-    "DocumentVehicleinspection": "Hướng dẫn 1",
-    "DocumentExtraFees": "Hướng dẫn 2",
+    "DocumentVehicleinspection": "Tiếp nhận nội trú KTX",
+    "DocumentExtraFees": "Thu phí khác",
     "VersionApp": "Phiên bản",
     "versionDetails": "Chi tiết phiên bản",
     "versionDetailsTitle": "Phiên bản mới của ứng dụng",
@@ -101,27 +106,63 @@
     "message": "Vui lòng liên hệ quản trị viên để được cấp quyền phù hợp.",
     "backHome": "Về trang chủ"
   },
+
   "Dashboard": {
-    "title": "Tổng quan"
+    "title": "HỆ THỐNG GIÁM SÁT KÝ TÚC XÁ",
+    "quickStats": "THỐNG KÊ NHANH",
+    "totalTitle": "TỔNG SV KTX",
+    "totalCaption": "Tổng số sinh viên",
+    "presentTitle": "ĐANG CÓ MẶT",
+    "presentCaption": "{percent}% tổng số SV",
+    "outTitle": "ĐÃ RA NGOÀI",
+    "outCaption": "{percent}% tổng số SV",
+    "debtTitle": "SINH VIÊN NỢ PHÍ",
+    "debtCaption": "{percent}% tổng số SV",
+    "bannedTitle": "SINH VIÊN BỊ CẤM",
+    "bannedCaption": "{percent}% tổng số SV",
+    "strangerTitle": "NGƯỜI LẠ HÔM NAY",
+    "strangerCaption": "Phát hiện hôm nay",
+    "historyTitle": "LỊCH SỬ VÀO/RA MỚI NHẤT",
+    "viewAll": "Xem tất cả",
+    "stt": "STT",
+    "time": "Thời gian",
+    "studentId": "MSSV",
+    "avatar": "Hình ảnh",
+    "name": "Họ và tên",
+    "type": "Lượt",
+    "ktx": "KTX",
+    "room": "Phòng",
+    "in": "Vào",
+    "out": "Ra",
+    "chartsTitle": "BIỂU ĐỒ THỐNG KÊ",
+    "timeChartTitle": "THỐNG KÊ LƯỢT VÀO/RA THEO THỜI GIAN",
+    "day": "Ngày",
+    "month": "Tháng",
+    "year": "Năm",
+    "top5Title": "TOP 5 SINH VIÊN RA VÀO NHIỀU NHẤT",
+    "top5Subtitle": "Số lượt quét thẻ/vân tay ghi nhận trong tháng này",
+    "scansCount": "Số lượt ra vào",
+    "ktxChartTitle": "THỐNG KÊ RA VÀO THEO KHU KÝ TÚC XÁ",
+    "ktxChartSubtitle": "Tỉ lệ quét thẻ phân bổ theo các khu KTX",
+    "distributionTitle": "THỐNG KÊ THEO KHU KTX",
+    "totalLabel": "Tổng:",
+    "totalStudentsText": "Tổng: {count} sinh viên",
+    "viewDetails": "Xem chi tiết",
+    "strangerChartTitle": "THỐNG KÊ SỐ LẦN XUẤT HIỆN NGƯỜI LẠ",
+    "strangerChartSubtitle": "Số lượt hệ thống phát hiện người lạ trong 7 ngày qua",
+    "strangerCount": "Số lần phát hiện",
+    "intrusionTitle": "CẢNH BÁO XÂM NHẬP",
+    "intrusionSubtitle": "Số lượt sinh viên bị hạn chế cố gắng quét thẻ vào KTX",
+    "ktxButton": "Khu KTX",
+    "dayMonthButton": "Ngày/Tháng",
+    "alertsCount": "Số lượt cảnh báo"
   },
-  "Analytics": {
-    "title": "Báo cáo thống kê"
-  },
-  "Content": {
-    "title": "Quản lý nội dung"
-  },
-  "Scheduler": {
-    "title": "Lên lịch đăng"
-  },
-  "Settings": {
-    "title": "Cài đặt"
-  },
-  "TollManagement": {
-    "title": "Đăng kiểm phương tiện giao thông đường bộ"
-  },
-  "ExtraFeesManagement": {
-    "title": "Thu phí khác"
-  },
+  "Analytics": { "title": "Báo cáo thống kê" },
+  "Content": { "title": "Quản lý nội dung" },
+  "Scheduler": { "title": "Lên lịch đăng" },
+  "Settings": { "title": "Cài đặt" },
+  "TollManagement": { "title": "Tiếp nhận nội trú KTX" },
+  "ExtraFeesManagement": { "title": "Thu phí khác" },
   "InlandWaterwaysFeesManagement": {
     "title": "Thu phí Phương tiện thuỷ nội địa"
   },

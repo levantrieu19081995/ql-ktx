@@ -152,7 +152,7 @@ export default function OwnerStep1Section({
     });
 
     const paramHSDK = {
-      hsTenDangKiem: "Đăng kiểm phương tiện khác - " + String(result.tenChuXe),
+      hsTenDangKiem: "Tiếp nhận nội trú - " + String(result.tenChuXe),
       hsNgaytiepnhan: new Date().toISOString(),
       hsMa: "",
       organizationGuid: user?.organizationGuid,
@@ -443,7 +443,7 @@ export default function OwnerStep1Section({
           leftSection={<IconPlus size={16} />}
           onClick={() => setDrawerAddChuSoHuuOpened(true)}
         >
-          Thêm thông tin đăng kiểm
+          Thêm thông tin sinh viên
         </Button>
       </Group>
 

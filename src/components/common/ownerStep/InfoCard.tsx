@@ -12,18 +12,18 @@ export default function InfoCard({ result }: { result: any }) {
 
   return (
     <Card withBorder radius="lg" p="lg" mt="md">
-      <Title order={5}>Thông tin tiếp nhận đăng kiểm</Title>
+      <Title order={5}>Thông tin tiếp nhận nội trú</Title>
       <Grid gutter="md" mb="md">
         <Grid.Col span={{ base: 12, md: 2 }}>
           <TextInput
-            label="Tên chủ phương tiện"
+            label="Họ và tên"
             value={result.tenChuXe}
             readOnly
           />
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 2 }}>
           <TextInput
-            label="Biển kiểm soát"
+            label="Mã số sinh viên"
             value={result.ttptBienkiemsoat}
             readOnly
           />
@@ -47,13 +47,13 @@ export default function InfoCard({ result }: { result: any }) {
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 2 }}>
           <TextInput
-            label="Loại hình"
-            value={result.loaiPhuongTien == 1 ? "Doanh nghiệp" : "Cá nhân"}
+            label="Đối tượng"
+            value={result.loaiPhuongTien == 1 ? "Sinh viên" : "Cán bộ"}
             readOnly
           />
         </Grid.Col>
         <Grid.Col span={{ base: 12, md: 2 }}>
-          <TextInput label="Mã số thuế" value={result.maSoThue} readOnly />
+          <TextInput label="Lớp / Khoa" value={result.maSoThue} readOnly />
         </Grid.Col>
       </Grid>
     </Card>

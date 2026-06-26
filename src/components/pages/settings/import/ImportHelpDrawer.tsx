@@ -227,7 +227,7 @@ export default function ImportHelpDrawer({ opened, onClose }: Props) {
                       textAlign: "center",
                     }}
                   >
-                    Biển kiểm soát đăng kiểm
+                    Mã số sinh viên
                   </Table.Th>
                   <Table.Th
                     style={{
@@ -236,7 +236,7 @@ export default function ImportHelpDrawer({ opened, onClose }: Props) {
                       textAlign: "center",
                     }}
                   >
-                    Chủ phương tiện
+                    Họ và tên sinh viên
                   </Table.Th>
                   <Table.Th
                     style={{
@@ -272,7 +272,7 @@ export default function ImportHelpDrawer({ opened, onClose }: Props) {
                       textAlign: "center",
                     }}
                   >
-                    Loại chủ PT
+                    Đối tượng
                   </Table.Th>
                   <Table.Th
                     style={{

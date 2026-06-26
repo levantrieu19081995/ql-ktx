@@ -35,7 +35,7 @@ import {
   updateConfigSystem,
 } from "@/services/setting/settingSystemInfoService";
 import { showNoti } from "@/components/common/showNoti";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/CTU_logo.png";
 import { useSessionStore } from "@/context/sessionStore";
 // ----------------------------- TYPES -----------------------------
 export type CompanySettings = {

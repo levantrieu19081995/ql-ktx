@@ -323,17 +323,17 @@ export default function OwnerDrawerDetail({
                   <Table.Thead>
                     <Table.Tr>
                       <Table.Th style={{ textAlign: "center" }}>
-                        Biển kiểm soát
+                        Mã số sinh viên
                       </Table.Th>
                       <Table.Th style={{ width: "25%", textAlign: "center" }}>
-                        Phương tiện tên
+                        Họ và tên
                       </Table.Th>
                       <Table.Th style={{ textAlign: "center" }}>
-                        Loại Phương tiện
+                        Đối tượng
                       </Table.Th>
                       {/* đổi tiêu đề cột */}
                       <Table.Th style={{ width: "20%", textAlign: "center" }}>
-                        Chọn đăng kiểm{" "}
+                        Đăng ký nội trú{" "}
                         <Text span c="dimmed">
                           (tuỳ chọn)
                         </Text>

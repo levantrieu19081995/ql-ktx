@@ -52,6 +52,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     // 3. Kiểm tra whitelist trước
     const whitelist = [
       "/dashboard",
+      "/thong-ke",
       "/no-permission",
       "/splashscreen",
       "/login",
