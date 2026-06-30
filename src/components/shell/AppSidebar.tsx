@@ -101,11 +101,23 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
-    { icon: <IconHistory />, label: t("historyMenu"), href: "/history/log" },
+
     {
-      icon: <IconAlertTriangle />,
-      label: t("warningsMenu"),
-      href: "/warnings",
+      icon: <IconHistory />,
+      label: t("historyWarning"),
+      grouped: true,
+      children: [
+        {
+          label: t("historyMenu"),
+          href: "/history/log",
+          icon: <IconArrowsLeftRight size={16} />,
+        },
+        {
+          label: t("warningsMenu"),
+          href: "/warnings",
+          icon: <IconAlertTriangle size={16} />,
+        },
+      ],
     },
     {
       icon: <IconCategory />,

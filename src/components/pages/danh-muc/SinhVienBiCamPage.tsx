@@ -11,7 +11,12 @@ import {
   TextInput,
   Textarea,
 } from "@mantine/core";
-import { IconAdOff, IconDeviceFloppy, IconSearch } from "@tabler/icons-react";
+import {
+  IconAdOff,
+  IconDeviceFloppy,
+  IconLockFilled,
+  IconSearch,
+} from "@tabler/icons-react";
 
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import CustomPagination from "@/components/common/CustomPagination";
@@ -173,6 +178,7 @@ export default function SinhVienBiCamPage() {
         description="Theo dõi danh sách sinh viên bị cấm ra vào ký túc xá."
         items={items}
         onEdit={handleEdit}
+        icon={<IconLockFilled size={20} />}
         searchControls={
           <>
             <TextInput

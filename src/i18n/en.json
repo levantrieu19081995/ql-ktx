@@ -82,6 +82,7 @@
     "close": "Close",
     "historyMenu": "Access History",
     "warningsMenu": "Stranger Warnings",
+    "historyWarning": "History/Warnings",
     "unit": "Unit"
   },
   "Integrations": {

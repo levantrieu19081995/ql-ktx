@@ -139,12 +139,13 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
   return (
     <Group
       h="100%"
-      px={36}
+      px={0}
       wrap="nowrap"
       justify="space-between"
       align="center" // thêm để 3 block đứng đúng trên mobile
       style={{
         background: "#ffffff",
+        paddingInline: "clamp(12px, 2.8vw, 36px)",
       }}
     >
       {/* ============ LEFT: LOGO (260px) ============ */}
@@ -158,7 +159,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           justifyContent: "flex-start",
         }}
       >
-        <Group gap="sm" wrap="nowrap" visibleFrom="sm">
+        <Group gap="sm" wrap="nowrap" visibleFrom="md">
           <Image
             src={logo}
             alt="Đại học Cần Thơ"
@@ -182,8 +183,8 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
       {/* ============ CENTER: TITLE (FLEX 1) ============ */}
       <Box
         style={{
-          flex: 1,
-          minWidth: "200px", // tránh bị ép nhỏ quá
+          flex: "1 1 auto",
+          minWidth: 0,
           textAlign: "center",
           padding: "4px 0",
           wordBreak: "break-word", // cho phép xuống hàng
@@ -206,17 +207,18 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
 
       {/* ============ RIGHT: USER BLOCK ============ */}
       <Group
-        gap="md"
+        gap="xs"
         wrap="nowrap"
         style={{
           width: "auto",
           minWidth: "auto",
           flexShrink: 0, // không bị ép
           justifyContent: "flex-end",
+          columnGap: "clamp(10px, 1.2vw, 16px)",
         }}
       >
         <TextInput
-          visibleFrom="md"
+          visibleFrom="lg"
           w={320}
           radius="md"
           size="md"

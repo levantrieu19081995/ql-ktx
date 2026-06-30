@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, Select } from "@mantine/core";
-import { IconSearch } from "@tabler/icons-react";
+import { IconCategory, IconSearch, IconUser } from "@tabler/icons-react";
 
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import CustomPagination from "@/components/common/CustomPagination";
@@ -74,6 +74,7 @@ export default function KhuKtxPage() {
       title="Lấy danh sách khu trong ký túc xá"
       description="Quản lý danh mục khu, dãy nhà trong ký túc xá."
       items={items}
+      icon={<IconCategory size={20} />}
       searchControls={
         <>
           <Select

@@ -21,6 +21,7 @@ type DanhMucFeaturePageProps = {
   searchControls?: ReactNode;
   pagination?: ReactNode;
   onEdit?: (item: any) => void;
+  icon?: ReactNode;
 };
 
 export default function DanhMucFeaturePage({
@@ -31,6 +32,7 @@ export default function DanhMucFeaturePage({
   searchControls,
   pagination,
   onEdit,
+  icon,
 }: DanhMucFeaturePageProps) {
   const renderTable = () => {
     switch (type) {
@@ -47,9 +49,7 @@ export default function DanhMucFeaturePage({
     <Stack gap="lg">
       <Group justify="space-between" align="flex-end">
         <Group>
-          <div className="page-icon">
-            <IconCategory size={20} />
-          </div>
+          <div className="page-icon">{icon || <IconCategory size={20} />}</div>
 
           <div>
             <Title order={3}>{title}</Title>
