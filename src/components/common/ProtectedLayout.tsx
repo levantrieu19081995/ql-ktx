@@ -59,6 +59,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       "/excel",
       "/history",
       "/warnings",
+      "/danh-muc",
     ];
     if (whitelist.includes(currentSlug)) {
       setChecked(true);

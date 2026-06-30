@@ -8,6 +8,11 @@
     "welcome": "Welcome back. Please sign in to continue.",
     "username": "Username",
     "password": "Password",
+    "captcha": "CAPTCHA",
+    "captchaCode": "6-digit CAPTCHA code",
+    "captchaInput": "Enter CAPTCHA",
+    "captchaInputPh": "Enter the 6 digits shown",
+    "captchaRefresh": "Refresh CAPTCHA",
     "usernamePh": "Enter username",
     "passwordPh": "••••••••",
     "submit": "Sign in",
@@ -20,7 +25,9 @@
       "requiredUsername": "Please enter your username",
       "minUsername": "Username must be at least {count} characters",
       "requiredPassword": "Please enter your password",
-      "minPassword": "Password must be at least {count} characters"
+      "minPassword": "Password must be at least {count} characters",
+      "requiredCaptcha": "Please enter the CAPTCHA",
+      "captchaMismatch": "Incorrect CAPTCHA, please try again"
     }
   },
   "Header": {
@@ -57,7 +64,12 @@
     "specializedMotorbikeFeesManagement": "Specialized Motorbike",
     "inspectionFeesManagement": "Inspection ATLĐ",
     "certificateOfRenovationFeesManagenment": "Certificate of Renovation",
-    "category": "Category system",
+    "category": "Categories",
+    "categoryStudentDorm": "Dormitory student list",
+    "categoryRoomDorm": "Dormitory room list",
+    "categoryAreaDorm": "Dormitory area list",
+    "categoryBannedStudent": "Banned student list",
+    "categoryBannedStudentUpdate": "Add/edit banned students",
     "reportsAndStatistics": "Reports And Statistics",
     "instructionManual": "Instruction Manual",
     "DocumentVehicleinspection": "KTX Admission Guide",

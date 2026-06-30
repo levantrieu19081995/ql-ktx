@@ -171,7 +171,33 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     {
       icon: <IconCategory />,
       label: t("category"),
-      href: "/category-management",
+      children: [
+        {
+          label: t("categoryStudentDorm"),
+          href: "/danh-muc/sinh-vien-ktx",
+          icon: <IconUser size={16} />,
+        },
+        {
+          label: t("categoryRoomDorm"),
+          href: "/danh-muc/phong-ktx",
+          icon: <IconHome2 size={16} />,
+        },
+        {
+          label: t("categoryAreaDorm"),
+          href: "/danh-muc/khu-ktx",
+          icon: <IconCategory size={16} />,
+        },
+        {
+          label: t("categoryBannedStudent"),
+          href: "/danh-muc/sinh-vien-bi-cam",
+          icon: <IconLockFilled size={16} />,
+        },
+        {
+          label: t("categoryBannedStudentUpdate"),
+          href: "/danh-muc/cap-nhat-sinh-vien-bi-cam",
+          icon: <IconShieldPlus size={16} />,
+        },
+      ],
     },
 
     // === menu có cấp con ===
@@ -390,7 +416,13 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     // menu chỉ có onClick (Version, Help, About...)
     if (item?.onClick && !href) return true;
 
-    const alwaysVisible = ["/dashboard", "/thong-ke", "/history", "/warnings"];
+    const alwaysVisible = [
+      "/dashboard",
+      "/thong-ke",
+      "/history",
+      "/warnings",
+      "/danh-muc",
+    ];
     if (alwaysVisible.some((v) => href.startsWith(v))) return true;
 
     const found = permissions.find((p: any) => {

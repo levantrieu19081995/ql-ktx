@@ -145,6 +145,23 @@ const API_URLS = {
     paginate: `${QLDK_SERVICE}/danh-muc-loai-phi/find-all/paginate`,
   },
 
+  danhMucKtx: {
+    sinhVien: {
+      paginate: `/ktx-service/ktx-dm-sinh-vien/paginate`,
+    },
+    phong: {
+      paginate: `/ktx-service/ktx-dm-phong/paginate`,
+    },
+    khu: {
+      paginate: `/ktx-service/ktx-dm-khu/paginate`,
+    },
+    sinhVienBiCam: {
+      paginate: `/ktx-service/ktx-sinh-vien-cam/paginate`,
+      create: `/ktx-service/ktx-sinh-vien-cam/create`,
+      update: `/ktx-service/ktx-sinh-vien-cam/update`,
+    },
+  },
+
   thongTinPhuongTien: {
     create: `${QLDK_SERVICE}/thong-tin-phuong-tien/create`,
     updateThongTinPhuongTien: `${QLDK_SERVICE}/thong-tin-phuong-tien/{id}`,
