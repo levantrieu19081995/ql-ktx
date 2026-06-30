@@ -1,6 +1,6 @@
 "use client";
 
-import { AppShell } from "@mantine/core";
+import { AppShell, Box } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import AppHeader from "@/components/shell/AppHeader";
 import AppSidebar from "@/components/shell/AppSidebar";
@@ -10,26 +10,28 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
 
   return (
     <AppShell
-      header={{ height: "auto" }} // header cao bao nhiêu tùy bạn
+      header={{ height: 108 }}
       navbar={{
-        width: opened ? 260 : 70,
+        width: opened ? 320 : 76,
         breakpoint: "sm",
         collapsed: { mobile: !opened },
       }}
-      padding="md"
+      padding={0}
       styles={(theme) => ({
         header: {
-          position: "sticky",
-          top: 0,
           background: "white",
-          borderBottom: "1px solid #e9ecef",
+          borderBottom: "1px solid #edf1f7",
+          boxShadow: "0 1px 0 rgba(15, 23, 42, 0.02)",
         },
         navbar: {
           background: "white",
-          borderRight: "1px solid #e9ecef",
+          borderRight: "1px solid #edf1f7",
         },
         main: {
-          paddingTop: 10,
+          minHeight: "100dvh",
+          background:
+            "linear-gradient(rgba(37, 99, 235, 0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(37, 99, 235, 0.018) 1px, transparent 1px), #fbfcff",
+          backgroundSize: "32px 32px",
         },
       })}
     >
@@ -39,7 +41,11 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
       <AppShell.Navbar>
         <AppSidebar collapsed={!opened} onNavigate={close} toggle={toggle} />
       </AppShell.Navbar>
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        <Box pt={15} pb={32} pl={32} pr={32}>
+          {children}
+        </Box>
+      </AppShell.Main>
     </AppShell>
   );
 }

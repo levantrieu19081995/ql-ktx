@@ -73,14 +73,23 @@ interface ThongKePageProps {
   type?: "luot-ra-vao" | "vang-mat" | "nguoi-la" | "bi-cam";
 }
 
-export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) {
+export default function ThongKePage({
+  type = "luot-ra-vao",
+}: ThongKePageProps) {
   // Local states for data to allow interactive additions
-  const [overviewList, setOverviewList] = useState<ThongKeOverview[]>(MOCK_THONG_KE_OVERVIEW);
-  const [detailsMap, setDetailsMap] = useState<{ [key: string]: Omit<ThongKeDetail, "stt">[] }>(MOCK_THONG_KE_DETAILS);
+  const [overviewList, setOverviewList] = useState<ThongKeOverview[]>(
+    MOCK_THONG_KE_OVERVIEW,
+  );
+  const [detailsMap, setDetailsMap] = useState<{
+    [key: string]: Omit<ThongKeDetail, "stt">[];
+  }>(MOCK_THONG_KE_DETAILS);
 
   // States for absent and banned logs (still mock)
-  const [absentList, setAbsentList] = useState<AbsentStudent[]>(MOCK_ABSENT_STUDENTS);
-  const [bannedList, setBannedList] = useState<BannedViolation[]>(MOCK_BANNED_VIOLATIONS);
+  const [absentList, setAbsentList] =
+    useState<AbsentStudent[]>(MOCK_ABSENT_STUDENTS);
+  const [bannedList, setBannedList] = useState<BannedViolation[]>(
+    MOCK_BANNED_VIOLATIONS,
+  );
 
   // === Nguoi-la API states ===
   const [nguoiLaList, setNguoiLaList] = useState<NguoiLaItem[]>([]);
@@ -104,8 +113,11 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
   const [loaiDoiTuong, setLoaiDoiTuong] = useState("Tất cả");
 
   // Selected student and click type for the detailed list
-  const [selectedStudent, setSelectedStudent] = useState<ThongKeOverview | null>(null);
-  const [detailType, setDetailType] = useState<"Vào" | "Ra" | "Tất cả" | null>(null);
+  const [selectedStudent, setSelectedStudent] =
+    useState<ThongKeOverview | null>(null);
+  const [detailType, setDetailType] = useState<"Vào" | "Ra" | "Tất cả" | null>(
+    null,
+  );
 
   // Helper to get local date-time string formatted for datetime-local input
   const getLocalDatetimeString = () => {
@@ -126,7 +138,9 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
 
   const handleMssvChange = (value: string) => {
     setFormMssv(value);
-    const existing = overviewList.find(s => s.studentId.toLowerCase() === value.toLowerCase().trim());
+    const existing = overviewList.find(
+      (s) => s.studentId.toLowerCase() === value.toLowerCase().trim(),
+    );
     if (existing) {
       setFormHoTen(existing.hoTen);
       const details = detailsMap[existing.studentId] || [];
@@ -156,7 +170,7 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       type: formLoai as "Vào" | "Ra",
       ktx: formKhuKtx,
       room: formPhong,
-      status: "Hợp lệ"
+      status: "Hợp lệ",
     };
 
     const updatedDetailsMap = { ...detailsMap };
@@ -167,7 +181,7 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
     setDetailsMap(updatedDetailsMap);
 
     const existingOverviewIndex = overviewList.findIndex(
-      (s) => s.studentId.toLowerCase() === formMssv.toLowerCase().trim()
+      (s) => s.studentId.toLowerCase() === formMssv.toLowerCase().trim(),
     );
 
     if (existingOverviewIndex > -1) {
@@ -180,7 +194,7 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
         ...student,
         luotVao: student.luotVao + (isVao ? 1 : 0),
         luotRa: student.luotRa + (isRa ? 1 : 0),
-        tongLuot: student.tongLuot + 1
+        tongLuot: student.tongLuot + 1,
       };
       setOverviewList(updatedOverviewList);
     } else {
@@ -192,7 +206,7 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
         luotVao: formLoai === "Vào" ? 1 : 0,
         luotRa: formLoai === "Ra" ? 1 : 0,
         tongLuot: 1,
-        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formMssv}`
+        avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formMssv}`,
       };
       setOverviewList([...overviewList, newOverview]);
     }
@@ -209,59 +223,67 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
   };
 
   // Handle clicking on statistics columns
-  const handleStatClick = (student: ThongKeOverview, type: "Vào" | "Ra" | "Tất cả") => {
+  const handleStatClick = (
+    student: ThongKeOverview,
+    type: "Vào" | "Ra" | "Tất cả",
+  ) => {
     setSelectedStudent(student);
     setDetailType(type);
   };
 
   // === Fetch nguoi-la from API ===
-  const loadNguoiLa = useCallback(async (page: number) => {
-    setNguoiLaLoading(true);
-    setNguoiLaError(null);
-    try {
-      // Format date MM/dd/yyyy for API; use defaults if empty
-      const formatDate = (dateStr: string, isStart: boolean): string => {
-        if (dateStr) {
-          const d = new Date(dateStr);
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const dd = String(d.getDate()).padStart(2, "0");
-          const yyyy = d.getFullYear();
-          return `${mm}/${dd}/${yyyy}`;
-        }
-        // Default: current month range
-        const now = new Date();
-        if (isStart) {
-          return `${String(now.getMonth() + 1).padStart(2, "0")}/01/${now.getFullYear()}`;
-        } else {
-          const mm = String(now.getMonth() + 1).padStart(2, "0");
-          const dd = String(now.getDate()).padStart(2, "0");
-          return `${mm}/${dd}/${now.getFullYear()}`;
-        }
-      };
+  const loadNguoiLa = useCallback(
+    async (page: number) => {
+      setNguoiLaLoading(true);
+      setNguoiLaError(null);
+      try {
+        // Format date MM/dd/yyyy for API; use defaults if empty
+        const formatDate = (dateStr: string, isStart: boolean): string => {
+          if (dateStr) {
+            const d = new Date(dateStr);
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            const yyyy = d.getFullYear();
+            return `${mm}/${dd}/${yyyy}`;
+          }
+          // Default: current month range
+          const now = new Date();
+          if (isStart) {
+            return `${String(now.getMonth() + 1).padStart(2, "0")}/01/${now.getFullYear()}`;
+          } else {
+            const mm = String(now.getMonth() + 1).padStart(2, "0");
+            const dd = String(now.getDate()).padStart(2, "0");
+            return `${mm}/${dd}/${now.getFullYear()}`;
+          }
+        };
 
-      const maKhu = khuKtx === "Tất cả" ? "-1" : khuKtx;
+        const maKhu = khuKtx === "Tất cả" ? "-1" : khuKtx;
 
-      const res = await fetchNguoiLaPaginate({
-        page: String(page),
-        pageSize: String(nguoiLaPageSize),
-        tuNgay: formatDate(tuNgay, true),
-        denNgay: formatDate(denNgay, false),
-        maKhu,
-      });
+        const res = await fetchNguoiLaPaginate({
+          page: String(page),
+          pageSize: String(nguoiLaPageSize),
+          tuNgay: formatDate(tuNgay, true),
+          denNgay: formatDate(denNgay, false),
+          maKhu,
+        });
 
-      const payload = res?.payload;
-      const items = payload?.items ?? payload?.content ?? [];
-      setNguoiLaList(items);
-      setNguoiLaTotalPages(payload?.totalPages ?? 1);
-      // API thực tế trả về numberOfElements thay vì totalElements
-      setNguoiLaTotalElements(payload?.numberOfElements ?? payload?.totalElements ?? items.length);
-    } catch (err: any) {
-      setNguoiLaError(err?.message ?? "Lỗi khi tải dữ liệu người lạ");
-      setNguoiLaList([]);
-    } finally {
-      setNguoiLaLoading(false);
-    }
-  }, [khuKtx, tuNgay, denNgay, nguoiLaPageSize]);
+        const payload = res?.payload;
+        const items = payload?.items ?? payload?.content ?? [];
+        setNguoiLaList(items);
+        setNguoiLaTotalPages(payload?.totalPages ?? 1);
+        // API thực tế trả về numberOfElements thay vì totalElements
+        setNguoiLaTotalElements(
+          payload?.numberOfElements ?? payload?.totalElements ?? items.length,
+        );
+      } catch (err: any) {
+        setNguoiLaError(err?.message ?? "Lỗi khi tải dữ liệu người lạ");
+        setNguoiLaList([]);
+      } finally {
+        setNguoiLaLoading(false);
+      }
+    },
+    [khuKtx, tuNgay, denNgay, nguoiLaPageSize],
+  );
 
   useEffect(() => {
     if (type === "nguoi-la") {
@@ -295,7 +317,9 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
   });
 
   // Get selected details data
-  const rawDetails = selectedStudent ? detailsMap[selectedStudent.studentId] || [] : [];
+  const rawDetails = selectedStudent
+    ? detailsMap[selectedStudent.studentId] || []
+    : [];
   const filteredDetails = rawDetails
     .filter((detail) => {
       if (detailType === "Vào" && detail.type !== "Vào") return false;
@@ -336,13 +360,22 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
   };
 
   return (
-    <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh" }}>
+    <Stack
+      gap="xl"
+      p="sm"
+      style={{ backgroundColor: "#fafbfd", minHeight: "100vh" }}
+    >
       {/* Page Title */}
       <Group gap="md">
         <ThemeIcon size={38} variant="light" color="blue">
           <IconReportAnalytics size={20} />
         </ThemeIcon>
-        <Title order={2} fw={800} c="#0f172a" style={{ letterSpacing: "-0.5px" }}>
+        <Title
+          order={2}
+          fw={800}
+          c="#0f172a"
+          style={{ letterSpacing: "-0.5px" }}
+        >
           {type === "luot-ra-vao"
             ? "THỐNG KÊ LƯỢT RA VÀO"
             : type === "vang-mat"
@@ -354,7 +387,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       </Group>
 
       {/* Expandable Search Filter Card (Image 2 design) */}
-      <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+      <Card
+        withBorder
+        radius="lg"
+        p="lg"
+        style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+      >
         <Stack gap="md">
           {/* Row 1: Always Visible */}
           <Grid align="flex-end" gutter="md">
@@ -364,7 +402,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                 placeholder="Nhập họ tên..."
                 value={hoTen}
                 onChange={(e) => setHoTen(e.currentTarget.value)}
-                styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                styles={{
+                  label: {
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    marginBottom: "6px",
+                  },
+                }}
               />
             </Grid.Col>
 
@@ -374,7 +419,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                 placeholder="Nhập MSSV..."
                 value={mssv}
                 onChange={(e) => setMssv(e.currentTarget.value)}
-                styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                styles={{
+                  label: {
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    marginBottom: "6px",
+                  },
+                }}
               />
             </Grid.Col>
 
@@ -384,7 +436,7 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   leftSection={<IconSearch size={16} />}
                   color="blue"
                   style={{ backgroundColor: "#1A52C5" }}
-                  onClick={type === "nguoi-la" ? handleNguoiLaSearch : () => { }}
+                  onClick={type === "nguoi-la" ? handleNguoiLaSearch : () => {}}
                   loading={type === "nguoi-la" && nguoiLaLoading}
                 >
                   Tìm kiếm
@@ -415,7 +467,9 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                 </Button>
                 <Button
                   leftSection={<IconPlus size={16} />}
-                  style={{ background: "linear-gradient(135deg, #0284c7, #0369a1)" }}
+                  style={{
+                    background: "linear-gradient(135deg, #0284c7, #0369a1)",
+                  }}
                   onClick={() => setModalOpened(true)}
                 >
                   Thêm dữ liệu
@@ -426,7 +480,11 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   size="lg"
                   onClick={() => setOpened((o) => !o)}
                 >
-                  {opened ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+                  {opened ? (
+                    <IconChevronUp size={18} />
+                  ) : (
+                    <IconChevronDown size={18} />
+                  )}
                 </ActionIcon>
               </Group>
             </Grid.Col>
@@ -441,7 +499,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   placeholder="mm/dd/yyyy"
                   value={tuNgay}
                   onChange={(e) => setTuNgay(e.currentTarget.value)}
-                  styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                  styles={{
+                    label: {
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#64748b",
+                      marginBottom: "6px",
+                    },
+                  }}
                 />
               </Grid.Col>
 
@@ -451,7 +516,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   placeholder="mm/dd/yyyy"
                   value={denNgay}
                   onChange={(e) => setDenNgay(e.currentTarget.value)}
-                  styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                  styles={{
+                    label: {
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#64748b",
+                      marginBottom: "6px",
+                    },
+                  }}
                 />
               </Grid.Col>
 
@@ -461,7 +533,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   value={khuKtx}
                   onChange={(val) => setKhuKtx(val || "Tất cả")}
                   data={["Tất cả", "Khu A", "Khu B"]}
-                  styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                  styles={{
+                    label: {
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#64748b",
+                      marginBottom: "6px",
+                    },
+                  }}
                 />
               </Grid.Col>
 
@@ -471,7 +550,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   value={trangThai}
                   onChange={(val) => setTrangThai(val || "Tất cả")}
                   data={["Tất cả", "Hợp lệ", "Nghi vấn", "Không hợp lệ"]}
-                  styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                  styles={{
+                    label: {
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#64748b",
+                      marginBottom: "6px",
+                    },
+                  }}
                 />
               </Grid.Col>
 
@@ -481,7 +567,14 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   value={loaiDoiTuong}
                   onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
                   data={["Tất cả", "Sinh viên", "Cán bộ"]}
-                  styles={{ label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px" } }}
+                  styles={{
+                    label: {
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: "#64748b",
+                      marginBottom: "6px",
+                    },
+                  }}
                 />
               </Grid.Col>
             </Grid>
@@ -493,8 +586,19 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       {type === "luot-ra-vao" && (
         <Grid gutter="md">
           <Grid.Col span={{ base: 12, md: 8 }}>
-            <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-              <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
+            <Card
+              withBorder
+              radius="lg"
+              p="lg"
+              style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+            >
+              <Text
+                fw={700}
+                size="sm"
+                c="dimmed"
+                mb="md"
+                style={{ letterSpacing: "0.5px" }}
+              >
                 THỐNG KÊ LƯỢT VÀO/RA THEO THỜI GIAN
               </Text>
               <div style={{ height: 300 }}>
@@ -507,7 +611,7 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                       { name: "Thứ 5", "Lượt vào": 130, "Lượt ra": 128 },
                       { name: "Thứ 6", "Lượt vào": 160, "Lượt ra": 155 },
                       { name: "Thứ 7", "Lượt vào": 90, "Lượt ra": 110 },
-                      { name: "Chủ nhật", "Lượt vào": 80, "Lượt ra": 85 }
+                      { name: "Chủ nhật", "Lượt vào": 80, "Lượt ra": 85 },
                     ]}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -515,8 +619,16 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="Lượt vào" fill="#228be6" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Lượt ra" fill="#fd7e14" radius={[4, 4, 0, 0]} />
+                    <Bar
+                      dataKey="Lượt vào"
+                      fill="#228be6"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="Lượt ra"
+                      fill="#fd7e14"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -524,17 +636,36 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
           </Grid.Col>
 
           <Grid.Col span={{ base: 12, md: 4 }}>
-            <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-              <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
+            <Card
+              withBorder
+              radius="lg"
+              p="lg"
+              style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+            >
+              <Text
+                fw={700}
+                size="sm"
+                c="dimmed"
+                mb="md"
+                style={{ letterSpacing: "0.5px" }}
+              >
                 THỐNG KÊ THEO KHU KÝ TÚC XÁ
               </Text>
-              <div style={{ height: 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+              <div
+                style={{
+                  height: 300,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <ResponsiveContainer width="100%" height="70%">
                   <PieChart>
                     <Pie
                       data={[
                         { name: "Khu A", value: 65 },
-                        { name: "Khu B", value: 35 }
+                        { name: "Khu B", value: 35 },
                       ]}
                       cx="50%"
                       cy="50%"
@@ -551,12 +682,30 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                 </ResponsiveContainer>
                 <Group gap="xl" mt="md">
                   <Group gap="xs">
-                    <Box style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#228be6" }} />
-                    <Text size="xs" fw={500}>Khu A (65%)</Text>
+                    <Box
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        backgroundColor: "#228be6",
+                      }}
+                    />
+                    <Text size="xs" fw={500}>
+                      Khu A (65%)
+                    </Text>
                   </Group>
                   <Group gap="xs">
-                    <Box style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#40c057" }} />
-                    <Text size="xs" fw={500}>Khu B (35%)</Text>
+                    <Box
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        backgroundColor: "#40c057",
+                      }}
+                    />
+                    <Text size="xs" fw={500}>
+                      Khu B (35%)
+                    </Text>
                   </Group>
                 </Group>
               </div>
@@ -568,8 +717,19 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       {type === "vang-mat" && (
         <Grid gutter="md">
           <Grid.Col span={12}>
-            <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-              <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
+            <Card
+              withBorder
+              radius="lg"
+              p="lg"
+              style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+            >
+              <Text
+                fw={700}
+                size="sm"
+                c="dimmed"
+                mb="md"
+                style={{ letterSpacing: "0.5px" }}
+              >
                 THỐNG KÊ SINH VIÊN VẮNG MẶT THEO SỐ NGÀY
               </Text>
               <div style={{ height: 260 }}>
@@ -579,7 +739,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#fa5252" radius={[4, 4, 0, 0]} label={{ position: 'top' }} />
+                    <Bar
+                      dataKey="value"
+                      fill="#fa5252"
+                      radius={[4, 4, 0, 0]}
+                      label={{ position: "top" }}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -591,8 +756,19 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       {type === "nguoi-la" && (
         <Grid gutter="md">
           <Grid.Col span={12}>
-            <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-              <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
+            <Card
+              withBorder
+              radius="lg"
+              p="lg"
+              style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+            >
+              <Text
+                fw={700}
+                size="sm"
+                c="dimmed"
+                mb="md"
+                style={{ letterSpacing: "0.5px" }}
+              >
                 TẦN SUẤT PHÁT HIỆN NGƯỜI LẠ (7 NGÀY QUA)
               </Text>
               <div style={{ height: 260 }}>
@@ -603,8 +779,20 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Area type="monotone" dataKey="Khu A" stroke="#228be6" fill="#228be6" fillOpacity={0.2} />
-                    <Area type="monotone" dataKey="Khu B" stroke="#40c057" fill="#40c057" fillOpacity={0.2} />
+                    <Area
+                      type="monotone"
+                      dataKey="Khu A"
+                      stroke="#228be6"
+                      fill="#228be6"
+                      fillOpacity={0.2}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="Khu B"
+                      stroke="#40c057"
+                      fill="#40c057"
+                      fillOpacity={0.2}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -616,8 +804,19 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       {type === "bi-cam" && (
         <Grid gutter="md">
           <Grid.Col span={12}>
-            <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-              <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
+            <Card
+              withBorder
+              radius="lg"
+              p="lg"
+              style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+            >
+              <Text
+                fw={700}
+                size="sm"
+                c="dimmed"
+                mb="md"
+                style={{ letterSpacing: "0.5px" }}
+              >
                 PHÂN BỔ SỐ LƯỢT XÂM NHẬP TRÁI PHÉP BỊ CẢNH BÁO
               </Text>
               <div style={{ height: 260 }}>
@@ -627,7 +826,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="value" fill="#e03131" radius={[4, 4, 0, 0]} label={{ position: 'top' }} />
+                    <Bar
+                      dataKey="value"
+                      fill="#e03131"
+                      radius={[4, 4, 0, 0]}
+                      label={{ position: "top" }}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -639,48 +843,157 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       {/* Table 1: Overview Statistics (Only for In/Out stats) */}
       {type === "luot-ra-vao" && (
         <>
-          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+          <Card
+            withBorder
+            radius="lg"
+            p="lg"
+            style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+          >
             <Group justify="space-between" mb="md">
-              <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
+              <Text
+                fw={800}
+                size="md"
+                c="#1e293b"
+                style={{ letterSpacing: "0.25px" }}
+              >
                 BẢNG THỐNG KÊ SINH VIÊN RA VÀO (TOP 5 VÀ CHI TIẾT)
               </Text>
             </Group>
 
             <ScrollArea>
-              <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
+              <Table
+                verticalSpacing="sm"
+                highlightOnHover
+                style={{ minWidth: 800 }}
+              >
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>MSSV</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Họ tên</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Mã nhóm</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Ảnh đại diện</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Lượt vào</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Lượt ra</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Tổng lượt</Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      STT
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      MSSV
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      Họ tên
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      Mã nhóm
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      Ảnh đại diện
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Lượt vào
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Lượt ra
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      Tổng lượt
+                    </Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {filteredOverview.map((row) => {
-                    const isSelected = selectedStudent?.studentId === row.studentId;
+                    const isSelected =
+                      selectedStudent?.studentId === row.studentId;
                     return (
                       <Table.Tr
                         key={row.studentId}
                         style={{
                           borderBottom: "1px solid #f1f5f9",
-                          backgroundColor: isSelected ? "#f0f7ff" : "transparent",
+                          backgroundColor: isSelected
+                            ? "#f0f7ff"
+                            : "transparent",
                         }}
                       >
-                        <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>{row.stt}</Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>
+                        <Table.Td
+                          style={{ fontSize: "13px", color: "#64748b" }}
+                        >
+                          {row.stt}
+                        </Table.Td>
+                        <Table.Td
+                          style={{
+                            fontSize: "13px",
+                            color: "#64748b",
+                            fontFamily: "monospace",
+                          }}
+                        >
                           {row.studentId}
                         </Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>
+                        <Table.Td
+                          style={{
+                            fontSize: "13px",
+                            color: "#1e293b",
+                            fontWeight: 600,
+                          }}
+                        >
                           {row.hoTen}
                         </Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.maNhom}</Table.Td>
+                        <Table.Td
+                          style={{ fontSize: "13px", color: "#475569" }}
+                        >
+                          {row.maNhom}
+                        </Table.Td>
                         <Table.Td>
-                          <Avatar src={row.avatarUrl} radius="xl" size="sm" alt={row.hoTen} />
+                          <Avatar
+                            src={row.avatarUrl}
+                            radius="xl"
+                            size="sm"
+                            alt={row.hoTen}
+                          />
                         </Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
                           <Anchor
@@ -690,7 +1003,10 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                             onClick={() => handleStatClick(row, "Vào")}
                             style={{
                               fontSize: "13px",
-                              textDecoration: isSelected && detailType === "Vào" ? "underline" : "none",
+                              textDecoration:
+                                isSelected && detailType === "Vào"
+                                  ? "underline"
+                                  : "none",
                             }}
                           >
                             {row.luotVao}
@@ -704,7 +1020,10 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                             onClick={() => handleStatClick(row, "Ra")}
                             style={{
                               fontSize: "13px",
-                              textDecoration: isSelected && detailType === "Ra" ? "underline" : "none",
+                              textDecoration:
+                                isSelected && detailType === "Ra"
+                                  ? "underline"
+                                  : "none",
                             }}
                           >
                             {row.luotRa}
@@ -718,7 +1037,10 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                             onClick={() => handleStatClick(row, "Tất cả")}
                             style={{
                               fontSize: "13px",
-                              textDecoration: isSelected && detailType === "Tất cả" ? "underline" : "none",
+                              textDecoration:
+                                isSelected && detailType === "Tất cả"
+                                  ? "underline"
+                                  : "none",
                             }}
                           >
                             {row.tongLuot}
@@ -742,44 +1064,146 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
           </Card>
 
           {/* Table 2: Detailed Statistics List */}
-          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+          <Card
+            withBorder
+            radius="lg"
+            p="lg"
+            style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+          >
             {selectedStudent && detailType ? (
               <Stack gap="md">
                 <Group justify="space-between">
-                  <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
-                    CHI TIẾT LƯỢT {detailType.toUpperCase()} - {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
+                  <Text
+                    fw={800}
+                    size="md"
+                    c="#1e293b"
+                    style={{ letterSpacing: "0.25px" }}
+                  >
+                    CHI TIẾT LƯỢT {detailType.toUpperCase()} -{" "}
+                    {selectedStudent.hoTen.toUpperCase()} (
+                    {selectedStudent.studentId})
                   </Text>
-                  <Badge color={detailType === "Vào" ? "blue" : detailType === "Ra" ? "orange" : "green"} size="lg">
-                    {detailType === "Tất cả" ? "Tất cả lượt ra/vào" : `Lượt ${detailType.toLowerCase()}`}
+                  <Badge
+                    color={
+                      detailType === "Vào"
+                        ? "blue"
+                        : detailType === "Ra"
+                          ? "orange"
+                          : "green"
+                    }
+                    size="lg"
+                  >
+                    {detailType === "Tất cả"
+                      ? "Tất cả lượt ra/vào"
+                      : `Lượt ${detailType.toLowerCase()}`}
                   </Badge>
                 </Group>
 
                 <ScrollArea>
-                  <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
+                  <Table
+                    verticalSpacing="sm"
+                    highlightOnHover
+                    style={{ minWidth: 800 }}
+                  >
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Thời gian</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Loại</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Phòng</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                        <Table.Th
+                          style={{
+                            color: "#475569",
+                            fontWeight: 600,
+                            fontSize: "12px",
+                          }}
+                        >
+                          STT
+                        </Table.Th>
+                        <Table.Th
+                          style={{
+                            color: "#475569",
+                            fontWeight: 600,
+                            fontSize: "12px",
+                          }}
+                        >
+                          Thời gian
+                        </Table.Th>
+                        <Table.Th
+                          style={{
+                            color: "#475569",
+                            fontWeight: 600,
+                            fontSize: "12px",
+                            textAlign: "center",
+                          }}
+                        >
+                          Loại
+                        </Table.Th>
+                        <Table.Th
+                          style={{
+                            color: "#475569",
+                            fontWeight: 600,
+                            fontSize: "12px",
+                          }}
+                        >
+                          Khu KTX
+                        </Table.Th>
+                        <Table.Th
+                          style={{
+                            color: "#475569",
+                            fontWeight: 600,
+                            fontSize: "12px",
+                          }}
+                        >
+                          Phòng
+                        </Table.Th>
+                        <Table.Th
+                          style={{
+                            color: "#475569",
+                            fontWeight: 600,
+                            fontSize: "12px",
+                            textAlign: "center",
+                          }}
+                        >
+                          Trạng thái
+                        </Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
                       {filteredDetails.map((detail) => (
-                        <Table.Tr key={detail.stt} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                          <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>{detail.stt}</Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 500 }}>
+                        <Table.Tr
+                          key={detail.stt}
+                          style={{ borderBottom: "1px solid #f1f5f9" }}
+                        >
+                          <Table.Td
+                            style={{ fontSize: "13px", color: "#64748b" }}
+                          >
+                            {detail.stt}
+                          </Table.Td>
+                          <Table.Td
+                            style={{
+                              fontSize: "13px",
+                              color: "#1e293b",
+                              fontWeight: 500,
+                            }}
+                          >
                             {detail.time}
                           </Table.Td>
                           <Table.Td style={{ textAlign: "center" }}>
-                            <Badge color={detail.type === "Vào" ? "blue" : "orange"} size="sm" radius="md">
+                            <Badge
+                              color={detail.type === "Vào" ? "blue" : "orange"}
+                              size="sm"
+                              radius="md"
+                            >
                               {detail.type}
                             </Badge>
                           </Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{detail.ktx}</Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{detail.room}</Table.Td>
+                          <Table.Td
+                            style={{ fontSize: "13px", color: "#475569" }}
+                          >
+                            {detail.ktx}
+                          </Table.Td>
+                          <Table.Td
+                            style={{ fontSize: "13px", color: "#475569" }}
+                          >
+                            {detail.room}
+                          </Table.Td>
                           <Table.Td style={{ textAlign: "center" }}>
                             <Badge
                               color={
@@ -813,7 +1237,9 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             ) : (
               <Box py="xl">
                 <Text ta="center" c="dimmed" style={{ fontStyle: "italic" }}>
-                  Chọn một số lượt thống kê (Lượt vào, Lượt ra, hoặc Tổng lượt) của một sinh viên ở bảng trên để hiển thị chi tiết lịch sử ra vào.
+                  Chọn một số lượt thống kê (Lượt vào, Lượt ra, hoặc Tổng lượt)
+                  của một sinh viên ở bảng trên để hiển thị chi tiết lịch sử ra
+                  vào.
                 </Text>
               </Box>
             )}
@@ -823,39 +1249,165 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
 
       {/* Table: Absent Students Statistics */}
       {type === "vang-mat" && (
-        <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+        <Card
+          withBorder
+          radius="lg"
+          p="lg"
+          style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+        >
           <Group justify="space-between" mb="md">
-            <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
+            <Text
+              fw={800}
+              size="md"
+              c="#1e293b"
+              style={{ letterSpacing: "0.25px" }}
+            >
               BẢNG THỐNG KÊ SINH VIÊN VẮNG MẶT LÂU NGÀY
             </Text>
           </Group>
 
           <ScrollArea>
-            <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
+            <Table
+              verticalSpacing="sm"
+              highlightOnHover
+              style={{ minWidth: 800 }}
+            >
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>MSSV</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Họ tên</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Phòng</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Số ngày vắng</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Lần quét cuối cùng</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    STT
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    MSSV
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Họ tên
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Khu KTX
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Phòng
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                      textAlign: "center",
+                    }}
+                  >
+                    Số ngày vắng
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Lần quét cuối cùng
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                      textAlign: "center",
+                    }}
+                  >
+                    Trạng thái
+                  </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {filteredAbsent.map((row) => (
-                  <Table.Tr key={row.studentId} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                    <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>{row.stt}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>{row.studentId}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>{row.hoTen}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.ktx}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.room}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#e03131", fontWeight: 700, textAlign: "center" }}>{row.absentDays} ngày</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.lastScan}</Table.Td>
+                  <Table.Tr
+                    key={row.studentId}
+                    style={{ borderBottom: "1px solid #f1f5f9" }}
+                  >
+                    <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
+                      {row.stt}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        color: "#64748b",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {row.studentId}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        color: "#1e293b",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {row.hoTen}
+                    </Table.Td>
+                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                      {row.ktx}
+                    </Table.Td>
+                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                      {row.room}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        color: "#e03131",
+                        fontWeight: 700,
+                        textAlign: "center",
+                      }}
+                    >
+                      {row.absentDays} ngày
+                    </Table.Td>
+                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                      {row.lastScan}
+                    </Table.Td>
                     <Table.Td style={{ textAlign: "center" }}>
-                      <Badge color={row.status === "Cảnh báo" ? "red" : row.status === "Nghi vấn" ? "yellow" : "green"} variant="light" size="sm">
+                      <Badge
+                        color={
+                          row.status === "Cảnh báo"
+                            ? "red"
+                            : row.status === "Nghi vấn"
+                              ? "yellow"
+                              : "green"
+                        }
+                        variant="light"
+                        size="sm"
+                      >
                         {row.status}
                       </Badge>
                     </Table.Td>
@@ -878,10 +1430,20 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
 
       {/* Table: Stranger Detection Statistics - API driven */}
       {type === "nguoi-la" && (
-        <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+        <Card
+          withBorder
+          radius="lg"
+          p="lg"
+          style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+        >
           <Group justify="space-between" mb="md">
             <div>
-              <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
+              <Text
+                fw={800}
+                size="md"
+                c="#1e293b"
+                style={{ letterSpacing: "0.25px" }}
+              >
                 BẢNG PHÁT HIỆN NGƯỜI LẠ XUẤT HIỆN
               </Text>
               {!nguoiLaLoading && (
@@ -891,7 +1453,9 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
               )}
             </div>
             {nguoiLaError && (
-              <Badge color="red" variant="light" size="sm">{nguoiLaError}</Badge>
+              <Badge color="red" variant="light" size="sm">
+                {nguoiLaError}
+              </Badge>
             )}
           </Group>
 
@@ -899,49 +1463,139 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             <Center py="xl">
               <Stack align="center" gap="sm">
                 <Loader size="md" color="blue" />
-                <Text size="sm" c="dimmed">Đang tải dữ liệu người lạ...</Text>
+                <Text size="sm" c="dimmed">
+                  Đang tải dữ liệu người lạ...
+                </Text>
               </Stack>
             </Center>
           ) : (
             <>
               <ScrollArea>
-                <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
+                <Table
+                  verticalSpacing="sm"
+                  highlightOnHover
+                  style={{ minWidth: 800 }}
+                >
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Thời gian phát hiện</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Vị trí / Cổng</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Ảnh camera</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                      <Table.Th
+                        style={{
+                          color: "#475569",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                        }}
+                      >
+                        STT
+                      </Table.Th>
+                      <Table.Th
+                        style={{
+                          color: "#475569",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                        }}
+                      >
+                        Thời gian phát hiện
+                      </Table.Th>
+                      <Table.Th
+                        style={{
+                          color: "#475569",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                        }}
+                      >
+                        Khu KTX
+                      </Table.Th>
+                      <Table.Th
+                        style={{
+                          color: "#475569",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                        }}
+                      >
+                        Vị trí / Cổng
+                      </Table.Th>
+                      <Table.Th
+                        style={{
+                          color: "#475569",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                          textAlign: "center",
+                        }}
+                      >
+                        Ảnh camera
+                      </Table.Th>
+                      <Table.Th
+                        style={{
+                          color: "#475569",
+                          fontWeight: 600,
+                          fontSize: "12px",
+                          textAlign: "center",
+                        }}
+                      >
+                        Trạng thái
+                      </Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
                     {nguoiLaList.map((row, index) => {
-                      const stt = (nguoiLaPage - 1) * nguoiLaPageSize + index + 1;
+                      const stt =
+                        (nguoiLaPage - 1) * nguoiLaPageSize + index + 1;
                       const thoiGian = row.detectTime ?? row.thoiGian ?? "--";
                       const khu = row.tenKhu ?? row.maKhu ?? "--";
                       const viTri = row.viTri ?? row.cong ?? "--";
                       const imgSrc = row.image ?? row.imageUrl ?? "";
                       const tt = row.trangThai ?? "";
                       return (
-                        <Table.Tr key={row.id ?? index} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                          <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>{stt}</Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 500 }}>{thoiGian}</Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{khu}</Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{viTri}</Table.Td>
+                        <Table.Tr
+                          key={row.id ?? index}
+                          style={{ borderBottom: "1px solid #f1f5f9" }}
+                        >
+                          <Table.Td
+                            style={{ fontSize: "13px", color: "#64748b" }}
+                          >
+                            {stt}
+                          </Table.Td>
+                          <Table.Td
+                            style={{
+                              fontSize: "13px",
+                              color: "#1e293b",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {thoiGian}
+                          </Table.Td>
+                          <Table.Td
+                            style={{ fontSize: "13px", color: "#475569" }}
+                          >
+                            {khu}
+                          </Table.Td>
+                          <Table.Td
+                            style={{ fontSize: "13px", color: "#475569" }}
+                          >
+                            {viTri}
+                          </Table.Td>
                           <Table.Td style={{ textAlign: "center" }}>
                             {imgSrc ? (
-                              <Avatar src={imgSrc} radius="md" size="md" alt="Stranger" style={{ margin: "auto" }} />
+                              <Avatar
+                                src={imgSrc}
+                                radius="md"
+                                size="md"
+                                alt="Stranger"
+                                style={{ margin: "auto" }}
+                              />
                             ) : (
-                              <Text size="xs" c="dimmed">Không có ảnh</Text>
+                              <Text size="xs" c="dimmed">
+                                Không có ảnh
+                              </Text>
                             )}
                           </Table.Td>
                           <Table.Td style={{ textAlign: "center" }}>
                             <Badge
                               color={
-                                tt === "Cảnh báo" || tt === "WARNING" ? "red"
-                                  : tt === "Hợp lệ" || tt === "OK" ? "green"
+                                tt === "Cảnh báo" || tt === "WARNING"
+                                  ? "red"
+                                  : tt === "Hợp lệ" || tt === "OK"
+                                    ? "green"
                                     : "blue"
                               }
                               variant="light"
@@ -957,7 +1611,9 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                       <Table.Tr>
                         <Table.Td colSpan={6}>
                           <Text ta="center" c="dimmed" py="xl">
-                            {nguoiLaError ? nguoiLaError : "Không có dữ liệu người lạ trong khoảng thời gian này"}
+                            {nguoiLaError
+                              ? nguoiLaError
+                              : "Không có dữ liệu người lạ trong khoảng thời gian này"}
                           </Text>
                         </Table.Td>
                       </Table.Tr>
@@ -985,37 +1641,159 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
 
       {/* Table: Banned Students Violations */}
       {type === "bi-cam" && (
-        <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+        <Card
+          withBorder
+          radius="lg"
+          p="lg"
+          style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+        >
           <Group justify="space-between" mb="md">
-            <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
+            <Text
+              fw={800}
+              size="md"
+              c="#1e293b"
+              style={{ letterSpacing: "0.25px" }}
+            >
               BẢNG THỐNG KÊ SINH VIÊN BỊ CẤM / CẢNH BÁO XÂM NHẬP
             </Text>
           </Group>
 
           <ScrollArea>
-            <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
+            <Table
+              verticalSpacing="sm"
+              highlightOnHover
+              style={{ minWidth: 800 }}
+            >
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>MSSV</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Họ tên</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Phòng</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Lý do cấm</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Số lần vi phạm</Table.Th>
-                  <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái thẻ</Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    STT
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    MSSV
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Họ tên
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Phòng
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                    }}
+                  >
+                    Lý do cấm
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                      textAlign: "center",
+                    }}
+                  >
+                    Số lần vi phạm
+                  </Table.Th>
+                  <Table.Th
+                    style={{
+                      color: "#475569",
+                      fontWeight: 600,
+                      fontSize: "12px",
+                      textAlign: "center",
+                    }}
+                  >
+                    Trạng thái thẻ
+                  </Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
                 {filteredBanned.map((row) => (
-                  <Table.Tr key={row.studentId} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                    <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>{row.stt}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>{row.studentId}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>{row.hoTen}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.room}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", color: "#fa5252", fontWeight: 500 }}>{row.reason}</Table.Td>
-                    <Table.Td style={{ fontSize: "13px", fontWeight: 700, color: "#1e293b", textAlign: "center" }}>{row.violationCount} lần</Table.Td>
+                  <Table.Tr
+                    key={row.studentId}
+                    style={{ borderBottom: "1px solid #f1f5f9" }}
+                  >
+                    <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
+                      {row.stt}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        color: "#64748b",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {row.studentId}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        color: "#1e293b",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {row.hoTen}
+                    </Table.Td>
+                    <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                      {row.room}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        color: "#fa5252",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {row.reason}
+                    </Table.Td>
+                    <Table.Td
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        color: "#1e293b",
+                        textAlign: "center",
+                      }}
+                    >
+                      {row.violationCount} lần
+                    </Table.Td>
                     <Table.Td style={{ textAlign: "center" }}>
-                      <Badge color={row.status === "Khóa thẻ" ? "red" : row.status === "Chờ xử lý" ? "yellow" : "orange"} variant="light" size="sm">
+                      <Badge
+                        color={
+                          row.status === "Khóa thẻ"
+                            ? "red"
+                            : row.status === "Chờ xử lý"
+                              ? "yellow"
+                              : "orange"
+                        }
+                        variant="light"
+                        size="sm"
+                      >
                         {row.status}
                       </Badge>
                     </Table.Td>
@@ -1041,7 +1819,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
         title={
-          <Text fw={800} size="lg" c="#1A52C5" style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <Text
+            fw={800}
+            size="lg"
+            c="#1A52C5"
+            style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}
+          >
             Thêm dữ liệu vào/ra
           </Text>
         }
@@ -1061,7 +1844,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             value={formMssv}
             onChange={(e) => handleMssvChange(e.currentTarget.value)}
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "4px",
+              },
               input: { borderRadius: "8px" },
             }}
           />
@@ -1072,7 +1860,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             value={formHoTen}
             onChange={(e) => setFormHoTen(e.currentTarget.value)}
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "4px",
+              },
               input: { borderRadius: "8px" },
             }}
           />
@@ -1085,7 +1878,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             onChange={(val) => setFormKhuKtx(val || "")}
             data={["Khu A", "Khu B"]}
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "4px",
+              },
               input: { borderRadius: "8px" },
             }}
           />
@@ -1104,7 +1902,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
                   : ["A101", "A302", "A408", "B104", "B205"]
             }
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "4px",
+              },
               input: { borderRadius: "8px" },
             }}
           />
@@ -1115,12 +1918,27 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             value={formLoai}
             onChange={setFormLoai}
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "8px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "8px",
+              },
             }}
           >
             <Group gap="xl">
-              <Radio value="Vào" label="Vào" color="green" styles={{ label: { fontWeight: 500 } }} />
-              <Radio value="Ra" label="Ra" color="green" styles={{ label: { fontWeight: 500 } }} />
+              <Radio
+                value="Vào"
+                label="Vào"
+                color="green"
+                styles={{ label: { fontWeight: 500 } }}
+              />
+              <Radio
+                value="Ra"
+                label="Ra"
+                color="green"
+                styles={{ label: { fontWeight: 500 } }}
+              />
             </Group>
           </Radio.Group>
 
@@ -1131,7 +1949,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             value={formThoiGian}
             onChange={(e) => setFormThoiGian(e.currentTarget.value)}
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "4px",
+              },
               input: { borderRadius: "8px" },
             }}
           />
@@ -1143,7 +1966,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             onChange={(e) => setFormGhiChu(e.currentTarget.value)}
             rows={3}
             styles={{
-              label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" },
+              label: {
+                fontWeight: 700,
+                fontSize: "14px",
+                color: "#1e293b",
+                marginBottom: "4px",
+              },
               input: { borderRadius: "8px" },
             }}
           />
@@ -1159,7 +1987,12 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
             </Button>
             <Button
               onClick={handleFormSubmit}
-              style={{ width: 140, borderRadius: "8px", backgroundColor: "#007fff", fontWeight: 600 }}
+              style={{
+                width: 140,
+                borderRadius: "8px",
+                backgroundColor: "#007fff",
+                fontWeight: 600,
+              }}
             >
               Ghi nhận
             </Button>

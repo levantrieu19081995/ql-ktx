@@ -1,6 +1,7 @@
 "use client";
 // src\components\shell\AppSidebar.tsx
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
   NavLink,
   ScrollArea,
@@ -62,6 +63,7 @@ import { usePathname, Link, useRouter } from "@/i18n/navigation";
 import { signOut } from "next-auth/react";
 import { useMediaQuery } from "@mantine/hooks";
 import usePermissions from "@/hooks/usePermissions";
+import logo from "@/assets/images/CTU_logo.png";
 
 type Props = {
   onNavigate?: () => void;
@@ -88,7 +90,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   const [listOfAppFunctions, setListOfAppFunctions] = useState<any>([]);
 
   // === State điều khiển mở rộng các menu cha ===
-  const [openParent, setOpenParent] = useState<string | null>(null);
+  const [openParent, setOpenParent] = useState<string | null>(t("category"));
   const openDocA = () => {
     window.open("/doc/huong_dan1.pdf", "_blank");
   };
@@ -106,71 +108,9 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       href: "/warnings",
     },
     {
-      icon: <IconChartBar />,
-      label: t("statistics"),
-      children: [
-        {
-          label: t("statInOut"),
-          href: "/thong-ke/luot-ra-vao",
-          icon: <IconArrowsLeftRight size={16} />,
-        },
-        {
-          label: t("statAbsent"),
-          href: "/thong-ke/vang-mat",
-          icon: <IconUserX size={16} />,
-        },
-        {
-          label: t("statStranger"),
-          href: "/thong-ke/nguoi-la",
-          icon: <IconEyeExclamation size={16} />,
-        },
-        {
-          label: t("statBanned"),
-          href: "/thong-ke/bi-cam",
-          icon: <IconLockFilled size={16} />,
-        },
-      ],
-    },
-    { icon: <IconCar />, label: t("tollManagement"), href: "/toll-management" },
-
-    {
-      icon: <IconShip />,
-      label: t("inlandWaterwaysFeesManagement"),
-      href: "/inland-waterways-fees-managenment",
-    },
-    {
-      icon: <IconTestPipeOff />,
-      label: t("inspectionFeesManagement"),
-      href: "/inspection-fees-managenment",
-    },
-    {
-      icon: <IconShieldPlus />,
-      label: t("certificateOfRenovationFeesManagenment"),
-      href: "/certificate-of-renovation-fees-managenment",
-    },
-    {
-      icon: <IconTractor />,
-      label: t("specializedMotorbikeFeesManagement"),
-      href: "/specialized-motorbike-fees-managenment",
-    },
-    {
-      icon: <IconCoins />,
-      label: t("extraFeesManagement"),
-      href: "/extra-fees-management",
-    },
-    {
-      icon: <IconFileInvoice />,
-      label: t("billManagement"),
-      href: "/bill-management",
-    },
-    {
-      icon: <IconCash />,
-      label: t("feesmanagement"),
-      href: "/fees-management",
-    },
-    {
       icon: <IconCategory />,
       label: t("category"),
+      grouped: true,
       children: [
         {
           label: t("categoryStudentDorm"),
@@ -202,18 +142,29 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
 
     // === menu có cấp con ===
     {
-      icon: <IconUsersGroup />,
-      label: t("users-roles"),
+      icon: <IconChartBar />,
+      label: t("statistics"),
+      grouped: true,
       children: [
         {
-          label: t("manage-users"),
-          href: "/manage-users",
-          icon: <IconUser size={16} />,
+          label: t("statInOut"),
+          href: "/thong-ke/luot-ra-vao",
+          icon: <IconArrowsLeftRight size={16} />,
         },
         {
-          label: t("manage-roles"),
-          href: "/manage-roles",
-          icon: <IconShield size={16} />,
+          label: t("statAbsent"),
+          href: "/thong-ke/vang-mat",
+          icon: <IconUserX size={16} />,
+        },
+        {
+          label: t("statStranger"),
+          href: "/thong-ke/nguoi-la",
+          icon: <IconEyeExclamation size={16} />,
+        },
+        {
+          label: t("statBanned"),
+          href: "/thong-ke/bi-cam",
+          icon: <IconLockFilled size={16} />,
         },
       ],
     },
@@ -221,6 +172,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     {
       icon: <IconBooks />,
       label: t("instructionManual"),
+      grouped: true,
       children: [
         {
           label: t("DocumentVehicleinspection"),
@@ -233,14 +185,6 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           onClick: () => openDocB(),
         },
       ],
-    },
-
-    { icon: <IconSettings />, label: t("settings"), href: "/settings" },
-
-    {
-      icon: <IconTag />,
-      label: `Phiên bản ${appInfo.appVersion}`,
-      onClick: () => setVersionInfoOpen(true),
     },
   ];
 
@@ -257,6 +201,27 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     });
     onNavigate?.();
   };
+
+  const navLinkStyles = (active: boolean, compact = false) => ({
+    root: {
+      minHeight: compact ? 44 : 48,
+      borderRadius: 12,
+      padding: compact ? 0 : "0 14px 0 12px",
+      color: active ? "#2563EB" : "#0f172a",
+      background: active ? "rgba(37, 99, 235, 0.08)" : "transparent",
+      // borderLeft: active ? "3px solid #2563EB" : "3px solid transparent",
+      fontWeight: active ? 800 : 650,
+      transition: "background-color 150ms ease, color 150ms ease",
+    },
+    label: {
+      fontSize: compact ? 0 : 14,
+      lineHeight: 1.2,
+    },
+    section: {
+      color: active ? "#2563EB" : "#0f172a",
+      marginRight: compact ? 0 : 12,
+    },
+  });
 
   // === Render menu item (hỗ trợ cấp con) ===
   const renderNavItem = (item: any) => {
@@ -338,7 +303,33 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     // === Dạng mở rộng đầy đủ ===
     return (
       <Box key={item.label}>
-        {hasChildren ? (
+        {hasChildren && item.grouped ? (
+          <Box>
+            <Group
+              justify="space-between"
+              px={12}
+              mb={8}
+              mt={14}
+              style={{ cursor: "pointer" }}
+              onClick={() => setOpenParent(isOpen ? null : item.label)}
+            >
+              <Text
+                tt="uppercase"
+                fz={12}
+                fw={700}
+                c="#7b8798"
+                style={{ letterSpacing: 0 }}
+              >
+                {item.label}
+              </Text>
+              {isOpen ? (
+                <IconChevronDown size={15} color="#64748b" />
+              ) : (
+                <IconChevronRight size={15} color="#64748b" />
+              )}
+            </Group>
+          </Box>
+        ) : hasChildren ? (
           //  MENU CHA
           <NavLink
             label={item.label}
@@ -353,6 +344,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
             component="button"
             onClick={() => setOpenParent(isOpen ? null : item.label)}
             active={isActive}
+            styles={navLinkStyles(isActive, false)}
           />
         ) : item.onClick ? (
           // MENU SYSTEM (VERSION)
@@ -371,12 +363,13 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
             leftSection={item.icon}
             active={isActive}
             onClick={isMobile ? onNavigate : undefined}
+            styles={navLinkStyles(isActive, false)}
           />
         )}
 
         {/* Hiển thị submenu */}
         {hasChildren && isOpen && (
-          <Stack pl={36} gap={4} mt={4}>
+          <Stack pl={item.grouped ? 0 : 36} gap={4} mt={item.grouped ? 0 : 4}>
             {item.children.map((child: any, index: number) =>
               child.onClick ? (
                 <NavLink
@@ -385,6 +378,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
                   label={child.label}
                   leftSection={child.icon}
                   onClick={child.onClick}
+                  styles={navLinkStyles(false, false)}
                   style={{ fontSize: "14px", paddingTop: 6, paddingBottom: 6 }}
                 />
               ) : (
@@ -396,6 +390,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
                   leftSection={child.icon}
                   active={pathname.startsWith(child.href)}
                   onClick={isMobile ? onNavigate : undefined}
+                  styles={navLinkStyles(pathname.startsWith(child.href), false)}
                   style={{
                     fontSize: "14px",
                     paddingTop: 6,
@@ -484,33 +479,37 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       <div
         ref={sidebarRef}
         style={{
-          height: "85dvh",
+          position: "relative",
+          height: "100dvh",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          paddingBottom: 10,
+          paddingBottom: 16,
         }}
       >
-        {/* HEADER */}
-        <div
+        <ActionIcon
+          variant="default"
+          size={34}
+          radius="xl"
+          onClick={toggle}
+          aria-label="Toggle sidebar"
           style={{
-            height: 56,
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "center",
-            padding: "0 12px",
+            position: "absolute",
+            top: 18,
+            right: 12,
+            zIndex: 5,
+            borderColor: "#dfe6f2",
+            color: "#2563EB",
+            background: "#ffffff",
+            boxShadow: "0 8px 20px rgba(15, 23, 42, 0.08)",
           }}
         >
-          <Group justify={collapsed ? "center" : "space-between"}>
-            <ActionIcon variant="light" size="sm" onClick={toggle}>
-              {collapsed ? (
-                <IconMenu2 size={18} />
-              ) : (
-                <IconChevronLeft size={18} />
-              )}
-            </ActionIcon>
-          </Group>
-        </div>
+          {collapsed ? (
+            <IconChevronRight size={18} />
+          ) : (
+            <IconChevronLeft size={18} />
+          )}
+        </ActionIcon>
 
         {/* MENU */}
         <div
@@ -519,19 +518,27 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
             flex: 1,
             minHeight: 0,
             overflow: "auto",
-            paddingBottom: 40,
+            padding: collapsed ? "72px 10px 40px" : "72px 24px 40px",
           }}
         >
-          <Stack p="sm" gap="md">
+          <Stack gap={collapsed ? 8 : 10}>
             {filteredItems.map((it) => renderNavItem(it))}
-
-            <NavLink
-              leftSection={<IconLogout />}
-              label={t("logout", { default: "Đăng xuất" })}
-              onClick={() => setConfirmOpen(true)}
-            />
           </Stack>
         </div>
+        <Box
+          style={{
+            flexShrink: 0,
+            padding: collapsed ? "16px 10px 4px" : "16px 26px 4px",
+            borderTop: "1px solid #edf1f7",
+          }}
+        >
+          <NavLink
+            leftSection={<IconLogout />}
+            label={t("logout", { default: "Đăng xuất" })}
+            onClick={() => setConfirmOpen(true)}
+            styles={navLinkStyles(false, collapsed)}
+          />
+        </Box>
       </div>
 
       {/* Modal xác nhận đăng xuất */}

@@ -1,23 +1,28 @@
 "use client";
 import {
   Group,
-  Burger,
   Text,
   Box,
   ActionIcon,
   Menu,
   Avatar,
-  Tooltip,
   Card,
   Stack,
+  TextInput,
+  Indicator,
 } from "@mantine/core";
 import Image from "next/image";
-import Link from "next/link";
 import { useLocale } from "next-intl";
 import { signOut } from "next-auth/react";
-import { IconLogout } from "@tabler/icons-react";
-import logo from "@/assets/images/CTU_logo.png";
+import {
+  IconBell,
+  IconChevronDown,
+  IconLogout,
+  IconSearch,
+  IconSun,
+} from "@tabler/icons-react";
 import LocaleSwitcher from "./LocaleSwitcher";
+import logo from "@/assets/images/CTU_logo.png";
 import { useUser } from "@/context/UserContext";
 import { fetchConfigSystem } from "@/services/setting/settingSystemInfoService";
 import { useEffect, useState } from "react";
@@ -133,60 +138,45 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
 
   return (
     <Group
-      px="md"
-      wrap="wrap"
+      h="100%"
+      px={36}
+      wrap="nowrap"
       justify="space-between"
       align="center" // thêm để 3 block đứng đúng trên mobile
       style={{
-        backdropFilter: "saturate(160%) blur(10px)",
-        WebkitBackdropFilter: "saturate(160%) blur(10px)",
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55))",
+        background: "#ffffff",
       }}
     >
       {/* ============ LEFT: LOGO (260px) ============ */}
       <Group
-        gap="xs"
+        gap="md"
         wrap="nowrap"
         style={{
-          width: "260px",
-          minWidth: "260px",
+          width: "auto",
+          minWidth: "auto",
           flexShrink: 0, // không cho ép nhỏ logo
           justifyContent: "flex-start",
         }}
       >
-        <Burger
-          opened={opened}
-          onClick={onBurgerClick}
-          aria-label="Toggle sidebar"
-          hiddenFrom="sm"
-        />
-
-        <Link
-          href="/"
-          style={{
-            textDecoration: "none",
-            color: "inherit",
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            justifyContent: "center",
-          }}
-        >
+        <Group gap="sm" wrap="nowrap" visibleFrom="sm">
           <Image
             src={logo}
-            alt="Quản lý ký túc xá"
-            width={120}
-            height={120}
+            alt="Đại học Cần Thơ"
+            width={90}
+            height={90}
             priority
-            style={{
-              borderRadius: 6,
-              marginRight: 20,
-              marginTop: 5,
-              marginBottom: 5,
-            }}
+            style={{ borderRadius: 8, marginLeft: 65, marginRight: 25 }}
           />
-        </Link>
+          <Box>
+            <Text fz={22} fw={700} c="gray.7" tt="uppercase" lh={1}>
+              Đại học Cần Thơ
+            </Text>
+
+            <Text fz={26} fw={900} c="blue.6" tt="uppercase" lh={1} mt={10}>
+              Quản lý Ký túc xá
+            </Text>
+          </Box>
+        </Group>
       </Group>
 
       {/* ============ CENTER: TITLE (FLEX 1) ============ */}
@@ -194,24 +184,13 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
         style={{
           flex: 1,
           minWidth: "200px", // tránh bị ép nhỏ quá
-          textAlign: "left",
+          textAlign: "center",
           padding: "4px 0",
           wordBreak: "break-word", // cho phép xuống hàng
         }}
       >
-        {/* <Text
-          fw={900}
-          c={BRAND_BLUE}
-          style={{
-            fontSize: "26px",
-            letterSpacing: "2.4px",
-            lineHeight: 1.2,
-            whiteSpace: "normal", // cho phép xuống hàng
-          }}
-        >
-          {titleConfig}
-        </Text> */}
         <Text
+          hidden
           fw={900}
           c={BRAND_BLUE}
           style={{
@@ -227,16 +206,38 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
 
       {/* ============ RIGHT: USER BLOCK ============ */}
       <Group
-        gap="xs"
+        gap="md"
         wrap="nowrap"
         style={{
-          width: "140px",
-          minWidth: "140px",
+          width: "auto",
+          minWidth: "auto",
           flexShrink: 0, // không bị ép
           justifyContent: "flex-end",
         }}
       >
-        <LocaleSwitcher size={40} />
+        <TextInput
+          visibleFrom="md"
+          w={320}
+          radius="md"
+          size="md"
+          placeholder="Tìm kiếm..."
+          leftSection={<IconSearch size={18} />}
+          rightSectionWidth={72}
+          rightSection={
+            <Text size="xs" c="#64748b" fw={700}>
+              Ctrl + K
+            </Text>
+          }
+          styles={{
+            input: {
+              height: 42,
+              borderColor: "#dfe6f2",
+              boxShadow: "0 8px 20px rgba(15, 23, 42, 0.035)",
+            },
+          }}
+        />
+
+        <LocaleSwitcher size={42} />
 
         <Menu
           withArrow
@@ -252,18 +253,26 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           }}
         >
           <Menu.Target>
-            <Tooltip label={name} openDelay={300}>
-              <ActionIcon radius="xl" variant="light" size={40}>
-                <Avatar
-                  src={(user as any)?.avatar || undefined}
-                  radius="xl"
-                  size={36}
-                  color="blue"
-                >
-                  {name ? name.charAt(0).toUpperCase() : null}
-                </Avatar>
-              </ActionIcon>
-            </Tooltip>
+            <Group gap="sm" wrap="nowrap" style={{ cursor: "pointer" }}>
+              <Avatar
+                src={(user as any)?.avatar || undefined}
+                radius="xl"
+                size={40}
+                color="blue"
+                style={{ background: "#1557ff" }}
+              >
+                {name ? name.charAt(0).toUpperCase() : null}
+              </Avatar>
+              <Box visibleFrom="sm">
+                <Text fw={800} size="sm" c="#0f172a" lh={1.2}>
+                  {fullUser?.caNhan?.ten ?? name ?? "Quản trị viên"}
+                </Text>
+                <Text size="sm" c="#64748b">
+                  Admin
+                </Text>
+              </Box>
+              <IconChevronDown size={18} color="#0f172a" />
+            </Group>
           </Menu.Target>
 
           <Menu.Dropdown w={320} p="md">
