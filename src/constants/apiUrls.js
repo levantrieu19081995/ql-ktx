@@ -154,6 +154,7 @@ const API_URLS = {
     },
     khu: {
       paginate: `/ktx-service/ktx-dm-khu/paginate`,
+      index: `/ktx-service/ktx-dm-khu/index`,
     },
     sinhVienBiCam: {
       paginate: `/ktx-service/ktx-sinh-vien-cam/paginate`,

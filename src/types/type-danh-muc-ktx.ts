@@ -1,5 +1,46 @@
 export type TrangThaiDanhMucKtx = "HOAT_DONG" | "NGUNG_HOAT_DONG";
+//
+export interface DanhMucKhuKtxPaginateRequest {
+  page?: number;
+  pageSize?: number;
+  maKhu?: string;
+}
 
+export interface KhuKtx {
+  khuId?: number;
+  maKhu?: string;
+  tenKhu?: string;
+  soLuongPhong?: string;
+  moTa?: string | null;
+  guid?: string;
+  uiisKhuId?: number;
+}
+
+export interface DanhMucKtxPaginatePayload<T> {
+  numberOfElements: number;
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+  items: T[];
+}
+
+export interface ApiResponse<T> {
+  time: string;
+  message: string;
+  status: string;
+  payload: T;
+}
+export interface DanhMucKhuKtxIndexResponse {
+  time: string;
+  message: string;
+  status: string;
+  payload: KhuKtx[];
+}
+//
 export interface DanhMucKtxPaginateRequest {
   page?: number;
   pageSize?: number;
@@ -7,14 +48,8 @@ export interface DanhMucKtxPaginateRequest {
   keyWord?: string;
 }
 
-export interface DanhMucKtxPaginatePayload<T> {
-  items: T[];
-  totalPages?: number;
-  totalElements?: number;
-  page?: number;
-  pageSize?: number;
-}
 
+ 
 export interface DanhMucKtxResponse<T> {
   status?: string;
   success?: boolean;
@@ -22,9 +57,7 @@ export interface DanhMucKtxResponse<T> {
   payload?: T;
 }
 
-export type DanhMucKtxPaginateResponse<T> = DanhMucKtxResponse<
-  DanhMucKtxPaginatePayload<T>
->;
+ 
 
 export interface SinhVienKtx {
   id?: number | string;
@@ -56,15 +89,7 @@ export interface PhongKtx {
   ghiChu?: string;
 }
 
-export interface KhuKtx {
-  id?: number | string;
-  guid?: string;
-  maKhu?: string;
-  tenKhu?: string;
-  diaChi?: string;
-  trangThai?: TrangThaiDanhMucKtx | string;
-  ghiChu?: string;
-}
+ 
 
 export interface SinhVienBiCam {
   id?: number | string;
