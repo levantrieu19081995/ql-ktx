@@ -132,11 +132,6 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           href: "/danh-muc/sinh-vien-bi-cam",
           icon: <IconLockFilled size={16} />,
         },
-        {
-          label: t("categoryBannedStudentUpdate"),
-          href: "/danh-muc/cap-nhat-sinh-vien-bi-cam",
-          icon: <IconShieldPlus size={16} />,
-        },
       ],
     },
 

@@ -165,7 +165,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             width={90}
             height={90}
             priority
-            style={{ borderRadius: 8, marginLeft: 65, marginRight: 25 }}
+            style={{ borderRadius: 8, marginLeft: 45, marginRight: 25 }}
           />
           <Box>
             <Text fz={22} fw={700} c="gray.7" tt="uppercase" lh={1}>

@@ -12,7 +12,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
     <AppShell
       header={{ height: 108 }}
       navbar={{
-        width: opened ? 320 : 76,
+        width: opened ? 280 : 76,
         breakpoint: "sm",
         collapsed: { mobile: !opened },
       }}

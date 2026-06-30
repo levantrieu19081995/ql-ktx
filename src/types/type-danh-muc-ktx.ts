@@ -1,5 +1,5 @@
 export type TrangThaiDanhMucKtx = "HOAT_DONG" | "NGUNG_HOAT_DONG";
-//
+// KHU
 export interface DanhMucKhuKtxPaginateRequest {
   page?: number;
   pageSize?: number;
@@ -40,7 +40,37 @@ export interface DanhMucKhuKtxIndexResponse {
   status: string;
   payload: KhuKtx[];
 }
+
+// SINH VIÊN BỊ CẤM
+export interface DanhSachSinhVienBiCamRequest {
+  page?: number;
+  pageSize?: number;
+  maSinhVien?: string;
+}
+
+export interface SinhVienBiCam {
+  camId?: number;
+  sinhVienId?: number;
+  lyDo?: string;
+  ngayBatDau?: number | null;
+  ngayKetThuc?: number | null;
+  loaiSuKienId?: number;
+  maSinhVien?: string;
+}
+
+export interface SinhVienBiCamRequest {
+  sinhVienId?: number;
+  lyDo?: string;
+  ngayBatDau?: string;
+  ngayKetThuc?: string | null;
+  loaiSuKienId?: number;
+  maSinhVien?: string;
+}
 //
+
+
+
+
 export interface DanhMucKtxPaginateRequest {
   page?: number;
   pageSize?: number;
@@ -91,29 +121,4 @@ export interface PhongKtx {
 
  
 
-export interface SinhVienBiCam {
-  id?: number | string;
-  guid?: string;
-  maso?: string;
-  mssv?: string;
-  hoten?: string;
-  hoTen?: string;
-  lyDo?: string;
-  tuNgay?: string;
-  denNgay?: string;
-  trangThai?: TrangThaiDanhMucKtx | string;
-  ghiChu?: string;
-}
-
-export interface SinhVienBiCamRequest {
-  id?: number | string;
-  guid?: string;
-  maso?: string;
-  mssv?: string;
-  hoten?: string;
-  hoTen?: string;
-  lyDo?: string;
-  tuNgay?: string;
-  denNgay?: string;
-  ghiChu?: string;
-}
+ 

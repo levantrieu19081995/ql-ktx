@@ -5,6 +5,7 @@ import {
   QLDK_SERVICE,
   FILE_SERVICE,
   GATEWAY_SERVICE,
+  KTX_SERVICE,
 } from "./servicePaths";
 import SettingPaymentInfo from "@/components/pages/settings/SettingPaymentInfo";
 const API_URLS = {
@@ -147,19 +148,21 @@ const API_URLS = {
 
   danhMucKtx: {
     sinhVien: {
-      paginate: `/ktx-service/ktx-dm-sinh-vien/paginate`,
+      paginate: `${KTX_SERVICE}/ktx-dm-sinh-vien/paginate`,
     },
     phong: {
-      paginate: `/ktx-service/ktx-dm-phong/paginate`,
+      paginate: `${KTX_SERVICE}/ktx-dm-phong/paginate`,
     },
     khu: {
-      paginate: `/ktx-service/ktx-dm-khu/paginate`,
-      index: `/ktx-service/ktx-dm-khu/index`,
+      paginate: `${KTX_SERVICE}/ktx-dm-khu/paginate`,
+      index: `${KTX_SERVICE}/ktx-dm-khu/index`,
     },
+
     sinhVienBiCam: {
-      paginate: `/ktx-service/ktx-sinh-vien-cam/paginate`,
-      create: `/ktx-service/ktx-sinh-vien-cam/create`,
-      update: `/ktx-service/ktx-sinh-vien-cam/update`,
+      paginate: `${KTX_SERVICE}/ktx-sinh-vien-cam/paginate`,
+      create: `${KTX_SERVICE}/ktx-sinh-vien-cam/create`,
+      update: `${KTX_SERVICE}/ktx-sinh-vien-cam`,
+      detail: `${KTX_SERVICE}/ktx-sinh-vien-cam`,
     },
   },
 
