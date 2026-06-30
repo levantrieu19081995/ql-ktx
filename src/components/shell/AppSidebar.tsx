@@ -99,6 +99,12 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
+    { icon: <IconHistory />, label: t("historyMenu"), href: "/history/log" },
+    {
+      icon: <IconAlertTriangle />,
+      label: t("warningsMenu"),
+      href: "/warnings",
+    },
     {
       icon: <IconChartBar />,
       label: t("statistics"),
@@ -384,7 +390,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     // menu chỉ có onClick (Version, Help, About...)
     if (item?.onClick && !href) return true;
 
-    const alwaysVisible = ["/dashboard", "/thong-ke"];
+    const alwaysVisible = ["/dashboard", "/thong-ke", "/history", "/warnings"];
     if (alwaysVisible.some((v) => href.startsWith(v))) return true;
 
     const found = permissions.find((p: any) => {
