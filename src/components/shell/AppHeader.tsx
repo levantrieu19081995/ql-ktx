@@ -1,27 +1,34 @@
 "use client";
 import {
   Group,
-  Burger,
   Text,
   Box,
   ActionIcon,
   Menu,
   Avatar,
-  Tooltip,
   Card,
   Stack,
+  TextInput,
+  Indicator,
 } from "@mantine/core";
 import Image from "next/image";
-import Link from "next/link";
 import { useLocale } from "next-intl";
 import { signOut } from "next-auth/react";
-import { IconLogout } from "@tabler/icons-react";
-import logo from "@/assets/images/logo.png";
+import {
+  IconBell,
+  IconChevronDown,
+  IconLogout,
+  IconSearch,
+  IconSettings,
+  IconSun,
+  IconUser,
+} from "@tabler/icons-react";
 import LocaleSwitcher from "./LocaleSwitcher";
+import logo from "@/assets/images/CTU_logo.png";
 import { useUser } from "@/context/UserContext";
 import { fetchConfigSystem } from "@/services/setting/settingSystemInfoService";
 import { useEffect, useState } from "react";
-import { ConfigSystemRequest } from "@/types/global";
+// import { ConfigSystemRequest } from "@/types/global";
 
 import { useSession } from "next-auth/react";
 import { fetchUserAPI } from "@/services/auth/authService";
@@ -48,11 +55,11 @@ type CompanySettings = {
 const DEFAULT_SETTINGS: CompanySettings = {
   title: "QUẢN LÝ KÝ TÚC XÁ",
   primaryColor: "#4C6EF5",
-  address: "Tòa nhà ABC, Quận 1, TP. HCM",
-  phone: "+84 912 345 678",
-  email: "contact@company.vn",
+  address: "Khu II, Đường 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ",
+  phone: "+84 292 3832 663",
+  email: "dhct@ctu.edu.vn",
   description:
-    "Nền tảng quản lý & lên lịch đăng đa kênh. Giúp đội ngũ của bạn vận hành truyền thông hiệu quả.",
+    "Hệ thống quản lý Ký túc xá Đại học Cần Thơ. Vận hành thông minh và theo dõi sinh viên vào ra.",
   logoDataUrl: null,
 };
 
@@ -71,14 +78,15 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
   const getConfigAppDetails = async () => {
     try {
       // Đặt params để lấy cả app.name và app.logo
-      const params: ConfigSystemRequest = { group: "app", keyword: "*" }; // Lấy tất cả key trong group "app"
+      // const params: ConfigSystemRequest = { group: "app", keyword: "*" }; // Lấy tất cả key trong group "app"
+      const params: any = { group: "app", keyword: "*" }; // Lấy tất cả key trong group "app"
 
       // Gọi API để lấy dữ liệu
       const configData = await fetchConfigSystem(params);
       console.log("[RUN_LOG] ===> AppHeader  configData: ", configData);
 
       // Lọc và xử lý dữ liệu từ API để lấy app.name và app.logo
-      const filteredData = configData.payload.reduce((acc: any, item) => {
+      const filteredData = configData.payload.reduce((acc: any, item: any) => {
         if (item.config.key === "app.name") {
           acc.name = item.value; // Lưu giá trị app.name
         }
@@ -130,88 +138,82 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
     getConfigAppDetails();
   }, [isHydrated, accessToken]);
 
+  useEffect(() => {
+    if (!logoConfig) return;
+
+    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+
+    link.href = logoConfig;
+  }, [logoConfig]);
+
   return (
     <Group
-      px="md"
-      wrap="wrap"
+      h="100%"
+      px={0}
+      wrap="nowrap"
       justify="space-between"
       align="center" // thêm để 3 block đứng đúng trên mobile
       style={{
-        backdropFilter: "saturate(160%) blur(10px)",
-        WebkitBackdropFilter: "saturate(160%) blur(10px)",
-        background:
-          "linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,.55))",
+        background: "#ffffff",
+        paddingInline: "clamp(12px, 2.8vw, 36px)",
       }}
     >
       {/* ============ LEFT: LOGO (260px) ============ */}
       <Group
-        gap="xs"
+        gap="md"
         wrap="nowrap"
         style={{
-          width: "260px",
-          minWidth: "260px",
+          width: "auto",
+          minWidth: "auto",
           flexShrink: 0, // không cho ép nhỏ logo
           justifyContent: "flex-start",
         }}
       >
-        <Burger
-          opened={opened}
-          onClick={onBurgerClick}
-          aria-label="Toggle sidebar"
-          hiddenFrom="sm"
-        />
-
-        <Link
-          href="/"
-          style={{
-            textDecoration: "none",
-            color: "inherit",
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            justifyContent: "center",
-          }}
-        >
+        <Group gap="sm" wrap="nowrap" visibleFrom="md">
           <Image
-            // src={logoConfig ? logoConfig : logo}
-            src={logo}
-            alt="Quản lý ký túc xá"
-            width={110}
-            height={110}
+            src={logoConfig || logo}
+            alt={titleConfig}
+            width={90}
+            height={90}
             priority
+            unoptimized
             style={{
-              borderRadius: 6,
-              marginRight: 20,
-              marginTop: 5,
-              marginBottom: 5,
+              borderRadius: 8,
+              marginLeft: 45,
+              marginRight: 25,
+              objectFit: "contain",
             }}
           />
-        </Link>
+          <Box>
+            <Text fz={22} fw={700} c="gray.7" tt="uppercase" lh={1}>
+              Đại học Cần Thơ
+            </Text>
+
+            <Text fz={26} fw={900} c="blue.6" tt="uppercase" lh={1} mt={10}>
+              {titleConfig || "Đang tải cấu hình..."}
+            </Text>
+          </Box>
+        </Group>
       </Group>
 
       {/* ============ CENTER: TITLE (FLEX 1) ============ */}
       <Box
         style={{
-          flex: 1,
-          minWidth: "200px", // tránh bị ép nhỏ quá
-          textAlign: "left",
+          flex: "1 1 auto",
+          minWidth: 0,
+          textAlign: "center",
           padding: "4px 0",
           wordBreak: "break-word", // cho phép xuống hàng
         }}
       >
-        {/* <Text
-          fw={900}
-          c={BRAND_BLUE}
-          style={{
-            fontSize: "26px",
-            letterSpacing: "2.4px",
-            lineHeight: 1.2,
-            whiteSpace: "normal", // cho phép xuống hàng
-          }}
-        >
-          {titleConfig}
-        </Text> */}
         <Text
+          hidden
           fw={900}
           c={BRAND_BLUE}
           style={{
@@ -230,70 +232,215 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
         gap="xs"
         wrap="nowrap"
         style={{
-          width: "140px",
-          minWidth: "140px",
+          width: "auto",
+          minWidth: "auto",
           flexShrink: 0, // không bị ép
           justifyContent: "flex-end",
+          columnGap: "clamp(10px, 1.2vw, 16px)",
         }}
       >
-        <LocaleSwitcher size={40} />
+        <TextInput
+          visibleFrom="lg"
+          w={320}
+          radius="md"
+          size="md"
+          placeholder="Tìm kiếm..."
+          leftSection={<IconSearch size={18} />}
+          rightSectionWidth={72}
+          rightSection={
+            <Text size="xs" c="#64748b" fw={700}>
+              Ctrl + K
+            </Text>
+          }
+          styles={{
+            input: {
+              height: 42,
+              borderColor: "#dfe6f2",
+              boxShadow: "0 8px 20px rgba(15, 23, 42, 0.035)",
+            },
+          }}
+        />
+
+        <LocaleSwitcher size={42} />
 
         <Menu
-          withArrow
+          shadow="xl"
+          width={390}
+          radius={15}
+          withArrow={false}
           position="bottom-end"
           offset={8}
-          transitionProps={{
-            transition: "pop",
-            duration: 200,
-            timingFunction: "ease",
-          }}
-          onOpen={() => {
-            if (!fullUser) loadFullUser();
-          }}
         >
           <Menu.Target>
-            <Tooltip label={name} openDelay={300}>
-              <ActionIcon radius="xl" variant="light" size={40}>
+            <Group gap="sm" wrap="nowrap" style={{ cursor: "pointer" }}>
+              <Avatar
+                src={(user as any)?.avatar || undefined}
+                radius="xl"
+                size={40}
+                color="blue"
+                style={{ background: "#1557ff" }}
+              >
+                {name ? name.charAt(0).toUpperCase() : null}
+              </Avatar>
+              <Box visibleFrom="sm">
+                <Text fw={800} size="sm" c="#0f172a" lh={1.2}>
+                  {fullUser?.caNhan?.ten ?? name ?? "Quản trị viên"}
+                </Text>
+                <Text size="sm" c="#64748b">
+                  Admin
+                </Text>
+              </Box>
+              <IconChevronDown size={18} color="#0f172a" />
+            </Group>
+          </Menu.Target>
+          <Menu.Dropdown className="user-menu-dropdown" p={0}>
+            <Box
+              p={24}
+              style={{
+                background: "#ffffff",
+              }}
+            >
+              <Group gap="md" wrap="nowrap">
                 <Avatar
                   src={(user as any)?.avatar || undefined}
-                  radius="xl"
-                  size={36}
-                  color="blue"
+                  size={76}
+                  radius="50%"
+                  style={{
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "linear-gradient(135deg, #5b6ff5, #1d5cff)",
+                    border: "1px solid rgba(255,255,255,.96)",
+                    boxShadow:
+                      "0 12px 30px rgba(37,99,235,.22), inset 0 0 0 1px rgba(255,255,255,.35)",
+                    flexShrink: 0,
+                  }}
                 >
-                  {name ? name.charAt(0).toUpperCase() : null}
+                  {(fullUser?.caNhan?.ten ?? name ?? "U")
+                    .charAt(0)
+                    .toUpperCase()}
                 </Avatar>
-              </ActionIcon>
-            </Tooltip>
-          </Menu.Target>
 
-          <Menu.Dropdown w={320} p="md">
-            {loadingFullUser && (
-              <Text size="sm" c="dimmed">
-                Đang tải thông tin...
-              </Text>
-            )}
-
-            {!loadingFullUser && fullUser && (
-              <Card withBorder radius="md" p="md" mb="sm">
-                <Stack gap={6}>
-                  <Text size="sm" c="dimmed" fw={500}>
-                    Đang đăng nhập:
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    fz={15}
+                    fw={600}
+                    c="#6B7280"
+                    style={{
+                      letterSpacing: "-0.2px",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Đang đăng nhập
                   </Text>
 
-                  <Text fw={700} size="lg">
-                    👤 {fullUser.caNhan?.ten ?? fullUser.username}
+                  <Text
+                    fz={28}
+                    fw={700}
+                    c="#111827"
+                    style={{
+                      letterSpacing: "-0.8px",
+                      lineHeight: 1.15,
+                    }}
+                  >
+                    {fullUser?.caNhan?.ten ?? fullUser?.username ?? name}
                   </Text>
-                </Stack>
-              </Card>
-            )}
 
-            <Menu.Item
-              color="red"
-              leftSection={<IconLogout size={16} />}
-              onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
+                  <Text
+                    fz={16}
+                    fw={500}
+                    c="#6B7280"
+                    style={{
+                      letterSpacing: "-0.15px",
+                    }}
+                  >
+                    Quản trị viên
+                  </Text>
+                </Box>
+              </Group>
+            </Box>
+
+            <Box
+              px={22}
+              py={14}
+              style={{
+                background: "#ffffff",
+                borderTop: "1px solid #eef2f7",
+              }}
             >
-              Đăng xuất
-            </Menu.Item>
+              <Menu.Item
+                leftSection={<IconUser size={20} color="#2563eb" />}
+                rightSection={
+                  <IconChevronDown
+                    size={16}
+                    color="#64748b"
+                    style={{ rotate: "-90deg" }}
+                  />
+                }
+                styles={{
+                  item: {
+                    borderRadius: 16,
+                    padding: "15px 16px",
+
+                    fontWeight: 600,
+                    fontSize: "18px",
+                    color: "#1F2937",
+                    background: "#ffffff",
+                  },
+                }}
+              >
+                Thông tin tài khoản
+              </Menu.Item>
+
+              <Menu.Item
+                leftSection={<IconSettings size={20} color="#2563eb" />}
+                rightSection={
+                  <IconChevronDown
+                    size={16}
+                    color="#64748b"
+                    style={{ rotate: "-90deg" }}
+                  />
+                }
+                styles={{
+                  item: {
+                    borderRadius: 16,
+                    padding: "15px 16px",
+                    fontWeight: 600,
+                    fontSize: "18px",
+                    color: "#1F2937",
+                    background: "#ffffff",
+                  },
+                }}
+              >
+                Cài đặt hệ thống
+              </Menu.Item>
+            </Box>
+
+            <Box
+              px={22}
+              py={16}
+              style={{
+                background: "#ffffff",
+                borderTop: "1px solid #eef2f7",
+              }}
+            >
+              <Menu.Item
+                color="red"
+                leftSection={<IconLogout size={20} />}
+                onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
+                styles={{
+                  item: {
+                    borderRadius: 16,
+                    padding: "15px 16px",
+                    fontWeight: 700,
+                    fontSize: "18px",
+                    color: "#EF4444",
+                    // background: "#fff5f5",
+                  },
+                }}
+              >
+                Đăng xuất
+              </Menu.Item>
+            </Box>
           </Menu.Dropdown>
         </Menu>
       </Group>

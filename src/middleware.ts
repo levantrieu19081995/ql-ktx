@@ -4,10 +4,21 @@ import { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";  
 
+// const PROTECTED = [
+//   '/dashboard',
+//   '/settings',
+//   '/manage-users'
+// ];
+
 const PROTECTED = [
-  '/dashboard', 
-  '/settings', 
-  '/manage-users'
+  "/dashboard",
+  "/thong-ke",
+  "/history",
+  "/warnings",
+  "/danh-muc",
+  "/settings",
+  "/manage-users",
+  "/manage-roles",
 ];
  
 
@@ -30,9 +41,15 @@ export default async function middleware(req: NextRequest) {
 
   // Lấy locale từ URL
   const locale = pathname.split('/')[1] || 'vi';  // Lấy locale từ URL hoặc mặc định là 'vi'
+
+  const pathWithoutLocale = pathname.replace(/^\/(vi|en)(?=\/|$)/, "") || "/";
+
+  const isProtectedRoute = PROTECTED.some((p) =>
+    pathWithoutLocale.startsWith(p)
+  );
   
   // Kiểm tra route có yêu cầu bảo vệ không
-  const isProtectedRoute = PROTECTED.some(p => pathname.startsWith(p));
+  // const isProtectedRoute = PROTECTED.some(p => pathname.startsWith(p));
   console.log('-----------> isProtectedRoute:', isProtectedRoute);
   
   // Nếu người dùng chưa đăng nhập và vào route yêu cầu đăng nhập

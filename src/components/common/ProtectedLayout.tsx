@@ -1,6 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 //src\components\common\ProtectedLayout.tsx
+import {
+  KTX_DEVELOPMENT_VISIBLE_ROUTES,
+  PUBLIC_APP_ROUTES,
+} from "@/constants/developmentRoutes";
 import { ReactNode, useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -29,13 +33,15 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const redirectNoPermission = useCallback(
     (locale?: string) => {
       const lang = locale || pathname.split("/")[1] || "vi";
-      if (!expired) {
-        return;
-      }
+      // if (!expired) {
+      //   return;
+      // }
+      // router.replace(`/${lang}/no-permission`);
+
       router.replace(`/${lang}/no-permission`);
       router.refresh();
     },
-    [pathname, router]
+    [pathname, router],
   );
 
   useEffect(() => {
@@ -49,16 +55,31 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
     const locale = parts[1] || "vi";
     const currentSlug = parts.length > 2 ? `/${parts[2].toLowerCase()}` : "/";
 
-    // 3. Kiểm tra whitelist trước
+    // // 3. Kiểm tra whitelist trước
+    // const whitelist = [
+    //   "/dashboard",
+    //   "/thong-ke",
+    //   "/no-permission",
+    //   "/splashscreen",
+    //   "/login",
+    //   "/excel",
+    //   "/history",
+    //   "/warnings",
+    //   "/danh-muc",
+    // ];
+
+    // if (whitelist.includes(currentSlug)) {
+    //   setChecked(true);
+    //   setHasAccess(true);
+    //   return;
+    // }
+
     const whitelist = [
-      "/dashboard",
-      "/no-permission",
-      "/splashscreen",
-      "/login",
+      ...KTX_DEVELOPMENT_VISIBLE_ROUTES,
+      ...PUBLIC_APP_ROUTES,
       "/excel",
-      "/history",
-      "/warnings",
     ];
+
     if (whitelist.includes(currentSlug)) {
       setChecked(true);
       setHasAccess(true);
@@ -75,7 +96,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
 
     // 5. Kiểm tra quyền cụ thể
     const allowedSlugs = permissions.map(
-      (p) => p.dmcnSlug?.toLowerCase() || ""
+      (p) => p.dmcnSlug?.toLowerCase() || "",
     );
 
     const canAccess = allowedSlugs.some((slug) => slug === currentSlug);

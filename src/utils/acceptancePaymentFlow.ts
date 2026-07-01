@@ -1,7 +1,7 @@
 import { showNoti } from "@/components/common/showNoti";
-import { generateThanhToan } from "@/services/thanh-toan/thanhToanService";
+// import { generateThanhToan } from "@/services/thanh-toan/thanhToanService";
 import { fetchConfigPayment } from "@/services/setting/settinPaymentInfoService";
-import { getInfor } from "@/services/hoa-don/hoaDonService";
+// import { getInfor } from "@/services/hoa-don/hoaDonService";
 import { HoSoPhiDichVuItem } from "@/types/global";
 
 export const createThanhToan = ({
@@ -88,20 +88,20 @@ export const previewInvoice = async ({
     })),
   };
 
-  const res = await getInfor(payload);
+  // const res = await getInfor(payload);
 
-  if (!res?.payload?.danhSach?.danhSachHoaDon?.length) {
-    showNoti("warning", "Không tìm thấy thông tin hóa đơn.");
-    return;
-  }
+  // if (!res?.payload?.danhSach?.danhSachHoaDon?.length) {
+  //   showNoti("warning", "Không tìm thấy thông tin hóa đơn.");
+  //   return;
+  // }
 
-  setInvoiceParams({
-    hsId: Number(result.hsId),
-    pdvId: selectedRows.map((item: any) => item.pdvId),
-  });
-  setSelectedRows(selectedRows);
-  setInvoiceData(res.payload);
-  setOpenedPreview(true);
+  // setInvoiceParams({
+  //   hsId: Number(result.hsId),
+  //   pdvId: selectedRows.map((item: any) => item.pdvId),
+  // });
+  // setSelectedRows(selectedRows);
+  // setInvoiceData(res.payload);
+  // setOpenedPreview(true);
 };
 
 export const doPayment = async ({
@@ -132,14 +132,14 @@ export const doPayment = async ({
       isHoSoNo: isNo,
     };
 
-    const res = await generateThanhToan(params);
+    // const res = await generateThanhToan(params);
 
-    setPaymentInfo((prev: any) => ({
-      ...prev,
-      qrCode: res?.payload?.qrCode || "",
-    }));
-    setTransactionId(res?.payload?.transactionId);
-    connect();
+    // setPaymentInfo((prev: any) => ({
+    //   ...prev,
+    //   qrCode: res?.payload?.qrCode || "",
+    // }));
+    // setTransactionId(res?.payload?.transactionId);
+    // connect();
   } catch {
     showNoti("warning", "Không thể kết nối tới máy chủ.");
   } finally {

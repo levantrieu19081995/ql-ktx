@@ -12,10 +12,10 @@ export function ThuTucSelect({ value, onChange }: any) {
         onChange={onChange}
         placeholder="Chọn thủ tục"
         data={[
-          { value: "dang_kiem", label: "Đăng kiểm" },
-          { value: "cap_dang_ky", label: "Cấp đăng ký mới" },
-          { value: "kia_han", label: "Gia hạn đăng kiểm" },
-          { value: "kiem_tra", label: "Kiểm tra thông số kỹ thuật" },
+          { value: "dang_ky_noi_tru", label: "Đăng ký nội trú" },
+          { value: "gia_han_tamtru", label: "Gia hạn tạm trú" },
+          { value: "tra_phong", label: "Trả phòng nội trú" },
+          { value: "kiem_tra_thiet_bi", label: "Kiểm tra thiết bị phòng" },
         ]}
         radius="lg"
         rightSection={<IconChevronDown size={18} stroke={1.5} />}

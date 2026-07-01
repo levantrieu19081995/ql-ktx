@@ -19,7 +19,7 @@ import { IconUser } from "@tabler/icons-react";
 
 // TODO: thay thế bằng service thực tế của bạn
 import { getAccountDetailByGuid } from "@/services/account/accountService";
-import { AccountDetailResponse } from "@/types/global";
+// import { AccountDetailResponse } from "@/types/global";
 
 type Props = {
   opened: boolean;
@@ -35,9 +35,7 @@ export default function AccountDetailModal({
   rolesData,
 }: Props) {
   const [loading, setLoading] = useState(false);
-  const [detail, setDetail] = useState<AccountDetailResponse["payload"] | null>(
-    null,
-  );
+  const [detail, setDetail] = useState<any["payload"] | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -68,8 +66,8 @@ export default function AccountDetailModal({
 
   const rolesFlat = useMemo(() => {
     if (!detail?.organizations) return [];
-    return detail.organizations.flatMap((o) =>
-      (o.roles ?? []).map((r) => ({ org: o.name, role: r.roleName })),
+    return detail.organizations.flatMap((o: any) =>
+      (o.roles ?? []).map((r: any) => ({ org: o.name, role: r.roleName })),
     );
   }, [detail]);
 
@@ -284,7 +282,7 @@ export default function AccountDetailModal({
               </Stack>
             ) : detail?.organizations?.length ? (
               <Stack gap={6}>
-                {detail.organizations.map((o, i) => (
+                {detail.organizations.map((o: any, i: any) => (
                   <Text key={i} fz="sm">
                     • {o.name}
                   </Text>

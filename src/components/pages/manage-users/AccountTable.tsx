@@ -20,17 +20,17 @@ import {
   IconTrash,
   IconUserMinus,
 } from "@tabler/icons-react";
-import type { UserItem } from "@/types/global";
+// import type { UserItem } from "@/types/global";
 import { HoverButton } from "@/components/common/HoverButton";
 
 interface AccountTableProps {
-  rows: UserItem[];
+  rows: any[];
   page: number;
   pageSize: number;
-  onEdit: (u: UserItem) => void;
-  onRowClick: (e: React.MouseEvent, u: UserItem) => void;
-  onDeleteUser: (u: UserItem) => void;
-  onDetachFromOrg: (u: UserItem) => void;
+  onEdit: (u: any) => void;
+  onRowClick: (e: React.MouseEvent, u: any) => void;
+  onDeleteUser: (u: any) => void;
+  onDetachFromOrg: (u: any) => void;
 }
 
 export default function AccountTable({
@@ -120,16 +120,16 @@ export default function AccountTable({
                     const uniqueOrgs = Array.from(
                       new Set(
                         u.organizations
-                          .map((o) => o.name?.trim())
-                          .filter(Boolean)
-                      )
+                          .map((o: any) => o.name?.trim())
+                          .filter(Boolean),
+                      ),
                     );
 
                     return (
                       <Stack gap={2}>
                         {uniqueOrgs.slice(0, 2).map((orgName, idx) => (
                           <Text key={idx} fz="sm" c="gray.8">
-                            • {orgName}
+                            • aaa
                           </Text>
                         ))}
 
@@ -155,7 +155,7 @@ export default function AccountTable({
                                 onMouseLeave={() => {
                                   hoverTimer.current = setTimeout(
                                     () => setHoveredOrgId(null),
-                                    200
+                                    200,
                                   );
                                 }}
                                 style={{
@@ -176,7 +176,7 @@ export default function AccountTable({
                               onMouseLeave={() => {
                                 hoverTimer.current = setTimeout(
                                   () => setHoveredOrgId(null),
-                                  200
+                                  200,
                                 );
                               }}
                               style={{
@@ -194,7 +194,7 @@ export default function AccountTable({
                               <Stack gap={2}>
                                 {uniqueOrgs.slice(2).map((orgName, i) => (
                                   <Text key={i} fz="xs" fw={500}>
-                                    • {orgName}
+                                    • aaaa
                                   </Text>
                                 ))}
                               </Stack>
@@ -214,27 +214,28 @@ export default function AccountTable({
               {/* Vai trò */}
               <Table.Td>
                 {u.organizations &&
-                u.organizations.some((o) => o.roles?.length) ? (
+                u.organizations.some((o: any) => o.roles?.length) ? (
                   (() => {
-                    const allRoles = u.organizations.flatMap((o) =>
-                      (o.roles || []).map((r) => ({
+                    const allRoles = u.organizations.flatMap((o: any) =>
+                      (o.roles || []).map((r: any) => ({
                         roleName: r.roleName?.trim(),
                         orgName: o.name?.trim() || "",
-                      }))
+                      })),
                     );
 
                     const uniqueRoles = allRoles.filter(
-                      (v, i, a) =>
+                      (v: any, i: any, a: any) =>
                         i ===
                         a.findIndex(
-                          (t) =>
-                            t.roleName === v.roleName && t.orgName === v.orgName
-                        )
+                          (t: any) =>
+                            t.roleName === v.roleName &&
+                            t.orgName === v.orgName,
+                        ),
                     );
 
                     return (
                       <Stack gap={2}>
-                        {uniqueRoles.slice(0, 2).map((item, idx) => (
+                        {uniqueRoles.slice(0, 2).map((item: any, idx: any) => (
                           <Text key={idx} fz="sm" c="gray.8">
                             • {item.roleName} –{" "}
                             <Text span c="dimmed" fz="sm" fw={400}>
@@ -269,7 +270,7 @@ export default function AccountTable({
                                 onMouseLeave={() => {
                                   hoverRoleTimer.current = setTimeout(
                                     () => setHoveredRoleId(null),
-                                    200
+                                    200,
                                   );
                                 }}
                                 style={{
@@ -290,7 +291,7 @@ export default function AccountTable({
                               onMouseLeave={() => {
                                 hoverRoleTimer.current = setTimeout(
                                   () => setHoveredRoleId(null),
-                                  200
+                                  200,
                                 );
                               }}
                               style={{
@@ -306,14 +307,16 @@ export default function AccountTable({
                               }}
                             >
                               <Stack gap={2}>
-                                {uniqueRoles.slice(2).map((item, i) => (
-                                  <Text key={i} fz="xs" fw={500}>
-                                    • {item.roleName} –{" "}
-                                    <Text span fw={400}>
-                                      {item.orgName}
+                                {uniqueRoles
+                                  .slice(2)
+                                  .map((item: any, i: any) => (
+                                    <Text key={i} fz="xs" fw={500}>
+                                      • {item.roleName} –{" "}
+                                      <Text span fw={400}>
+                                        {item.orgName}
+                                      </Text>
                                     </Text>
-                                  </Text>
-                                ))}
+                                  ))}
                               </Stack>
                             </Popover.Dropdown>
                           </Popover>

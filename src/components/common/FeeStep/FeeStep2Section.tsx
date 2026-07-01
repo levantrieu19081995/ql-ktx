@@ -16,17 +16,17 @@ import {
 import { showNoti } from "@/components/common/showNoti";
 import { useUser } from "@/context/UserContext";
 import { fetchPhiDichVu } from "@/services/danh-muc/dmPhiDichVu";
-import {
-  createHoSoPhiDichVu,
-  fetchListHoSoPhiDichVu,
-} from "@/services/ho-so-phu-dich-vu/hoSoPhiDichVuService";
+// import {
+//   createHoSoPhiDichVu,
+//   fetchListHoSoPhiDichVu,
+// } from "@/services/ho-so-phu-dich-vu/hoSoPhiDichVuService";
 import { fetchConfigFee } from "@/services/setting/settinFeeInfoService";
-import {
-  HoSoPhiDichVuCreate,
-  HoSoPhiDichVuQuery,
-  PhiDichVuItem,
-} from "@/types/global";
-import { updateHoSoDangKiem } from "@/services/ho-so-dang-kiem/hoSoDangKiemService";
+// import {
+//   HoSoPhiDichVuCreate,
+//   HoSoPhiDichVuQuery,
+//   PhiDichVuItem,
+// } from "@/types/global";
+// import { updateHoSoDangKiem } from "@/services/ho-so-dang-kiem/hoSoDangKiemService";
 import { validateAndGoStep } from "@/utils/acceptanceFlow";
 import { buildTenPhi } from "@/utils/buildName";
 
@@ -49,7 +49,8 @@ export default function FeeStep2Section({
 }: Props) {
   const { user } = useUser();
 
-  const [phiDichVuList, setPhiDichVuList] = useState<PhiDichVuItem[]>([]);
+  // const [phiDichVuList, setPhiDichVuList] = useState<PhiDichVuItem[]>([]);
+  const [phiDichVuList, setPhiDichVuList] = useState<any[]>([]);
   const [selectedPhiDichVu, setSelectedPhiDichVu] = useState<string | null>(
     null,
   );
@@ -106,21 +107,29 @@ export default function FeeStep2Section({
 
   const _fetchListHoSoPhiDichVu = async () => {
     try {
-      const params: HoSoPhiDichVuQuery = {
+      // const params: HoSoPhiDichVuQuery = {
+      //   page: 1,
+      //   pageSize: 500,
+      //   userIdTiepNhan: String(user?.guid),
+      //   hsId: result.hsId,
+      // };
+      const params: any = {
         page: 1,
         pageSize: 500,
         userIdTiepNhan: String(user?.guid),
         hsId: result.hsId,
       };
 
-      const response = await fetchListHoSoPhiDichVu(params);
-      if (response?.status === "OK") {
-        const list = response.payload?.items;
-        setResult((prev: any) => ({
-          ...prev,
-          listHoSoPhiDichVu: list,
-        }));
-      }
+      // const response = await fetchListHoSoPhiDichVu(params);
+      const response = null;
+      setResult(null);
+      // if (response?.status === "OK") {
+      //   const list = response.payload?.items;
+      //   setResult((prev: any) => ({
+      //     ...prev,
+      //     listHoSoPhiDichVu: list,
+      //   }));
+      // }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách hồ sơ phí dịch vụ:", error);
     }
@@ -130,7 +139,8 @@ export default function FeeStep2Section({
     try {
       const res = await fetchPhiDichVu(1, 300, "*", 0, Number(ttId), 1);
       const items =
-        res?.payload?.items?.map((item: PhiDichVuItem) => ({
+        // res?.payload?.items?.map((item: PhiDichVuItem) => ({
+        res?.payload?.items?.map((item: any) => ({
           pdvId: item?.pdvId,
           pdvNoidung: item?.pdvNoidung,
           pdvKhoanphi: item?.pdvKhoanphi,
@@ -160,14 +170,15 @@ export default function FeeStep2Section({
         version: safeVersion + 1,
       };
 
-      const response = await updateHoSoDangKiem(result.hsId, updatedData);
+      // const response = await updateHoSoDangKiem(result.hsId, updatedData);
+      const response = null;
 
-      if (response?.status === "OK" || response?.payload) {
-        showNoti("success", "Cập nhật hồ sơ thành công!");
-        return true;
-      } else {
-        showNoti("error", "Cập nhật hồ sơ không thành công!");
-      }
+      // if (response?.status === "OK" || response?.payload) {
+      //   showNoti("success", "Cập nhật hồ sơ thành công!");
+      //   return true;
+      // } else {
+      //   showNoti("error", "Cập nhật hồ sơ không thành công!");
+      // }
     } catch (error) {
       showNoti("error", "Có lỗi khi cập nhật hồ sơ");
       return false;
@@ -273,7 +284,8 @@ export default function FeeStep2Section({
       const tenPhiRaw = selectedPhi?.pdvNoidung ?? "Phí dịch vụ";
       const tenPhiFinal = buildTenPhi(tenPhiRaw, formattedDateTime, 45);
 
-      const params: HoSoPhiDichVuCreate = {
+      // const params: HoSoPhiDichVuCreate = {
+      const params: any = {
         pdvId: Number(selectedPhiDichVu),
         //   dùng từ memo
         phiThucTe: feeCalc.giaVAT,
@@ -287,14 +299,15 @@ export default function FeeStep2Section({
       };
 
       const hsId = result.hsId;
-      const response = await createHoSoPhiDichVu(params, hsId);
+      // const response = await createHoSoPhiDichVu(params, hsId);
+      const response = null;
 
-      if (response?.status === "OK" || response?.payload) {
-        await _fetchListHoSoPhiDichVu();
-        showNoti("success", "Tạo thu phí thành công !");
-      } else {
-        showNoti("error", "Không thể tạo hồ sơ thu phí");
-      }
+      // if (response?.status === "OK" || response?.payload) {
+      //   await _fetchListHoSoPhiDichVu();
+      //   showNoti("success", "Tạo thu phí thành công !");
+      // } else {
+      //   showNoti("error", "Không thể tạo hồ sơ thu phí");
+      // }
     } catch (error) {
       showNoti("error", "Có lỗi xảy ra khi tạo hồ sơ");
     } finally {
@@ -382,7 +395,7 @@ export default function FeeStep2Section({
             }
             label={
               <div style={{ display: "flex", flexDirection: "row" }}>
-                <span>Giá đăng kiểm (trước thuế) </span>
+                <span>Phí nội trú (trước thuế) </span>
                 {phiCanEdit && (
                   <span
                     style={{

@@ -15,16 +15,33 @@ import {
   Group,
   Divider,
   Alert,
+  ActionIcon,
 } from "@mantine/core";
 import Image from "next/image";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { IconAlertCircle, IconLock, IconUser } from "@tabler/icons-react";
-import logo from "@/assets/images/logo.png";
+import {
+  IconAlertCircle,
+  IconLock,
+  IconRefresh,
+  IconShieldCheck,
+  IconUser,
+} from "@tabler/icons-react";
+import logo from "@/assets/images/CTU_logo.png";
 
 const BRAND_BLUE = "#5AA4E7";
 const BRAND_RED = "#E2433E";
+
+const taoMaCaptcha = () => {
+  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    return String(values[0] % 1_000_000).padStart(6, "0");
+  }
+
+  return String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0");
+};
 
 function LoginContent() {
   const router = useRouter();
@@ -37,18 +54,23 @@ function LoginContent() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaCode, setCaptchaCode] = useState(() => taoMaCaptcha());
+  const [captchaInput, setCaptchaInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const getLoginErrorMessage = useCallback((code?: string | null) => {
-    if (!code) return te("generic");
+  const getLoginErrorMessage = useCallback(
+    (code?: string | null) => {
+      if (!code) return te("generic");
 
-    try {
-      return te(code as any);
-    } catch {
-      return code;
-    }
-  }, [te]);
+      try {
+        return te(code as any);
+      } catch {
+        return code;
+      }
+    },
+    [te],
+  );
 
   useEffect(() => {
     const qErr = search?.get("error");
@@ -68,8 +90,21 @@ function LoginContent() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
+
+    if (!captchaInput.trim()) {
+      setError(te("requiredCaptcha"));
+      return;
+    }
+
+    if (captchaInput.trim() !== captchaCode) {
+      setError(te("captchaMismatch"));
+      setCaptchaCode(taoMaCaptcha());
+      setCaptchaInput("");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await signIn("credentials", {
@@ -77,6 +112,8 @@ function LoginContent() {
         callbackUrl: from,
         username,
         password,
+        captcha: captchaInput.trim(),
+        captchaExpected: captchaCode,
       });
 
       if (!res) return setError(te("generic"));
@@ -111,6 +148,12 @@ function LoginContent() {
     );
   };
 
+  const lamMoiCaptcha = () => {
+    setCaptchaCode(taoMaCaptcha());
+    setCaptchaInput("");
+    setError(null);
+  };
+
   return (
     <Paper
       radius={18}
@@ -124,7 +167,7 @@ function LoginContent() {
         <Group justify="center">
           <Image
             src={logo}
-            alt="Quản lý ký túc xá"
+            alt="Quản lý Ký túc xá"
             width={120}
             height={120}
             priority
@@ -186,6 +229,52 @@ function LoginContent() {
               styles={{ label: { color: "#334155", fontWeight: 600 } }}
             />
 
+            <Stack gap={8}>
+              <Group justify="space-between" align="flex-end" gap="sm">
+                <div style={{ flex: 1 }}>
+                  <Text size="sm" fw={600} c="#334155" mb={6}>
+                    {t("captcha")}
+                  </Text>
+                  <div className="captcha-box" aria-label={t("captchaCode")}>
+                    {captchaCode.split("").map((so, index) => (
+                      <span key={`${so}-${index}`} className="captcha-digit">
+                        {so}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <ActionIcon
+                  variant="light"
+                  size={42}
+                  color="blue"
+                  onClick={lamMoiCaptcha}
+                  aria-label={t("captchaRefresh")}
+                >
+                  <IconRefresh size={18} />
+                </ActionIcon>
+              </Group>
+
+              <TextInput
+                size="md"
+                label={t("captchaInput")}
+                placeholder={t("captchaInputPh")}
+                value={captchaInput}
+                onChange={(e) =>
+                  setCaptchaInput(
+                    e.currentTarget.value.replace(/\D/g, "").slice(0, 6),
+                  )
+                }
+                required
+                inputMode="numeric"
+                maxLength={6}
+                autoComplete="off"
+                leftSection={<IconShieldCheck size={18} />}
+                leftSectionPointerEvents="none"
+                styles={{ label: { color: "#334155", fontWeight: 600 } }}
+              />
+            </Stack>
+
             <Button
               type="submit"
               size="md"
@@ -214,6 +303,41 @@ function LoginContent() {
           {t("forgot")}
         </Text>
       </Stack>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+.captcha-box {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(90,164,231,.10), rgba(226,67,62,.08)),
+    repeating-linear-gradient(45deg, transparent 0 10px, rgba(15,23,42,.04) 10px 12px);
+  user-select: none;
+}
+
+.captcha-digit {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,.72);
+  color: #0f172a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+}
+`,
+        }}
+      />
     </Paper>
   );
 }

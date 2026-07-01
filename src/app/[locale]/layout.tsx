@@ -1,6 +1,6 @@
-// src/app/[locale]/layout.tsx
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "@mantine/dates/styles.css";
 import "@/styles/mantine-overrides.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
@@ -13,8 +13,8 @@ import { Suspense } from "react";
 type Props = { children: React.ReactNode; params: { locale: string } };
 
 export const metadata = {
-  title: "Quản lý ký túc xá",
-  description: "Next.js + Mantine",
+  title: "Quản lý Ký túc xá Đại học Cần Thơ",
+  description: "Hệ thống quản lý Ký túc xá Đại học Cần Thơ",
 };
 
 export default async function RootLayout({ children, params }: Props) {

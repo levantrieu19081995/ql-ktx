@@ -29,13 +29,13 @@ import {
   IconPalette,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { ViewConfigData } from "@/types/global";
+// import { ViewConfigData } from "@/types/global";
 import {
   fetchConfigSystem,
   updateConfigSystem,
 } from "@/services/setting/settingSystemInfoService";
 import { showNoti } from "@/components/common/showNoti";
-import logo from "@/assets/images/logo.png";
+import logo from "@/assets/images/CTU_logo.png";
 import { useSessionStore } from "@/context/sessionStore";
 // ----------------------------- TYPES -----------------------------
 export type CompanySettings = {
@@ -63,7 +63,7 @@ export default function SettingSystemInfo({
   const [errors, setErrors] = useState<
     Partial<Record<keyof CompanySettings, string>>
   >({});
-  const [config, setConfig] = useState<ViewConfigData | null>(null);
+  const [config, setConfig] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const fallbackLogo = "/images/logo.png";
   // ----------------------------- LOGO HANDLERS -----------------------------

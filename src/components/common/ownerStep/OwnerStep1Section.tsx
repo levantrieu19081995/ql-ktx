@@ -24,12 +24,12 @@ import {
 } from "@mantine/core";
 import { useEffect, useRef, useState } from "react";
 import { showNoti } from "@/components/common/showNoti";
-import {
-  createChuPhuongTien,
-  fetchChuPhuongTienList,
-  getDetailChuPhuongTienById,
-  updateChuPhuongTien,
-} from "@/services/chu-phuong-tien/chuPhuongTienService";
+// import {
+//   createChuPhuongTien,
+//   fetchChuPhuongTienList,
+//   getDetailChuPhuongTienById,
+//   updateChuPhuongTien,
+// } from "@/services/chu-phuong-tien/chuPhuongTienService";
 import { ChuPhuongTien, ChuPhuongTienPut } from "@/types/type-chu-phuong-tien";
 import {
   IconInfoCircle,
@@ -37,7 +37,7 @@ import {
   IconPlus,
   IconSearch,
 } from "@tabler/icons-react";
-import { createHoSoDangKiem } from "@/services/ho-so-dang-kiem/hoSoDangKiemService";
+// import { createHoSoDangKiem } from "@/services/ho-so-dang-kiem/hoSoDangKiemService";
 import { useUser } from "@/context/UserContext";
 import OwnerDrawerAddForm from "@/components/common/drawer/OwnerDrawerAddForm";
 import OwnerListTable from "@/components/common/tables/OwnerListTable";
@@ -76,7 +76,7 @@ export default function OwnerStep1Section({
   const [totalPages, setTotalPages] = useState(1);
 
   const [selectedOwner, setSelectedOwner] = useState<ChuPhuongTien | null>(
-    null
+    null,
   );
   const [detailOwner, setDetailOwner] = useState<ChuPhuongTien | null>(null);
 
@@ -152,7 +152,7 @@ export default function OwnerStep1Section({
     });
 
     const paramHSDK = {
-      hsTenDangKiem: "Đăng kiểm phương tiện khác - " + String(result.tenChuXe),
+      hsTenDangKiem: "Tiếp nhận nội trú - " + String(result.tenChuXe),
       hsNgaytiepnhan: new Date().toISOString(),
       hsMa: "",
       organizationGuid: user?.organizationGuid,
@@ -165,33 +165,31 @@ export default function OwnerStep1Section({
       ttcptId: Number(result?.ttcptId),
     };
 
-    const response = await createHoSoDangKiem(paramHSDK);
-    showNoti("success", "Thêm hồ sơ tiếp nhận đăng kiểm thành công!");
+    // const response = await createHoSoDangKiem(paramHSDK);
+    // showNoti("success", "Thêm hồ sơ tiếp nhận đăng kiểm thành công!");
 
-    updateResult({
-      hsId: response?.payload.hsId,
-      bxlId: 3,
-    });
+    // updateResult({
+    //   hsId: response?.payload.hsId,
+    //   bxlId: 3,
+    // });
     onNext();
   };
 
   async function detailChuPhuongTien(item: ChuPhuongTien) {
-    const detail = await getDetailChuPhuongTienById(Number(item.ttcptId));
-    const data = detail.payload;
-    if (!data) return;
-
-    setSelectedChuSoHuu(data as ChuPhuongTien);
-    setDrawerDetailChuSoHuuOpened(true);
-
-    setEditChuSoHuuValue({
-      ttcptTen: data.ttcptTen || "",
-      ttcptDiachi: data.ttcptDiachi || "",
-      ttcptMasothue: data.ttcptMasothue || "",
-      ttcptCccd: data.ttcptCccd || "",
-      ttcptIsDoanhNghiep: data.ttcptIsDoanhNghiep || 0,
-      ttcptSodienthoai: data.ttcptSodienthoai || "",
-      ttId: Number(data.ttId) || ttId,
-    });
+    // const detail = await getDetailChuPhuongTienById(Number(item.ttcptId));
+    // const data = detail.payload;
+    // if (!data) return;
+    // setSelectedChuSoHuu(data as ChuPhuongTien);
+    // setDrawerDetailChuSoHuuOpened(true);
+    // setEditChuSoHuuValue({
+    //   ttcptTen: data.ttcptTen || "",
+    //   ttcptDiachi: data.ttcptDiachi || "",
+    //   ttcptMasothue: data.ttcptMasothue || "",
+    //   ttcptCccd: data.ttcptCccd || "",
+    //   ttcptIsDoanhNghiep: data.ttcptIsDoanhNghiep || 0,
+    //   ttcptSodienthoai: data.ttcptSodienthoai || "",
+    //   ttId: Number(data.ttId) || ttId,
+    // });
   }
 
   const handleAddChuPhuongTien = async () => {
@@ -208,7 +206,7 @@ export default function OwnerStep1Section({
         }
       }
 
-      await createChuPhuongTien(valueChuPhuongTien);
+      // await createChuPhuongTien(valueChuPhuongTien);
       onFind();
       showNoti("success", "Đã thêm mới chủ phương tiện!");
 
@@ -233,7 +231,7 @@ export default function OwnerStep1Section({
   const _getInforChuPhuongTien = async (
     nextPage = page,
     nextPageSize = pageSize,
-    nextSearch = searchInfo
+    nextSearch = searchInfo,
   ) => {
     const requestId = ++requestIdRef.current;
 
@@ -243,21 +241,21 @@ export default function OwnerStep1Section({
       // Optional: clear list để khỏi thấy “dính” (tuỳ bạn muốn)
       setChuPhuongTien([]);
 
-      const res = await fetchChuPhuongTienList({
-        page: nextPage,
-        pageSize: nextPageSize,
-        filterWithHoTenOrBienKiemSoat: nextSearch.filterWithHoTenOrBienKiemSoat,
-        filterWithCccdOrMst: nextSearch.filterWithCccdOrMst,
-        // ttId: 3,
-        ttId: ttId,
-      });
+      // const res = await fetchChuPhuongTienList({
+      //   page: nextPage,
+      //   pageSize: nextPageSize,
+      //   filterWithHoTenOrBienKiemSoat: nextSearch.filterWithHoTenOrBienKiemSoat,
+      //   filterWithCccdOrMst: nextSearch.filterWithCccdOrMst,
+      //   // ttId: 3,
+      //   ttId: ttId,
+      // });
 
-      // Nếu có request mới hơn thì bỏ qua response cũ
-      if (requestId !== requestIdRef.current) return;
+      // // Nếu có request mới hơn thì bỏ qua response cũ
+      // if (requestId !== requestIdRef.current) return;
 
-      setChuPhuongTien(res.payload?.items || []);
-      setTotalItems(res.payload?.totalElements ?? 0);
-      setTotalPages(res.payload?.totalPages ?? 1);
+      // setChuPhuongTien(res.payload?.items || []);
+      // setTotalItems(res.payload?.totalElements ?? 0);
+      // setTotalPages(res.payload?.totalPages ?? 1);
     } finally {
       if (requestId === requestIdRef.current) {
         setSelectLoadingFind(false);
@@ -266,18 +264,17 @@ export default function OwnerStep1Section({
   };
 
   const _getListChuPhuongTien = async () => {
-    const res = await fetchChuPhuongTienList({
-      page,
-      pageSize,
-      filterWithHoTenOrBienKiemSoat: searchInfo.filterWithHoTenOrBienKiemSoat,
-      filterWithCccdOrMst: searchInfo.filterWithCccdOrMst,
-      ttId,
-    });
-
-    const items = res.payload?.items || [];
-    setChuPhuongTien(items);
-    setTotalItems(res.payload?.totalElements ?? 0);
-    setTotalPages(res.payload?.totalPages ?? 1);
+    // const res = await fetchChuPhuongTienList({
+    //   page,
+    //   pageSize,
+    //   filterWithHoTenOrBienKiemSoat: searchInfo.filterWithHoTenOrBienKiemSoat,
+    //   filterWithCccdOrMst: searchInfo.filterWithCccdOrMst,
+    //   ttId,
+    // });
+    // const items = res.payload?.items || [];
+    // setChuPhuongTien(items);
+    // setTotalItems(res.payload?.totalElements ?? 0);
+    // setTotalPages(res.payload?.totalPages ?? 1);
   };
 
   const onFind = async () => {
@@ -299,14 +296,14 @@ export default function OwnerStep1Section({
     try {
       const res = await fetchLoaiPhuongTienList(1, 100, "*");
       const apiData = res.payload?.items || [];
-      const loaiPhuongTien: any = [
-        { value: "-1", label: "Tất cả" },
-        ...apiData.map((item) => ({
-          value: item.dmLptId.toString(),
-          label: item.dmLptTen,
-        })),
-      ];
-      setLoaiPhuongTien(loaiPhuongTien);
+      // const loaiPhuongTien: any = [
+      //   { value: "-1", label: "Tất cả" },
+      //   ...apiData.map((item) => ({
+      //     value: item.dmLptId.toString(),
+      //     label: item.dmLptTen,
+      //   })),
+      // ];
+      // setLoaiPhuongTien(loaiPhuongTien);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     } finally {
@@ -446,7 +443,7 @@ export default function OwnerStep1Section({
           leftSection={<IconPlus size={16} />}
           onClick={() => setDrawerAddChuSoHuuOpened(true)}
         >
-          Thêm thông tin đăng kiểm
+          Thêm thông tin sinh viên
         </Button>
       </Group>
 

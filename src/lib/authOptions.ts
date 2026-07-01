@@ -20,6 +20,8 @@ export const authOptions: NextAuthOptions = {
           refreshToken: {},
           expired: {},
           user: {},
+          captcha: {},
+          captchaExpected: {},
       },
 
       async authorize(creds:any) {

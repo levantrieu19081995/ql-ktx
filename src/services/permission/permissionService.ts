@@ -44,6 +44,6 @@ export const fetchPermissionsByAccountLimit = async (
   organizationId: number,
   token?: string
 ): Promise<any> => {
-  const url = `${API_URLS.permission.permissionsByAccountLimit}?acocuntId=${accountId}&organizationId=${organizationId}`; 
+  const url = `${API_URLS.permission.permissionsByAccountLimit}?acocuntId=${accountId}&organizationId=${organizationId}`;  
   return await serverGet(url, token);
 };

@@ -2,7 +2,7 @@
 import API_URLS from "@/constants/apiUrls";
 import { post, get, del, put } from "@/utils/axios";
 import type { User, UserResponse,UserDetailResponse, UserByOrganizationsResponse, FetchUsersRequest, AccountDetailResponse  } from "@/types/global";
- 
+//  
 // Function to get paginated user data
 export const fetchUsers = async (
   page: number,
