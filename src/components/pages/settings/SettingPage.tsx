@@ -87,16 +87,6 @@ export default function SettingPage() {
         </Group>
       </Group>
 
-      <Group>
-        <Button
-          color="blue"
-          variant="light"
-          onClick={() => router.push("/vi/settings/import")}
-        >
-          Thêm dữ liệu phương tiện từ Excel
-        </Button>
-      </Group>
-
       {/* Cầu hình thông tin hệ thông  */}
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
         <SettingSystemInfo
@@ -106,20 +96,6 @@ export default function SettingPage() {
         />
         <SettingPreview values={values} previewColor={previewColor} />
       </SimpleGrid>
-
-      {/* Cấu hình thanh toán */}
-      {/* <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-        <SettingPaymentInfo
-          paymentInfo={paymentInfo}
-          onChange={(key, val) => setPaymentInfo((s) => ({ ...s, [key]: val }))}
-          setSaved={setSaved}
-        />
-        <SettingFeeInfo
-          feeValues={feeValues}
-          onChange={(key, val) => setFeeValues((s) => ({ ...s, [key]: val }))}
-          setSaved={setSaved}
-        />
-      </SimpleGrid> */}
     </Stack>
   );
 }

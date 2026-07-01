@@ -19,7 +19,9 @@ import {
   IconChevronDown,
   IconLogout,
   IconSearch,
+  IconSettings,
   IconSun,
+  IconUser,
 } from "@tabler/icons-react";
 import LocaleSwitcher from "./LocaleSwitcher";
 import logo from "@/assets/images/CTU_logo.png";
@@ -136,6 +138,20 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
     getConfigAppDetails();
   }, [isHydrated, accessToken]);
 
+  useEffect(() => {
+    if (!logoConfig) return;
+
+    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+
+    link.href = logoConfig;
+  }, [logoConfig]);
+
   return (
     <Group
       h="100%"
@@ -161,12 +177,18 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
       >
         <Group gap="sm" wrap="nowrap" visibleFrom="md">
           <Image
-            src={logo}
-            alt="Đại học Cần Thơ"
+            src={logoConfig || logo}
+            alt={titleConfig}
             width={90}
             height={90}
             priority
-            style={{ borderRadius: 8, marginLeft: 45, marginRight: 25 }}
+            unoptimized
+            style={{
+              borderRadius: 8,
+              marginLeft: 45,
+              marginRight: 25,
+              objectFit: "contain",
+            }}
           />
           <Box>
             <Text fz={22} fw={700} c="gray.7" tt="uppercase" lh={1}>
@@ -174,7 +196,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             </Text>
 
             <Text fz={26} fw={900} c="blue.6" tt="uppercase" lh={1} mt={10}>
-              Quản lý Ký túc xá
+              {titleConfig || "Đang tải cấu hình..."}
             </Text>
           </Box>
         </Group>
@@ -242,17 +264,12 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
         <LocaleSwitcher size={42} />
 
         <Menu
-          withArrow
+          shadow="xl"
+          width={390}
+          radius={15}
+          withArrow={false}
           position="bottom-end"
           offset={8}
-          transitionProps={{
-            transition: "pop",
-            duration: 200,
-            timingFunction: "ease",
-          }}
-          onOpen={() => {
-            if (!fullUser) loadFullUser();
-          }}
         >
           <Menu.Target>
             <Group gap="sm" wrap="nowrap" style={{ cursor: "pointer" }}>
@@ -276,35 +293,154 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
               <IconChevronDown size={18} color="#0f172a" />
             </Group>
           </Menu.Target>
-
-          <Menu.Dropdown w={320} p="md">
-            {loadingFullUser && (
-              <Text size="sm" c="dimmed">
-                Đang tải thông tin...
-              </Text>
-            )}
-
-            {!loadingFullUser && fullUser && (
-              <Card withBorder radius="md" p="md" mb="sm">
-                <Stack gap={6}>
-                  <Text size="sm" c="dimmed" fw={500}>
-                    Đang đăng nhập:
-                  </Text>
-
-                  <Text fw={700} size="lg">
-                    👤 {fullUser.caNhan?.ten ?? fullUser.username}
-                  </Text>
-                </Stack>
-              </Card>
-            )}
-
-            <Menu.Item
-              color="red"
-              leftSection={<IconLogout size={16} />}
-              onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
+          <Menu.Dropdown className="user-menu-dropdown" p={0}>
+            <Box
+              p={24}
+              style={{
+                background: "#ffffff",
+              }}
             >
-              Đăng xuất
-            </Menu.Item>
+              <Group gap="md" wrap="nowrap">
+                <Avatar
+                  src={(user as any)?.avatar || undefined}
+                  size={76}
+                  radius="50%"
+                  style={{
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "linear-gradient(135deg, #5b6ff5, #1d5cff)",
+                    border: "1px solid rgba(255,255,255,.96)",
+                    boxShadow:
+                      "0 12px 30px rgba(37,99,235,.22), inset 0 0 0 1px rgba(255,255,255,.35)",
+                    flexShrink: 0,
+                  }}
+                >
+                  {(fullUser?.caNhan?.ten ?? name ?? "U")
+                    .charAt(0)
+                    .toUpperCase()}
+                </Avatar>
+
+                <Box style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    fz={15}
+                    fw={600}
+                    c="#6B7280"
+                    style={{
+                      letterSpacing: "-0.2px",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    Đang đăng nhập
+                  </Text>
+
+                  <Text
+                    fz={28}
+                    fw={700}
+                    c="#111827"
+                    style={{
+                      letterSpacing: "-0.8px",
+                      lineHeight: 1.15,
+                    }}
+                  >
+                    {fullUser?.caNhan?.ten ?? fullUser?.username ?? name}
+                  </Text>
+
+                  <Text
+                    fz={16}
+                    fw={500}
+                    c="#6B7280"
+                    style={{
+                      letterSpacing: "-0.15px",
+                    }}
+                  >
+                    Quản trị viên
+                  </Text>
+                </Box>
+              </Group>
+            </Box>
+
+            <Box
+              px={22}
+              py={14}
+              style={{
+                background: "#ffffff",
+                borderTop: "1px solid #eef2f7",
+              }}
+            >
+              <Menu.Item
+                leftSection={<IconUser size={20} color="#2563eb" />}
+                rightSection={
+                  <IconChevronDown
+                    size={16}
+                    color="#64748b"
+                    style={{ rotate: "-90deg" }}
+                  />
+                }
+                styles={{
+                  item: {
+                    borderRadius: 16,
+                    padding: "15px 16px",
+
+                    fontWeight: 600,
+                    fontSize: "18px",
+                    color: "#1F2937",
+                    background: "#ffffff",
+                  },
+                }}
+              >
+                Thông tin tài khoản
+              </Menu.Item>
+
+              <Menu.Item
+                leftSection={<IconSettings size={20} color="#2563eb" />}
+                rightSection={
+                  <IconChevronDown
+                    size={16}
+                    color="#64748b"
+                    style={{ rotate: "-90deg" }}
+                  />
+                }
+                styles={{
+                  item: {
+                    borderRadius: 16,
+                    padding: "15px 16px",
+                    fontWeight: 600,
+                    fontSize: "18px",
+                    color: "#1F2937",
+                    background: "#ffffff",
+                  },
+                }}
+              >
+                Cài đặt hệ thống
+              </Menu.Item>
+            </Box>
+
+            <Box
+              px={22}
+              py={16}
+              style={{
+                background: "#ffffff",
+                borderTop: "1px solid #eef2f7",
+              }}
+            >
+              <Menu.Item
+                color="red"
+                leftSection={<IconLogout size={20} />}
+                onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
+                styles={{
+                  item: {
+                    borderRadius: 16,
+                    padding: "15px 16px",
+                    fontWeight: 700,
+                    fontSize: "18px",
+                    color: "#EF4444",
+                    // background: "#fff5f5",
+                  },
+                }}
+              >
+                Đăng xuất
+              </Menu.Item>
+            </Box>
           </Menu.Dropdown>
         </Menu>
       </Group>
