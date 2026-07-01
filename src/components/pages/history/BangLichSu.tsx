@@ -16,7 +16,7 @@ import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 
 // Kiểu Tab hiển thị để quyết định cột Loại render như thế nào
-export type LoaiTabHienThi = 'LICH_SU' | 'CO_MAT' | 'VANG_MAT' | 'CANH_BAO';
+export type LoaiTabHienThi = 'LICH_SU' | 'CO_MAT' | 'VANG_MAT' | 'CANH_BAO' | 'CAN_BO' | 'SINH_VIEN';
 
 // Định nghĩa giao diện thuộc tính cho Component Bảng lịch sử ra vào
 interface ThuocTinhBangLichSu {

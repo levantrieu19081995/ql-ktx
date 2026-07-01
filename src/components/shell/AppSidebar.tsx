@@ -229,17 +229,6 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     },
   ];
 
-  // Automatically open the parent menu if a child is active
-  useEffect(() => {
-    const currentParent = items.find((item) =>
-      item.children?.some((child: any) => pathname.startsWith(child.href))
-    );
-    if (currentParent && openParent !== currentParent.label) {
-      setOpenParent(currentParent.label);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
-
   const doLogout = () => {
     setConfirmOpen(false);
     signOut({ callbackUrl: `/${locale}/login` }).catch(() => {
