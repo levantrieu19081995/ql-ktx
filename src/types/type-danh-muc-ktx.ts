@@ -66,9 +66,8 @@ export interface SinhVienBiCamRequest {
   loaiSuKienId?: number;
   maSinhVien?: string;
 }
+
 //
-
-
 
 
 export interface DanhMucKtxPaginateRequest {
@@ -104,6 +103,15 @@ export interface SinhVienKtx {
   tenNhom?: string;
   trangThai?: TrangThaiDanhMucKtx | string;
   ghiChu?: string;
+
+
+  //
+  sinhVienId?: number;
+  userId?: number | null;
+  maSinhVien?: string;
+  lop?: string; 
+  maPhongCu?: string | null;
+
 }
 
 export interface PhongKtx {
@@ -119,6 +127,33 @@ export interface PhongKtx {
   ghiChu?: string;
 }
 
- 
+// === LOẠI SỰ KIỆN ===
+ export interface LoaiSuKienKtx {
+  loaiSuKienId?: number;
+  maLoai?: string;
+  tenLoai?: string;
+  moTa?: string | null;
+  trangThai?: string;
+  guid?: string;
+}
 
+export interface DanhSachLoaiSuKienKtxRequest {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+}
+
+//
+export interface DanhSachSinhVienKtxRequest {
+  page?: number;
+  pageSize?: number;
+  keyword?: string;
+}
+
+
+// === SYNC - ĐỒNG BỘ DANH SÁCH  SINH VIÊN
+export type UiisKhuPayload = {
+  nam_hoc: string;
+  hoc_ky: string;
+};
  

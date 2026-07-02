@@ -233,8 +233,8 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                   color: "#FFFFFF",
                   fontSize: 16,
                   fontWeight: 800,
-                  background: "linear-gradient(135deg, #5c1dff, #4f46e5)",
-                  boxShadow: "0 14px 28px rgba(92, 29, 255, 0.24)",
+                  background: "linear-gradient(135deg, #1f5ca9, #1f5ca9)",
+                  // boxShadow: "0 14px 28px rgba(92, 29, 255, 0.24)",
                 }}
               >
                 {name ? name.charAt(0).toUpperCase() : null}

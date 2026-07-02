@@ -156,6 +156,10 @@ const API_URLS = {
     khu: {
       paginate: `${KTX_SERVICE}/ktx-dm-khu/paginate`,
       index: `${KTX_SERVICE}/ktx-dm-khu/index`,
+
+      //
+      uiisDanhSach: `${KTX_SERVICE}/uiis/dm-khu/danh-sach`,
+      uiisSync: `${KTX_SERVICE}/uiis/dm-khu/sync`,
     },
 
     sinhVienBiCam: {
@@ -163,6 +167,10 @@ const API_URLS = {
       create: `${KTX_SERVICE}/ktx-sinh-vien-cam/create`,
       update: `${KTX_SERVICE}/ktx-sinh-vien-cam`,
       detail: `${KTX_SERVICE}/ktx-sinh-vien-cam`,
+    },
+
+    loaiSuKien: {
+      paginate: `${KTX_SERVICE}/ktx-dm-loai-su-kien/paginate`,
     },
   },
 

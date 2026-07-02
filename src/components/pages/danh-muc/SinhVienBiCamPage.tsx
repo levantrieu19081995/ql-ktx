@@ -7,6 +7,7 @@ import {
   Drawer,
   Group,
   NumberInput,
+  Select,
   Stack,
   TextInput,
   Textarea,
@@ -23,7 +24,9 @@ import CustomPagination from "@/components/common/CustomPagination";
 import {
   createSinhVienBiCam,
   fetchChiTietSinhVienBiCam,
+  fetchDanhSachLoaiSuKienKtx,
   fetchDanhSachSinhVienBiCam,
+  fetchDanhSachSinhVienKtx,
   updateSinhVienBiCam,
 } from "@/services/danh-muc/danhMucKtxService";
 
@@ -47,6 +50,49 @@ export default function SinhVienBiCamPage() {
     loaiSuKienId: "-1",
   });
 
+  const [loaiSuKienOptions, setLoaiSuKienOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const [sinhVienOptions, setSinhVienOptions] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const loadLoaiSuKienOptions = async () => {
+    const res = await fetchDanhSachLoaiSuKienKtx({ page: 1, pageSize: 20 });
+
+    setLoaiSuKienOptions(
+      (res?.items || [])
+        .filter((item: any) => item.trangThai === "ACTIVE")
+        .map((item: any) => ({
+          value: String(item.loaiSuKienId),
+          label: `${item.tenLoai} (${item.maLoai})`,
+        })),
+    );
+  };
+
+  const loadSinhVienOptions = async (keyword = "") => {
+    try {
+      const res = await fetchDanhSachSinhVienKtx({
+        page: 1,
+        pageSize: 20,
+        keyword,
+      });
+
+      setSinhVienOptions(
+        (res?.items || []).map((item: any) => ({
+          value: item.maSinhVien,
+          label: `${item.maSinhVien} - ${item.hoTen || ""}${
+            item.maPhong ? ` - Phòng ${item.maPhong}` : ""
+          }`,
+        })),
+      );
+    } catch (error) {
+      console.error("Lỗi lấy danh sách sinh viên:", error);
+      setSinhVienOptions([]);
+    }
+  };
+
   const formatDateMMDDYYYY = (value?: string) => {
     if (!value) return undefined;
 
@@ -68,7 +114,23 @@ export default function SinhVienBiCamPage() {
     return localDate.toISOString().slice(0, 16);
   };
 
+  const handleAdd = () => {
+    loadSinhVienOptions();
+    loadLoaiSuKienOptions();
+    setForm({
+      maSinhVien: "",
+      lyDo: "",
+      ngayBatDau: "",
+      ngayKetThuc: "",
+      loaiSuKienId: "-1",
+    });
+
+    setOpened(true);
+  };
+
   const handleEdit = async (item: any) => {
+    loadSinhVienOptions();
+    loadLoaiSuKienOptions();
     try {
       const id = item.camId;
       const detail = await fetchChiTietSinhVienBiCam(id);
@@ -125,18 +187,6 @@ export default function SinhVienBiCamPage() {
   const handleSearch = () => {
     setPage(1);
     loadData(1, pageSize);
-  };
-
-  const handleAdd = () => {
-    setForm({
-      maSinhVien: "",
-      lyDo: "",
-      ngayBatDau: "",
-      ngayKetThuc: "",
-      loaiSuKienId: "-1",
-    });
-
-    setOpened(true);
   };
 
   const handleSave = async () => {
@@ -235,11 +285,22 @@ export default function SinhVienBiCamPage() {
         size="lg"
       >
         <Stack gap="md">
-          <TextInput
+          <Select
             label="Mã sinh viên"
-            placeholder="Nhập mã sinh viên"
-            value={form.maSinhVien}
-            onChange={handleChangeForm("maSinhVien")}
+            placeholder="Tìm mã sinh viên / họ tên"
+            data={sinhVienOptions}
+            value={form.maSinhVien || null}
+            searchable
+            clearable
+            nothingFoundMessage="Không tìm thấy sinh viên"
+            onSearchChange={loadSinhVienOptions}
+            onChange={(value) =>
+              setForm((prev) => ({
+                ...prev,
+                maSinhVien: value || "",
+              }))
+            }
+            flex={1}
           />
 
           <Textarea
@@ -264,11 +325,20 @@ export default function SinhVienBiCamPage() {
             onChange={handleChangeForm("ngayKetThuc")}
           />
 
-          <TextInput
-            label="Loại sự kiện ID"
-            placeholder="Nhập loại sự kiện ID"
-            value={form.loaiSuKienId}
-            onChange={handleChangeForm("loaiSuKienId")}
+          <Select
+            label="Loại sự kiện"
+            placeholder="Chọn loại sự kiện"
+            data={loaiSuKienOptions}
+            value={form.loaiSuKienId === "-1" ? null : form.loaiSuKienId}
+            searchable
+            clearable
+            nothingFoundMessage="Không tìm thấy loại sự kiện"
+            onChange={(value) =>
+              setForm((prev) => ({
+                ...prev,
+                loaiSuKienId: value || "-1",
+              }))
+            }
           />
 
           <Group justify="flex-end" mt="md">
