@@ -225,11 +225,16 @@
       "feedbackBtn": "Phản hồi sai thông tin"
     },
     "drawer": {
+<<<<<<< Updated upstream
       "detailTitle": "Chi tiết lượt ra vào",
       "portraitCamera": "Ảnh chụp thực tế",
       "eventLabel": "Sự kiện",
       "closeBtn": "Đóng",
       "unitLabel": "Đơn vị",
+=======
+      "detailTitle": "Chi tiết lịch sử ra vào",
+      "detailTitleStranger": "Chi tiết cảnh báo người lạ",
+>>>>>>> Stashed changes
       "createTitle": "Ghi nhận lịch sử ra vào mới",
       "dormLabel": "Khu ký túc xá",
       "dormPlaceholder": "Chọn khu",
@@ -245,7 +250,9 @@
       "notePlaceholder": "Ghi chú sự kiện nếu có",
       "saveBtn": "Lưu ghi nhận",
       "cancelBtn": "Hủy",
-      "studentIdLabel": "Mã số sinh viên (MSSV)",
+      "closeBtn": "Đóng",
+      "eventLabel": "Trạng thái",
+      "studentIdLabel": "Mã số",
       "studentIdPlaceholder": "Nhập mã số sinh viên (ví dụ: B2003789)",
       "fullNameLabel": "Họ và tên sinh viên",
       "fullNamePlaceholder": "Nhập họ và tên sinh viên",

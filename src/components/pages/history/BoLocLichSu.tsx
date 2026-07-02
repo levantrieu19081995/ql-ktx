@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import {
     IconSearch,
     IconRefresh,
-    IconPlus,
     IconChevronDown,
     IconChevronUp,
     IconFileSpreadsheet,
@@ -43,9 +42,9 @@ interface ThuocTinhBoLocLichSu {
     }) => void;
     datLaiBoLoc: () => void;
     khiTimKiem: () => void;
-    khiXuatExcel: () => void;
-    khiXuatPdf: () => void;
-    khiThemDuLieu: () => void;
+    khiXuatExcel?: () => void;
+    khiXuatPdf?: () => void;
+    loaiBoLoc?: 'LICH_SU' | 'NGUOI_LA';
 }
 
 export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
@@ -55,7 +54,7 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
     khiTimKiem,
     khiXuatExcel,
     khiXuatPdf,
-    khiThemDuLieu,
+    loaiBoLoc = 'LICH_SU',
 }) => {
     const t = useTranslations('History');
     const [moRong, datMoRong] = useState(false);
@@ -77,9 +76,12 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
         ...danhSachNhom.map((n) => ({ value: n.maNhom, label: n.tenNhom }))
     ];
 
+    const laTrangLichSu = loaiBoLoc === 'LICH_SU';
+
     return (
         <div className="modern-filter-container">
             <div className="filter-content-wrapper">
+<<<<<<< Updated upstream
                 {/* HÀNG 1: Từ ngày + Đến ngày + Nhóm nút hành động */}
                 <div className="filter-row-1">
                     <div className="filter-field-group text-inputs">
@@ -114,36 +116,238 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                                 styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
                             />
                         </div>
+=======
+                {laTrangLichSu ? (
+                    /* BỘ LỌC CŨ CỦA LỊCH SỬ RA VÀO (Hàng 1: Từ ngày, Đến ngày, Khu KTX, Trạng thái, Hàng 2: Đối tượng, Họ tên, MSSV) */
+                    <div className="lich-su-filter-wrapper">
+                        {/* HÀNG 1 */}
+                        <div className="filter-row-1">
+                            <div className="filter-inputs-group-row-1">
+                                {/* Từ ngày */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.fromDate').toUpperCase()}</label>
+                                    <DateInput
+                                        placeholder="mm/dd/yyyy"
+                                        valueFormat="DD/MM/YYYY"
+                                        value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
+                                        onChange={(ngay) =>
+                                            datBoLoc({ tuNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
+                                        }
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                    />
+                                </div>
+
+                                {/* Đến ngày */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.toDate').toUpperCase()}</label>
+                                    <DateInput
+                                        placeholder="mm/dd/yyyy"
+                                        valueFormat="DD/MM/YYYY"
+                                        value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
+                                        onChange={(ngay) =>
+                                            datBoLoc({ denNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
+                                        }
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                    />
+                                </div>
+
+                                {/* Khu KTX */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.dormitory').toUpperCase()}</label>
+                                    <Select
+                                        value={boLoc.maKtx || '-1'}
+                                        onChange={(giaTri) => datBoLoc({ maKtx: giaTri || '-1' })}
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                        data={optionsKhu}
+                                        placeholder="Tất cả"
+                                    />
+                                </div>
+
+                                {/* Trạng thái */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.status').toUpperCase()}</label>
+                                    <Select
+                                        value={boLoc.loai || 'ALL'}
+                                        onChange={(giaTri) => datBoLoc({ loai: (giaTri as 'IN' | 'OUT' | 'ALL') || 'ALL' })}
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                        data={[
+                                            { value: 'ALL', label: t('filter.all') },
+                                            { value: 'IN', label: t('filter.in') },
+                                            { value: 'OUT', label: t('filter.out') },
+                                        ]}
+                                        placeholder="Tất cả"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="filter-actions-row">
+                                <Button
+                                    onClick={khiTimKiem}
+                                    leftSection={<IconSearch size={15} />}
+                                    className="btn-action btn-search"
+                                >
+                                    {t('filter.search')}
+                                </Button>
+
+                                <Button
+                                    onClick={datLaiBoLoc}
+                                    leftSection={<IconRefresh size={15} />}
+                                    variant="outline"
+                                    className="btn-action btn-reset"
+                                >
+                                    {t('filter.reset')}
+                                </Button>
+
+                                {khiXuatExcel && (
+                                    <Button
+                                        onClick={khiXuatExcel}
+                                        leftSection={<IconFileSpreadsheet size={15} />}
+                                        variant="outline"
+                                        className="btn-action btn-excel"
+                                    >
+                                        {t('filter.exportExcel')}
+                                    </Button>
+                                )}
+
+                                {khiXuatPdf && (
+                                    <Button
+                                        onClick={khiXuatPdf}
+                                        leftSection={<IconFileTypePdf size={15} />}
+                                        variant="outline"
+                                        className="btn-action btn-pdf"
+                                    >
+                                        {t('filter.exportPdf')}
+                                    </Button>
+                                )}
+
+                                {/* Nút mở rộng/thu gọn */}
+                                <Button
+                                    variant="subtle"
+                                    onClick={() => datMoRong(!moRong)}
+                                    className="btn-toggle-expand"
+                                    title={moRong ? t('filter.collapse') : t('filter.expand')}
+                                >
+                                    {moRong ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* HÀNG 2: Mở rộng */}
+                        {moRong && (
+                            <div className="filter-row-2">
+                                {/* Loại đối tượng */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.objectType').toUpperCase()}</label>
+                                    <Select
+                                        value={boLoc.maNhom || '-1'}
+                                        onChange={(giaTri) => datBoLoc({ maNhom: giaTri || '-1' })}
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                        data={optionsNhom}
+                                        placeholder="Tất cả"
+                                    />
+                                </div>
+
+                                {/* Họ tên */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.fullName').toUpperCase()}</label>
+                                    <TextInput
+                                        placeholder="Nhập họ tên..."
+                                        value={boLoc.hoVaTen || ''}
+                                        onChange={(e) => datBoLoc({ hoVaTen: e.target.value })}
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                    />
+                                </div>
+
+                                {/* MSSV / Mã số */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.studentId').toUpperCase()}</label>
+                                    <TextInput
+                                        placeholder="Nhập mã số..."
+                                        value={boLoc.mssv || ''}
+                                        onChange={(e) => datBoLoc({ mssv: e.target.value })}
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7', fontFamily: 'monospace' } }}
+                                    />
+                                </div>
+                            </div>
+                        )}
+>>>>>>> Stashed changes
                     </div>
+                ) : (
+                    /* BỘ LỌC CŨ CỦA TRANG CẢNH BÁO NGƯỜI LẠ (Từ ngày, Đến ngày, Khu KTX + Buttons) */
+                    <div className="nguoi-la-filter-wrapper">
+                        <div className="filter-row-1">
+                            <div className="filter-inputs-group-row-1 stranger-fields">
+                                {/* Từ ngày */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.fromDate').toUpperCase()}</label>
+                                    <DateInput
+                                        placeholder="mm/dd/yyyy"
+                                        valueFormat="DD/MM/YYYY"
+                                        value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
+                                        onChange={(ngay) =>
+                                            datBoLoc({ tuNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
+                                        }
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                    />
+                                </div>
 
-                    {/* Nút hành động hàng 1 */}
-                    <div className="filter-actions-group">
-                        <Button
-                            onClick={khiTimKiem}
-                            leftSection={<IconSearch size={15} />}
-                            className="btn-action btn-search"
-                        >
-                            {t('filter.search')}
-                        </Button>
+                                {/* Đến ngày */}
+                                <div className="filter-field">
+                                    <label className="filter-label">{t('filter.toDate').toUpperCase()}</label>
+                                    <DateInput
+                                        placeholder="mm/dd/yyyy"
+                                        valueFormat="DD/MM/YYYY"
+                                        value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
+                                        onChange={(ngay) =>
+                                            datBoLoc({ denNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
+                                        }
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                    />
+                                </div>
 
-                        <Button
-                            onClick={datLaiBoLoc}
-                            leftSection={<IconRefresh size={15} />}
-                            variant="outline"
-                            className="btn-action btn-reset"
-                        >
-                            {t('filter.reset')}
-                        </Button>
+                                {/* Khu KTX */}
+                                <div className="filter-field">
+                                    <label className="filter-label">KHU KTX PHÁT HIỆN</label>
+                                    <Select
+                                        value={boLoc.maKtx || '-1'}
+                                        onChange={(giaTri) => datBoLoc({ maKtx: giaTri || '-1' })}
+                                        size="sm"
+                                        radius="md"
+                                        styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                                        data={optionsKhu}
+                                        placeholder="Tất cả"
+                                    />
+                                </div>
+                            </div>
 
-                        <Button
-                            onClick={khiXuatExcel}
-                            leftSection={<IconFileSpreadsheet size={15} />}
-                            variant="outline"
-                            className="btn-action btn-excel"
-                        >
-                            {t('filter.exportExcel')}
-                        </Button>
+                            <div className="filter-actions-group">
+                                <Button
+                                    onClick={khiTimKiem}
+                                    leftSection={<IconSearch size={15} />}
+                                    className="btn-action btn-search"
+                                >
+                                    {t('filter.search')}
+                                </Button>
 
+<<<<<<< Updated upstream
                         <Button
                             onClick={khiXuatPdf}
                             leftSection={<IconFileTypePdf size={15} />}
@@ -220,6 +424,17 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                                 data={optionsNhom}
                                 placeholder="Tất cả"
                             />
+=======
+                                <Button
+                                    onClick={datLaiBoLoc}
+                                    leftSection={<IconRefresh size={15} />}
+                                    variant="outline"
+                                    className="btn-action btn-reset"
+                                >
+                                    Làm mới
+                                </Button>
+                            </div>
+>>>>>>> Stashed changes
                         </div>
 
                         {/* Họ tên */}
@@ -270,7 +485,6 @@ const filterStyles = `
 .filter-content-wrapper {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
 }
 
 .filter-row-1 {
@@ -278,7 +492,7 @@ const filterStyles = `
     flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.25rem;
     width: 100%;
 }
 
@@ -315,6 +529,33 @@ const filterStyles = `
     gap: 0.5rem;
 }
 
+.filter-inputs-group-row-1 {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+    flex: 1;
+    min-width: 280px;
+}
+
+@media (min-width: 640px) {
+    .filter-inputs-group-row-1 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 992px) {
+    .filter-inputs-group-row-1 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+.filter-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .btn-action {
     height: 38px !important;
     font-size: 13px !important;
@@ -337,6 +578,17 @@ const filterStyles = `
     box-shadow: 0 4px 8px rgba(31, 92, 169, 0.2) !important;
 }
 
+.btn-red {
+    background-color: #be123c !important;
+    border: none !important;
+    color: #ffffff !important;
+}
+
+.btn-red:hover {
+    background-color: #9f1239 !important;
+    box-shadow: 0 4px 8px rgba(190, 18, 60, 0.2) !important;
+}
+
 .btn-reset {
     background-color: #ffffff !important;
     border: 1px solid #d4d4d8 !important;
@@ -352,41 +604,28 @@ const filterStyles = `
 
 .btn-excel {
     background-color: #ffffff !important;
-    border: 1px solid #0f766e !important;
-    color: #0f766e !important;
+    border: 1px solid #1f5ca9 !important;
+    color: #1f5ca9 !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
 }
 
 .btn-excel:hover {
-    background-color: rgba(15, 118, 110, 0.04) !important;
-    box-shadow: 0 4px 8px rgba(15, 118, 110, 0.1) !important;
+    background-color: rgba(31, 92, 169, 0.04) !important;
+    box-shadow: 0 4px 8px rgba(31, 92, 169, 0.1) !important;
 }
 
 .btn-pdf {
     background-color: #ffffff !important;
-    border: 1px solid #be123c !important;
-    color: #be123c !important;
+    border: 1px solid #00afef !important;
+    color: #00afef !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
 }
 
 .btn-pdf:hover {
-    background-color: rgba(190, 18, 60, 0.04) !important;
-    box-shadow: 0 4px 8px rgba(190, 18, 60, 0.1) !important;
-}
-
-.btn-add-data {
-    background: linear-gradient(135deg, #00afef 0%, #1f5ca9 100%) !important;
-    color: #ffffff !important;
-    border: none !important;
-    padding-left: 1.25rem !important;
-    padding-right: 1.25rem !important;
-}
-
-.btn-add-data:hover {
-    opacity: 0.95 !important;
-    box-shadow: 0 4px 10px rgba(0, 175, 239, 0.25) !important;
+    background-color: rgba(0, 175, 240, 0.04) !important;
+    box-shadow: 0 4px 8px rgba(0, 175, 240, 0.1) !important;
 }
 
 .btn-toggle-expand {
@@ -416,6 +655,7 @@ const filterStyles = `
     gap: 0.75rem;
     border-top: 1px dashed #cbd5e1;
     padding-top: 1rem;
+    margin-top: 1rem;
     animation: slideDown 0.2s ease-out;
 }
 
@@ -427,7 +667,7 @@ const filterStyles = `
 
 @media (min-width: 1024px) {
     .filter-row-2 {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 

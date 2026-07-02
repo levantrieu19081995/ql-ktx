@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 
 
 const AUTH_HEADER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
-const BASE_URL = 'http://172.16.20.177:53009';
+const BASE_URL = 'https://qldaotaolaixe.cusc.vn/face-detect-service';
 
 const moPhongDoTre = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

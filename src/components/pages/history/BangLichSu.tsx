@@ -216,11 +216,15 @@ export default function BangLichSu({
                                         <Table.Td style={{ textAlign: 'center' }}>
                                             <Box style={{ display: 'flex', justifyContent: 'center' }}>
                                                 <Avatar
+<<<<<<< Updated upstream
 <<<<<<< HEAD
                                                     src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
 =======
                                                     src={banGhi.duongDanAnhDaiDien || banGhi.duongDanAnhChup}
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+                                                    src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
+>>>>>>> Stashed changes
                                                     radius="sm"
                                                     size={44}
                                                     className="avatar-image"

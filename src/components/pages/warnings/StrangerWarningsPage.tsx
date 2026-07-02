@@ -1,5 +1,6 @@
 'use client';
 
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Card, Group, Text, Button, Select, Table, Avatar, Badge, Loader, Drawer, Stack } from '@mantine/core';
@@ -34,6 +35,8 @@ export default function StrangerWarningsPage() {
         denNgay: '2026-06-06',
         maKtx: '-1',
 =======
+=======
+>>>>>>> Stashed changes
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -41,23 +44,27 @@ import {
   Group,
   Text,
   Button,
-  Select,
   Table,
   Avatar,
   Badge,
   Loader,
+  Pagination,
+  Portal,
+  Notification,
 } from "@mantine/core";
+<<<<<<< Updated upstream
 import { DatePickerInput } from "@mantine/dates";
+=======
+>>>>>>> Stashed changes
 import { useTranslations } from "next-intl";
 import {
   IconAlertTriangle,
-  IconSearch,
-  IconRefresh,
   IconLayoutGrid,
   IconList,
   IconCamera,
   IconMapPin,
   IconClock,
+<<<<<<< Updated upstream
   IconFileSpreadsheet,
   IconFileTypePdf,
   IconPlus,
@@ -70,12 +77,85 @@ import {
   KhuItem,
 } from "../history/historyService";
 import { DrawerChiTietLichSu } from "../history/DrawerChiTietLichSu";
+=======
+  IconCheck,
+  IconX,
+} from "@tabler/icons-react";
+import dayjs from "dayjs";
+import { HistoryItem } from "../../../types/type-history";
+import { dichVuNguoiLa } from "./strangerService";
+import BoLocNguoiLa from "./BoLocNguoiLa";
+import DrawerChiTietLichSu from "../history/DrawerChiTietLichSu";
+import { xuatRaFileExcel } from "../history/excelHelper";
+
+const MOCK_STRANGERS: HistoryItem[] = [
+  {
+    id: "mock-stranger-1",
+    thoiGian: "2026-06-03 08:20:00",
+    mssv: "Người lạ",
+    hoVaTen: "Người lạ",
+    duongDanAnhChup: "http://172.16.10.208:8001/images/db_json/2026/6/3/no_data/384117_1_08_20_00.jpg",
+    duongDanAnhDaiDien: "",
+    loai: "IN",
+    maKtx: "A",
+    tenKtx: "Ký túc xá A",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "CO_MAT",
+    ngayNguoiLa: "03/06/2026",
+    gioNguoiLa: "08:20:00",
+    cameraNguoiLa: 1
+  },
+  {
+    id: "mock-stranger-2",
+    thoiGian: "2026-06-03 06:58:07",
+    mssv: "Người lạ",
+    hoVaTen: "Người lạ",
+    duongDanAnhChup: "http://172.16.10.208:8001/images/db_json/2026/6/3/no_data/514905_1_06_58_07.jpg",
+    duongDanAnhDaiDien: "",
+    loai: "IN",
+    maKtx: "A",
+    tenKtx: "Ký túc xá A",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "CO_MAT",
+    ngayNguoiLa: "03/06/2026",
+    gioNguoiLa: "06:58:07",
+    cameraNguoiLa: 1
+  },
+  {
+    id: "mock-stranger-3",
+    thoiGian: "2026-06-02 21:15:30",
+    mssv: "Người lạ",
+    hoVaTen: "Người lạ",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+    duongDanAnhDaiDien: "",
+    loai: "IN",
+    maKtx: "B",
+    tenKtx: "Ký túc xá B",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera sảnh",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "CO_MAT",
+    ngayNguoiLa: "02/06/2026",
+    gioNguoiLa: "21:15:30",
+    cameraNguoiLa: 2
+  }
+];
+>>>>>>> Stashed changes
 
 export default function StrangerWarningsPage() {
   const t = useTranslations("History");
   const [dangTai, setDangTai] = useState(false);
   const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
-  const [danhSachKhu, setDanhSachKhu] = useState<KhuItem[]>([]);
   const [dangLieu, datDangLieu] = useState<"GRID" | "TABLE">("GRID");
   
   // Trạng thái phân trang
@@ -92,6 +172,7 @@ export default function StrangerWarningsPage() {
     loai: "ALL" as "IN" | "OUT" | "ALL",
   });
 
+<<<<<<< Updated upstream
   // Bản ghi được chọn để xem chi tiết
   const [lichSuDuocChon, setLichSuDuocChon] = useState<HistoryItem | null>(null);
 
@@ -111,11 +192,65 @@ export default function StrangerWarningsPage() {
       const res = await dichVuCanhBaoNguoiLa.layDanhSachCanhBao({
         page: trangMoi,
         pageSize: soDongTrenTrang,
+=======
+  const [trangHienTai, setTrangHienTai] = useState(1);
+  const [tongSoTrang, setTongSoTrang] = useState(1);
+  const [tongSoPhanTu, setTongSoPhanTu] = useState(0);
+  const sizeTrang = 8;
+
+  const [strangerDuocChon, setStrangerDuocChon] = useState<HistoryItem | null>(null);
+  const [thongBao, setThongBao] = useState<{ tinNhan: string; kieu: "success" | "error" } | null>(null);
+
+  const hienThongBao = (tinNhan: string, kieu: "success" | "error" = "success") => {
+    setThongBao({ tinNhan, kieu });
+  };
+
+  useEffect(() => {
+    if (thongBao) {
+      const timer = setTimeout(() => setThongBao(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [thongBao]);
+
+  const xuLyXuatExcel = () => {
+    const duLieuXuat = danhSachCanhBao.map((h, i) => ({
+      [t("table.no")]: i + 1,
+      "Thời gian": h.thoiGian,
+      "Đối tượng": h.loaiDoiTuong || "Người lạ",
+      "Khu KTX": h.tenKtx || "N/A",
+      "Thiết bị/Camera": h.thietBi || "N/A",
+      "Ngày phát hiện": h.ngayNguoiLa || "",
+      "Giờ phát hiện": h.gioNguoiLa || ""
+    }));
+    xuatRaFileExcel(
+      duLieuXuat,
+      `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
+      "Cảnh báo người lạ"
+    );
+    hienThongBao(t("messages.exportExcelSuccess"), "success");
+  };
+
+  const xuLyXuatPdf = () => {
+    hienThongBao(t("messages.exportPdfSuccess"), "success");
+  };
+
+  useEffect(() => {
+    taiDuLieu();
+  }, []);
+
+  const taiDuLieu = async () => {
+    setDangTai(true);
+    try {
+      const response = await dichVuNguoiLa.layDanhSachNguoiLa({
+>>>>>>> Stashed changes
         tuNgay: boLoc.tuNgay,
         denNgay: boLoc.denNgay,
-        maKtx: boLoc.maKtx === "-1" ? undefined : boLoc.maKtx,
+        maKtx: boLoc.maKtx,
+        page: trangHienTai,
+        pageSize: sizeTrang
       });
 
+<<<<<<< Updated upstream
       // Lọc theo trạng thái Vào/Ra tại Client nếu có
       let filteredItems = res.items;
       if (boLoc.loai && boLoc.loai !== "ALL") {
@@ -128,6 +263,22 @@ export default function StrangerWarningsPage() {
       datTrangHienTai(trangMoi);
     } catch (err) {
       console.error("Lỗi khi tải cảnh báo người lạ:", err);
+=======
+      if (response && response.items) {
+        setDanhSachCanhBao(response.items);
+        setTongSoTrang(response.totalPages);
+        setTongSoPhanTu(response.totalElements);
+      } else {
+        setDanhSachCanhBao([]);
+        setTongSoTrang(1);
+        setTongSoPhanTu(0);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải cảnh báo người lạ:", err);
+      setDanhSachCanhBao([]);
+      setTongSoTrang(1);
+      setTongSoPhanTu(0);
+>>>>>>> Stashed changes
     } finally {
       setDangTai(false);
     }
@@ -141,6 +292,7 @@ export default function StrangerWarningsPage() {
       loai: "ALL",
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
     });
+<<<<<<< Updated upstream
 
 <<<<<<< HEAD
     const [page, setPage] = useState(1);
@@ -597,6 +749,20 @@ export default function StrangerWarningsPage() {
 
   const chiSoBatDau = (trangHienTai - 1) * soDongTrenTrang;
   const chiSoKetThuc = trangHienTai * soDongTrenTrang;
+=======
+    setTrangHienTai(1);
+  };
+
+  const datBoLocVaResetPage = (boLocMoi: any) => {
+    setBoLoc((prev) => ({ ...prev, ...boLocMoi }));
+    setTrangHienTai(1);
+  };
+
+  // Auto load when filters or page changes
+  useEffect(() => {
+    taiDuLieu();
+  }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx, trangHienTai]);
+>>>>>>> Stashed changes
 
   return (
     <Box className="stranger-page-container">
@@ -632,6 +798,7 @@ export default function StrangerWarningsPage() {
         </Group>
       </div>
 
+<<<<<<< Updated upstream
       {/* BỘ LỌC CẢNH BÁO (LƯỢC BỚT CÒN 4 TRƯỜNG VÀ CÁC NÚT) */}
       <div className="alert-filter-bar">
         <div className="filter-grid">
@@ -760,6 +927,17 @@ export default function StrangerWarningsPage() {
           </Button>
         </div>
       </div>
+=======
+      {/* BỘ LỌC CẢNH BÁO NGƯỜI LẠ CHUYÊN BIỆT */}
+      <BoLocNguoiLa
+        boLoc={boLoc}
+        datBoLoc={datBoLocVaResetPage}
+        datLaiBoLoc={datLaiBoLoc}
+        khiTimKiem={taiDuLieu}
+        khiXuatExcel={xuLyXuatExcel}
+        khiXuatPdf={xuLyXuatPdf}
+      />
+>>>>>>> Stashed changes
 
       {/* HIỂN THỊ DỮ LIỆU */}
       {dangTai ? (
@@ -788,7 +966,11 @@ export default function StrangerWarningsPage() {
               className="stranger-card"
               radius="lg"
               withBorder
+<<<<<<< Updated upstream
               onClick={() => setLichSuDuocChon(banGhi)}
+=======
+              onClick={() => setStrangerDuocChon(banGhi)}
+>>>>>>> Stashed changes
               style={{ cursor: "pointer" }}
             >
               {/* Hình chụp */}
@@ -807,7 +989,11 @@ export default function StrangerWarningsPage() {
                   }}
                 />
                 <Badge color="#1f5ca9" variant="filled" className="warning-badge">
+<<<<<<< Updated upstream
                   {t("warnings.alertIntrusion")}
+=======
+                  CẢNH BÁO XÂM NHẬP
+>>>>>>> Stashed changes
                 </Badge>
               </div>
 
@@ -878,6 +1064,7 @@ export default function StrangerWarningsPage() {
             </Table.Thead>
             <Table.Tbody>
               {danhSachCanhBao.map((banGhi, index) => (
+<<<<<<< Updated upstream
                 <Table.Tr
                   key={banGhi.id}
                   className="table-tr"
@@ -889,6 +1076,11 @@ export default function StrangerWarningsPage() {
                   </Table.Td>
                   <Table.Td className="td-highlight">
                     {dayjs(banGhi.thoiGian).format("DD/MM/YYYY HH:mm:ss")}
+=======
+                <Table.Tr key={banGhi.id} className="table-tr" onClick={() => setStrangerDuocChon(banGhi)} style={{ cursor: "pointer" }}>
+                  <Table.Td style={{ textAlign: "center" }} className="td-stt">
+                    {(trangHienTai - 1) * sizeTrang + index + 1}
+>>>>>>> Stashed changes
                   </Table.Td>
                   <Table.Td>
                     <Box style={{ display: "flex", justifyContent: "center" }}>
@@ -904,7 +1096,11 @@ export default function StrangerWarningsPage() {
                   </Table.Td>
                   <Table.Td className="td-camera">{banGhi.thietBi}</Table.Td>
                   <Table.Td className="td-ktx">
+<<<<<<< Updated upstream
                     <Badge color="blue" variant="light" size="md">
+=======
+                    <Badge color="#1f5ca9" variant="light" size="md">
+>>>>>>> Stashed changes
                       {banGhi.tenKtx}
                     </Badge>
                   </Table.Td>
@@ -915,6 +1111,7 @@ export default function StrangerWarningsPage() {
         </div>
       )}
 
+<<<<<<< Updated upstream
       {/* THANH PHÂN TRANG CHO TRANG CẢNH BÁO */}
       {!dangTai && danhSachCanhBao.length > 0 && (
         <div className="pagination-bar">
@@ -972,6 +1169,55 @@ export default function StrangerWarningsPage() {
         lichSuDuocChon={lichSuDuocChon}
       />
 
+=======
+      {/* Pagination */}
+      {tongSoTrang > 1 && (
+        <div className="pagination-wrapper" style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+          <Pagination
+            value={trangHienTai}
+            onChange={setTrangHienTai}
+            total={tongSoTrang}
+            color="#1f5ca9"
+            radius="md"
+          />
+        </div>
+      )}
+
+      {/* Drawer chi tiết người lạ */}
+      <DrawerChiTietLichSu
+        open={strangerDuocChon !== null}
+        onClose={() => setStrangerDuocChon(null)}
+        lichSuDuocChon={strangerDuocChon}
+        isStranger={true}
+      />
+
+      {/* THÔNG BÁO DẠNG TOAST */}
+      {thongBao && (
+        <Portal>
+          <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
+            <Notification
+              icon={
+                thongBao.kieu === "success" ? (
+                  <IconCheck size={18} />
+                ) : (
+                  <IconX size={18} />
+                )
+              }
+              color={thongBao.kieu === "success" ? "teal" : "red"}
+              title={
+                thongBao.kieu === "success"
+                  ? t("messages.success")
+                  : t("messages.error")
+              }
+              onClose={() => setThongBao(null)}
+            >
+              {thongBao.tinNhan}
+            </Notification>
+          </div>
+        </Portal>
+      )}
+
+>>>>>>> Stashed changes
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
     </Box>
   );
@@ -1002,6 +1248,7 @@ const pageStyles = `
 }
 
 .pulse-alert-icon {
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     background-color: #e0f2fe;
     border: 1px solid #bae6fd;
@@ -1011,19 +1258,29 @@ const pageStyles = `
     border: 1px solid rgba(31, 92, 169, 0.15);
     color: #1f5ca9;
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1f5ca9;
+>>>>>>> Stashed changes
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     box-shadow: 0 0 0 0 rgba(0, 175, 239, 0.4);
+=======
+    box-shadow: 0 0 0 0 rgba(31, 92, 169, 0.4);
+>>>>>>> Stashed changes
     animation: alertPulse 1.5s infinite;
 }
 
 .alert-title {
     margin: 0;
+<<<<<<< Updated upstream
     font-size: 1.5rem;
     font-weight: 800;
     color: #1f5ca9;
@@ -1032,15 +1289,21 @@ const pageStyles = `
 }
 
 .alert-title {
+=======
+>>>>>>> Stashed changes
     font-size: 1.125rem;
     font-weight: bold;
     color: #27272a;
     text-transform: uppercase;
     letter-spacing: -0.025em;
+<<<<<<< Updated upstream
     margin-top: 0;
     margin-bottom: 1rem;
     font-family: var(--font-k2d), sans-serif;
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+    font-family: var(--font-k2d);
+>>>>>>> Stashed changes
 }
 
 .alert-subtitle {
@@ -1055,6 +1318,7 @@ const pageStyles = `
     font-weight: 600 !important;
 }
 
+<<<<<<< Updated upstream
 .alert-filter-bar {
     background-color: #ffffff;
     border-radius: 1rem;
@@ -1192,6 +1456,8 @@ const pageStyles = `
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
 }
 
+=======
+>>>>>>> Stashed changes
 .loader-box {
     display: flex;
     flex-direction: column;
@@ -1250,12 +1516,17 @@ const pageStyles = `
 
 .stranger-card:hover {
     transform: translateY(-4px);
+<<<<<<< Updated upstream
     box-shadow: 0 10px 15px -3px rgba(31, 92, 169, 0.05), 0 4px 6px -2px rgba(31, 92, 169, 0.03);
 <<<<<<< HEAD
     border-color: #93c5fd;
 =======
     border-color: #00afef;
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+    box-shadow: 0 10px 15px -3px rgba(31, 92, 169, 0.08), 0 4px 6px -2px rgba(31, 92, 169, 0.04);
+    border-color: #00afef;
+>>>>>>> Stashed changes
 }
 
 .image-wrapper {
@@ -1310,6 +1581,7 @@ const pageStyles = `
 }
 
 .icon-red {
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     background-color: #e0f2fe;
     color: #00afef;
@@ -1317,6 +1589,10 @@ const pageStyles = `
     background-color: rgba(31, 92, 169, 0.08);
     color: #1f5ca9;
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+    background-color: #eff6ff;
+    color: #1f5ca9;
+>>>>>>> Stashed changes
 }
 
 .icon-blue {
@@ -1376,11 +1652,15 @@ const pageStyles = `
 }
 
 .avatar-warning {
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     border: 2px solid #bfdbfe;
 =======
     border: 2px solid rgba(31, 92, 169, 0.15);
 >>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+    border: 2px solid #bfdbfe;
+>>>>>>> Stashed changes
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -1401,6 +1681,7 @@ const pageStyles = `
 <<<<<<< HEAD
 @keyframes alertPulse {
     0% {
+<<<<<<< Updated upstream
         box-shadow: 0 0 0 0 rgba(0, 175, 239, 0.4);
     }
     70% {
@@ -1408,6 +1689,15 @@ const pageStyles = `
     }
     100% {
         box-shadow: 0 0 0 0 rgba(0, 175, 239, 0);
+=======
+        box-shadow: 0 0 0 0 rgba(31, 92, 169, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(31, 92, 169, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(31, 92, 169, 0);
+>>>>>>> Stashed changes
     }
 =======
 /* Pagination */

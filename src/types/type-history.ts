@@ -27,6 +27,9 @@ export interface HistoryItem {
   loaiDoiTuong?: string;
   trangThaiSinhVien?: 'BINH_THUONG' | 'NO_PHI' | 'BI_CAM';
   trangThaiHienDien?: 'CO_MAT' | 'VANG_MAT';
+  ngayNguoiLa?: string;
+  gioNguoiLa?: string;
+  cameraNguoiLa?: number;
 }
 
 export interface HistoryListResponse {
