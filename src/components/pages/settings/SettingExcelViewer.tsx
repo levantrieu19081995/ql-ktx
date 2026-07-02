@@ -25,7 +25,7 @@ import {
   IconEdit,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
-import ImportHelpDrawer from "./import/ImportHelpDrawer";
+// import ImportHelpDrawer from "./import/ImportHelpDrawer";
 
 import { fetchLoaiPhuongTienList } from "@/services/danh-muc/dmLoaiPhuongTienService";
 import { fetchPhuongTienList } from "@/services/danh-muc/dmPhuongTienService";
@@ -507,11 +507,6 @@ export default function SettingExcelViewer() {
           </Card>
         )}
       </Modal>
-
-      <ImportHelpDrawer
-        opened={helpOpened}
-        onClose={() => setHelpOpened(false)}
-      />
     </Stack>
   );
 }

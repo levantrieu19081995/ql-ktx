@@ -32,8 +32,6 @@ import {
   IconFilter,
 } from "@tabler/icons-react";
 
-import ImportHelpDrawer from "./import/ImportHelpDrawer";
-
 import { convertExcel } from "@/services/Excel/excelService";
 import { fetchLoaiPhuongTienList } from "@/services/danh-muc/dmLoaiPhuongTienService";
 import { fetchPhuongTienList } from "@/services/danh-muc/dmPhuongTienService";
@@ -791,11 +789,6 @@ export default function SettingExcelConvertPage() {
           </Card>
         )}
       </Modal>
-
-      <ImportHelpDrawer
-        opened={helpOpened}
-        onClose={() => setHelpOpened(false)}
-      />
     </Stack>
   );
 }
