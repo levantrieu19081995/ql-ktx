@@ -81,6 +81,10 @@
     "newVersion": "New Features in the Version",
     "close": "Close",
     "historyMenu": "Access History",
+    "history-log": "History",
+    "history-statistics": "Statistics",
+    "history-staff": "Staff",
+    "history-student": "Students",
     "warningsMenu": "Stranger Warnings",
     "historyWarning": "History/Warnings",
     "unit": "Unit"
@@ -222,7 +226,7 @@
     "filter": {
       "fromDate": "From Date",
       "toDate": "To Date",
-      "studentId": "Student ID",
+      "studentId": "ID",
       "fullName": "Full Name",
       "dormitory": "Dormitory",
       "group": "Group",
@@ -272,10 +276,21 @@
       "dormitory": "Dormitory:",
       "time": "Time:",
       "room": "Room:",
+      "device": "Device:",
       "status": "Status:",
       "feedbackBtn": "Report Incorrect Info"
     },
     "drawer": {
+<<<<<<< Updated upstream
+      "detailTitle": "Access Event Details",
+      "portraitCamera": "Camera Captured Photo",
+      "eventLabel": "Event",
+      "closeBtn": "Close",
+      "unitLabel": "Unit",
+=======
+      "detailTitle": "Access History Details",
+      "detailTitleStranger": "Stranger Warning Details",
+>>>>>>> Stashed changes
       "createTitle": "Record New Access History",
       "dormLabel": "Dormitory Area",
       "dormPlaceholder": "Select area",
@@ -291,7 +306,9 @@
       "notePlaceholder": "Enter event note if any",
       "saveBtn": "Save Record",
       "cancelBtn": "Cancel",
-      "studentIdLabel": "Student ID ",
+      "closeBtn": "Close",
+      "eventLabel": "Access Status",
+      "studentIdLabel": "ID",
       "studentIdPlaceholder": "Enter student ID (e.g. B2003789)",
       "fullNameLabel": "Student Full Name",
       "fullNamePlaceholder": "Enter student full name",
@@ -328,6 +345,22 @@
       "turnsCount": "Turns Count",
       "topTitle": "Top Active Students",
       "viewAll": "View All"
+    },
+    "warnings": {
+      "title": "STRANGER WARNINGS",
+      "subtitle": "Real-time monitoring and unauthorized intrusion detection",
+      "gridFeed": "Grid Feed",
+      "tableList": "Table List",
+      "timeDetect": "TIME DETECTED",
+      "cameraDetect": "CAMERA DETECTED",
+      "dormDetect": "DORMITORY DETECTED",
+      "alertIntrusion": "INTRUSION WARNING",
+      "noStranger": "No strangers detected",
+      "noStrangerDesc": "No intrusions matching the current filter have been recorded.",
+      "scanning": "Scanning history records...",
+      "camera": "Camera Detected",
+      "dorm": "Dormitory Detected",
+      "detailStranger": "Stranger Details"
     }
   }
 }

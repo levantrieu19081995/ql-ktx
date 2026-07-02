@@ -172,27 +172,23 @@ export default function BangLichSu({
                         <Table.Tr>
                             <Table.Th style={{ width: 48, textAlign: 'center' }}>{t('table.no')}</Table.Th>
                             <Table.Th style={{ width: 145 }}>{t('table.time')}</Table.Th>
+                            <Table.Th style={{ width: 100 }}>{t('filter.studentId')}</Table.Th>
                             <Table.Th style={{ width: 155 }}>{t('table.fullName')}</Table.Th>
                             <Table.Th style={{ width: 80, textAlign: 'center' }}>{t('table.image')}</Table.Th>
                             <Table.Th style={{ width: 110 }}>{t('table.type')}</Table.Th>
                             <Table.Th style={{ width: 75 }}>{t('table.dormitory')}</Table.Th>
-                            {tabActive !== 'LICH_SU' && (
-                                <Table.Th style={{ width: 80 }}>
-                                    {tabActive === 'CAN_BO' ? t('table.unit') : t('table.room')}
-                                </Table.Th>
-                            )}
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
                         {dangTai ? (
                             <Table.Tr>
-                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 6 : 7} className="table-cell-empty">
+                                <Table.Td colSpan={7} className="table-cell-empty">
                                     {t('table.loading')}
                                 </Table.Td>
                             </Table.Tr>
                         ) : danhSachHienThi.length === 0 ? (
                             <Table.Tr>
-                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 6 : 7} className="table-cell-empty">
+                                <Table.Td colSpan={7} className="table-cell-empty">
                                     {t('table.noData')}
                                 </Table.Td>
                             </Table.Tr>
@@ -211,13 +207,24 @@ export default function BangLichSu({
                                         <Table.Td className="cell-time">
                                             {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
                                         </Table.Td>
+                                        <Table.Td className="cell-text-medium" style={{ fontFamily: 'monospace' }}>
+                                            {banGhi.mssv || '-'}
+                                        </Table.Td>
                                         <Table.Td className="cell-name">
                                             {banGhi.hoVaTen}
                                         </Table.Td>
                                         <Table.Td style={{ textAlign: 'center' }}>
                                             <Box style={{ display: 'flex', justifyContent: 'center' }}>
                                                 <Avatar
-                                                    src={banGhi.duongDanAnhDaiDien}
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+                                                    src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
+=======
+                                                    src={banGhi.duongDanAnhDaiDien || banGhi.duongDanAnhChup}
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
+=======
+                                                    src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
+>>>>>>> Stashed changes
                                                     radius="sm"
                                                     size={44}
                                                     className="avatar-image"
@@ -228,11 +235,6 @@ export default function BangLichSu({
                                         <Table.Td className="cell-text-medium">
                                             {banGhi.tenKtx}
                                         </Table.Td>
-                                        {tabActive !== 'LICH_SU' && (
-                                            <Table.Td className="cell-text-medium">
-                                                {banGhi.tenPhong}
-                                            </Table.Td>
-                                        )}
                                     </Table.Tr>
                                 );
                             })

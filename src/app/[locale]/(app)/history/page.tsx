@@ -1,4 +1,10 @@
-import ClientPage from "./ClientPage";
-export default function Page() {
-  return <ClientPage />;
+import { redirect } from "next/navigation";
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  redirect(`/${locale}/history/log`);
 }

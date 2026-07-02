@@ -2,49 +2,49 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
+<<<<<<< Updated upstream
 import React, { useState, useEffect, useMemo } from "react";
+import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
+=======
+import React, { useState, useEffect } from "react";
 import {
   Portal,
   Notification,
+  Box,
   Modal,
   Stack,
   Text,
   Group,
   Button,
-  Box,
 } from "@mantine/core";
+>>>>>>> Stashed changes
 import { useTranslations } from "next-intl";
 import {
-  IconAlertTriangle,
-  IconHistory,
-  IconChartBar,
-  IconUser,
-  IconUserMinus,
   IconCheck,
   IconX,
+  IconSearch,
+  IconRefresh,
 } from "@tabler/icons-react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LabelList,
-} from "recharts";
 
 import BoLocLichSu from "./BoLocLichSu";
 import BangLichSu from "./BangLichSu";
-import ChiTietLichSuCard from "./ChiTietLichSuCard";
+import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
+<<<<<<< Updated upstream
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
+=======
+>>>>>>> Stashed changes
 import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
-import type { LoaiTabHienThi } from "./BangLichSu";
+
+<<<<<<< HEAD
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
+=======
+type LoaiTabChinh = "LICH_SU" | "THONG_KE";
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
+<<<<<<< Updated upstream
 const duLieuBieuDoThoiGian = [
   { ngay: "01/06", luotVao: 110, luotRa: 60 },
   { ngay: "02/06", luotVao: 270, luotRa: 370 },
@@ -66,29 +66,32 @@ const duLieuTopSinhVien = [
   { mssv: "TM565488", hoVaTen: "Trịnh Thị Mỹ Ái", luotRaVao: 33 },
 ];
 
+interface HistoryPageProps {
+  activeTab?: LoaiTabChinh;
+}
+
+export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps) {
+  const t = useTranslations("History");
+  const [tabActive, datTabActive] = useState<LoaiTabChinh>(activeTab);
+  const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
+  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
+  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
+  const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
+=======
 type HistoryPageProps = {
   tab?: LoaiTabChinh;
 };
-// export default function HistoryPage() {
+
 export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const t = useTranslations("History");
-  // const [tabActive, datTabActive] = useState<LoaiTabChinh>("LICH_SU");
-  const [tabActive, datTabActive] = useState<LoaiTabChinh>(tab);
   const [thongBao, setThongBao] = useState<{
     kieu: "success" | "error";
     tinNhan: string;
   } | null>(null);
-  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
-    null,
-  );
-  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">(
-    "NGAY",
-  );
-  const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
+>>>>>>> Stashed changes
 
   const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
   const [dangTai, setDangTai] = useState<boolean>(false);
-  const [dangTao, setDangTao] = useState<boolean>(false);
 
   const [boLoc, setBoLoc] = useState({
     tuNgay: "",
@@ -103,15 +106,31 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     maNhom: "-1",
   });
 
+<<<<<<< Updated upstream
+  const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(null);
+  const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
+=======
   const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(
     null,
   );
-  const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
 
-  const hienThongBao = (
-    tinNhan: string,
-    kieu: "success" | "error" = "success",
-  ) => {
+  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
+    null,
+  );
+>>>>>>> Stashed changes
+
+
+  useEffect(() => {
+    datTabActive(activeTab);
+    datLichSuDuocChon(null);
+    const targetMaNhom = activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1";
+    setBoLoc((prev) => {
+      if (prev.maNhom === targetMaNhom) return prev;
+      return { ...prev, maNhom: targetMaNhom };
+    });
+  }, [activeTab]);
+
+  const hienThongBao = (tinNhan: string, kieu: "success" | "error" = "success") => {
     setThongBao({ tinNhan, kieu });
   };
 
@@ -142,6 +161,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   };
 
   const taiDuLieu = async () => {
+    setDanhSachLichSu([]); // Clear old items to show loading state properly
     setDangTai(true);
     try {
       const duLieu = await dichVuLichSuRaVao.layDanhSachLichSu(boLoc);
@@ -157,60 +177,54 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     taiDuLieu();
   }, [boLoc]);
 
-  useEffect(() => {
-    if (danhSachLichSu.length > 0 && !lichSuDuocChon) {
-      datLichSuDuocChon(danhSachLichSu[0]);
-    }
-  }, [danhSachLichSu, lichSuDuocChon]);
+<<<<<<< Updated upstream
+<<<<<<< HEAD
+  // Removed auto-select useEffect to prevent drawer from opening automatically on load
 
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
     if (tabActive === "CAN_BO") {
-      return danhSachLichSu.filter(
-        (h) =>
-          h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-          h.loaiDoiTuong?.toLowerCase().includes("can bo"),
+      return danhSachLichSu.filter((h) =>
+        h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
+        h.loaiDoiTuong?.toLowerCase().includes("can bo")
       );
     }
     if (tabActive === "SINH_VIEN") {
-      return danhSachLichSu.filter(
-        (h) =>
-          !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
-          !h.loaiDoiTuong?.toLowerCase().includes("can bo"),
+      return danhSachLichSu.filter((h) =>
+        !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
+        !h.loaiDoiTuong?.toLowerCase().includes("can bo")
       );
     }
+=======
+  // Auto-selection of first item on load has been disabled to prevent drawer from auto-opening
+
+  const duLieuTheoTab = useMemo((): HistoryItem[] => {
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
     return danhSachLichSu;
-  }, [danhSachLichSu, tabActive]);
+  }, [danhSachLichSu]);
 
   const loaiTabHienThi = useMemo((): LoaiTabHienThi => {
-    if (tabActive === "CAN_BO") return "LICH_SU";
-    if (tabActive === "SINH_VIEN") return "LICH_SU";
     return "LICH_SU";
-  }, [tabActive]);
+  }, []);
 
+=======
+>>>>>>> Stashed changes
   const xuLyTimKiem = () => {
     taiDuLieu();
     hienThongBao(t("messages.updated"), "success");
   };
 
   const xuLyXuatExcel = () => {
-    const duLieuXuat = duLieuTheoTab.map((h, i) => ({
+    const duLieuXuat = danhSachLichSu.map((h, i) => ({
       [t("table.no")]: i + 1,
       [t("table.time")]: h.thoiGian,
       [t("filter.studentId")]: h.mssv,
       [t("table.name")]: h.hoVaTen,
       [t("table.type")]: h.loai === "IN" ? t("filter.in") : t("filter.out"),
-      [t("filter.objectType")]:
-        h.loaiDoiTuong === "Người lạ"
-          ? t("filter.stranger")
-          : t("filter.student"),
+      [t("filter.objectType")]: h.loaiDoiTuong === "Người lạ" ? t("filter.stranger") : t("filter.student"),
       [t("table.dormitory")]: h.tenKtx,
       [t("table.room")]: h.tenPhong,
     }));
-    xuatRaFileExcel(
-      duLieuXuat,
-      `Lich_Su_Ra_Vao_${new Date().toISOString().split("T")[0]}`,
-      t("tabs.log"),
-    );
+    xuatRaFileExcel(duLieuXuat, `Lich_Su_Ra_Vao_${new Date().toISOString().split("T")[0]}`, t("tabs.log"));
     hienThongBao(t("messages.exportExcelSuccess"), "success");
   };
 
@@ -218,17 +232,12 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     hienThongBao(t("messages.exportPdfSuccess"), "success");
   };
 
-  const xuLyThemDuLieu = () => {
-    datMoDrawerBieuMau(true);
-  };
-
   const xuLyDongChiTiet = () => {
     datLichSuDuocChon(null);
   };
 
-  const xuLyTaoBanGhi = async (
-    duLieu: Omit<HistoryItem, "id" | "thoiGian">,
-  ) => {
+<<<<<<< Updated upstream
+  const xuLyTaoBanGhi = async (duLieu: Omit<HistoryItem, "id" | "thoiGian">) => {
     setDangTao(true);
     try {
       await dichVuLichSuRaVao.taoBanGhiLichSu(duLieu);
@@ -246,23 +255,32 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     switch (key) {
       case "LICH_SU":
         return danhSachLichSu.length;
+<<<<<<< HEAD
       case "CAN_BO":
-        return danhSachLichSu.filter(
-          (h) =>
-            h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-            h.loaiDoiTuong?.toLowerCase().includes("can bo"),
+        return danhSachLichSu.filter((h) =>
+          h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
+          h.loaiDoiTuong?.toLowerCase().includes("can bo")
         ).length;
       case "SINH_VIEN":
-        return danhSachLichSu.filter(
-          (h) =>
-            !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
-            !h.loaiDoiTuong?.toLowerCase().includes("can bo"),
+        return danhSachLichSu.filter((h) =>
+          !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
+          !h.loaiDoiTuong?.toLowerCase().includes("can bo")
         ).length;
+=======
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
       default:
         return undefined;
     }
   };
 
+<<<<<<< HEAD
+  return (
+    <Box className="history-page-container">
+      {/* TIÊU ĐỀ TRANG */}
+      <h2 className="history-title">
+        {t("title")}
+      </h2>
+=======
   const danhSachTabs = useMemo(
     () => [
       {
@@ -275,68 +293,35 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         nhan: t("tabs.statistics"),
         icon: <IconChartBar size={16} />,
       },
-      {
-        key: "CAN_BO" as const,
-        nhan: t("tabs.staff"),
-        icon: <IconUser size={16} className="text-blue-500" />,
-      },
-      {
-        key: "SINH_VIEN" as const,
-        nhan: t("tabs.student"),
-        icon: <IconUserMinus size={16} className="text-emerald-500" />,
-      },
     ],
     [t],
   );
 
+=======
+>>>>>>> Stashed changes
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
       <h2 className="history-title">{t("title")}</h2>
-
-      {/* THANH TABS ĐIỀU HƯỚNG DẠNG PILLS */}
-      <div className="tabs-bar">
-        {danhSachTabs.map((tab) => {
-          const laActive = tabActive === tab.key;
-          return (
-            <button
-              key={tab.key}
-              id={`tab-${tab.key.toLowerCase()}`}
-              onClick={() => {
-                datTabActive(tab.key);
-                datLichSuDuocChon(null);
-                // Tự động đặt bộ lọc maNhom khi chuyển tab Cán bộ / Sinh viên
-                if (tab.key === "CAN_BO") {
-                  setBoLoc((prev) => ({ ...prev, maNhom: "0" }));
-                } else if (tab.key === "SINH_VIEN") {
-                  setBoLoc((prev) => ({ ...prev, maNhom: "1" }));
-                } else {
-                  setBoLoc((prev) => ({ ...prev, maNhom: "-1" }));
-                }
-              }}
-              className={`tab-btn ${laActive ? "tab-btn-active" : ""}`}
-            >
-              {tab.nhan}
-            </button>
-          );
-        })}
-      </div>
+<<<<<<< Updated upstream
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
       {/* BỘ LỌC */}
-      <BoLocLichSu
-        boLoc={boLoc}
-        datBoLoc={datBoLoc}
-        datLaiBoLoc={datLaiBoLoc}
-        khiTimKiem={xuLyTimKiem}
-        khiXuatExcel={xuLyXuatExcel}
-        khiXuatPdf={xuLyXuatPdf}
-        khiThemDuLieu={xuLyThemDuLieu}
-      />
+      {tabActive !== "THONG_KE" && (
+        <BoLocLichSu
+          boLoc={boLoc}
+          datBoLoc={datBoLoc}
+          datLaiBoLoc={datLaiBoLoc}
+          khiTimKiem={xuLyTimKiem}
+          khiXuatExcel={xuLyXuatExcel}
+          khiXuatPdf={xuLyXuatPdf}
+          khiThemDuLieu={xuLyThemDuLieu}
+        />
+      )}
 
+<<<<<<< HEAD
       {/* TAB: LỊCH SỬ | CÓ MẶT | VẮNG MẶT */}
-      {(tabActive === "LICH_SU" ||
-        tabActive === "CAN_BO" ||
-        tabActive === "SINH_VIEN") && (
+      {(tabActive === "LICH_SU" || tabActive === "CAN_BO" || tabActive === "SINH_VIEN") && (
         <div key={tabActive} className="page-layout">
           {/* Cột trái: Bảng dữ liệu */}
           <div className="main-content-col">
@@ -349,18 +334,35 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
               datLichSuDuocChon={datLichSuDuocChon}
             />
           </div>
+=======
 
-          {/* Cột phải: Thông tin chi tiết */}
-          <div className="detail-card-col">
-            <ChiTietLichSuCard
-              lichSuDuocChon={lichSuDuocChon}
-              loaiTab={loaiTabHienThi}
-              khiDong={xuLyDongChiTiet}
-              khiPhanHoi={xuLyPhanHoiSaiThongTin}
-            />
-          </div>
+      {/* BỘ LỌC */}
+      <BoLocLichSu
+        boLoc={boLoc}
+        datBoLoc={datBoLoc}
+        datLaiBoLoc={datLaiBoLoc}
+        khiTimKiem={xuLyTimKiem}
+        khiXuatExcel={xuLyXuatExcel}
+        khiXuatPdf={xuLyXuatPdf}
+        loaiBoLoc="LICH_SU"
+      />
+
+      <div className="page-layout">
+        {/* Cột trái: Bảng dữ liệu chiếm 100% */}
+        <div className="main-content-col">
+          <BangLichSu
+            duLieu={danhSachLichSu}
+            dangTai={dangTai}
+            loaiTab="LICH_SU"
+            tabActive="LICH_SU"
+            lichSuDuocChon={lichSuDuocChon}
+            datLichSuDuocChon={datLichSuDuocChon}
+          />
+>>>>>>> Stashed changes
         </div>
-      )}
+      </div>
+
+<<<<<<< Updated upstream
 
       {/* TAB: THỐNG KÊ */}
       {tabActive === "THONG_KE" && (
@@ -390,11 +392,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
                     onClick={() => datLoaiThoiGian(loai)}
                     className={`chart-filter-btn ${loaiThoiGian === loai ? "chart-filter-btn-active" : ""}`}
                   >
-                    {loai === "NGAY"
-                      ? t("statistics.day")
-                      : loai === "THANG"
-                        ? t("statistics.month")
-                        : t("statistics.year")}
+                    {loai === "NGAY" ? t("statistics.day") : loai === "THANG" ? t("statistics.month") : t("statistics.year")}
                   </button>
                 ))}
 
@@ -414,32 +412,13 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
             <div className="chart-container">
               {loaiBieuDo === "THOI_GIAN" ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={duLieuBieuDoThoiGian}
-                    margin={{ top: 5, right: 10, left: -20, bottom: 5 }}
-                  >
+                  <BarChart data={duLieuBieuDoThoiGian} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis
-                      dataKey="ngay"
-                      tick={{ fontSize: 11 }}
-                      stroke="#9ca3af"
-                    />
+                    <XAxis dataKey="ngay" tick={{ fontSize: 11 }} stroke="#9ca3af" />
                     <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
-                    <Tooltip
-                      formatter={(value) => [value, t("statistics.turn")]}
-                    />
-                    <Bar
-                      dataKey="luotVao"
-                      fill="#10b981"
-                      radius={[3, 3, 0, 0]}
-                      name={t("statistics.inbound")}
-                    />
-                    <Bar
-                      dataKey="luotRa"
-                      fill="#3b82f6"
-                      radius={[3, 3, 0, 0]}
-                      name={t("statistics.outbound")}
-                    />
+                    <Tooltip formatter={(value) => [value, t("statistics.turn")]} />
+                    <Bar dataKey="luotVao" fill="#10b981" radius={[3, 3, 0, 0]} name={t("statistics.inbound")} />
+                    <Bar dataKey="luotRa" fill="#3b82f6" radius={[3, 3, 0, 0]} name={t("statistics.outbound")} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -454,50 +433,16 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
                     ]}
                     margin={{ top: 10, right: 50, left: 10, bottom: 5 }}
                   >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      horizontal={false}
-                      stroke="#f5f5f5"
-                    />
-                    <XAxis
-                      type="number"
-                      domain={[0, 1400]}
-                      stroke="#9ca3af"
-                      tick={{ fontSize: 11 }}
-                    />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      stroke="#9ca3af"
-                      tick={{ fontSize: 11, fontWeight: 600 }}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      formatter={(value) => [
-                        Number(value).toLocaleString("vi-VN"),
-                        t("statistics.turnsCount"),
-                      ]}
-                    />
-                    <Bar
-                      dataKey="value"
-                      fill="#00afef"
-                      barSize={18}
-                      radius={[0, 4, 4, 0]}
-                    >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f5f5f5" />
+                    <XAxis type="number" domain={[0, 1400]} stroke="#9ca3af" tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="name" type="category" stroke="#9ca3af" tick={{ fontSize: 11, fontWeight: 600 }} tickLine={false} axisLine={false} />
+                    <Tooltip formatter={(value) => [Number(value).toLocaleString("vi-VN"), t("statistics.turnsCount")]} />
+                    <Bar dataKey="value" fill="#00afef" barSize={18} radius={[0, 4, 4, 0]}>
                       <LabelList
                         dataKey="value"
                         position="right"
-                        formatter={(val: any) =>
-                          val !== null && val !== undefined
-                            ? Number(val).toLocaleString("vi-VN")
-                            : ""
-                        }
-                        style={{
-                          fontSize: 12,
-                          fontWeight: 700,
-                          fill: "#374151",
-                        }}
+                        formatter={(val: any) => (val !== null && val !== undefined ? Number(val).toLocaleString("vi-VN") : "")}
+                        style={{ fontSize: 12, fontWeight: 700, fill: "#374151" }}
                         offset={8}
                       />
                     </Bar>
@@ -510,7 +455,9 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           {/* BẢNG TOP SINH VIÊN */}
           <div className="top-students-card">
             <div className="top-students-header">
-              <h4 className="top-students-title">{t("statistics.topTitle")}</h4>
+              <h4 className="top-students-title">
+                {t("statistics.topTitle")}
+              </h4>
               <button className="btn-text-link">
                 {t("statistics.viewAll")}
               </button>
@@ -537,6 +484,21 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           </div>
         </div>
       )}
+=======
+      {/* DANH SÁCH LỊCH SỬ */}
+      <div className="page-layout-full">
+        <div className="main-content-col-full">
+          <BangLichSu
+            duLieu={duLieuTheoTab}
+            dangTai={dangTai}
+            loaiTab={loaiTabHienThi}
+            tabActive="LICH_SU"
+            lichSuDuocChon={lichSuDuocChon}
+            datLichSuDuocChon={datLichSuDuocChon}
+          />
+        </div>
+      </div>
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
       {/* DRAWER THÊM DỮ LIỆU */}
       <DrawerBieuMauLichSu
@@ -546,31 +508,21 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         dangTao={dangTao}
       />
 
-      {/* THÔNG BÁO DẠNG TOAST */}
-      {thongBao && (
-        <Portal>
-          <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
-            <Notification
-              icon={
-                thongBao.kieu === "success" ? (
-                  <IconCheck size={18} />
-                ) : (
-                  <IconX size={18} />
-                )
-              }
-              color={thongBao.kieu === "success" ? "teal" : "red"}
-              title={
-                thongBao.kieu === "success"
-                  ? t("messages.success")
-                  : t("messages.error")
-              }
-              onClose={() => setThongBao(null)}
-            >
-              {thongBao.tinNhan}
-            </Notification>
-          </div>
-        </Portal>
-      )}
+      {/* DRAWER CHI TIẾT LỊCH SỬ */}
+      <DrawerChiTietLichSu
+        open={lichSuDuocChon !== null}
+        onClose={xuLyDongChiTiet}
+        lichSuDuocChon={lichSuDuocChon}
+        khiPhanHoi={xuLyPhanHoiSaiThongTin}
+      />
+=======
+      {/* DRAWER CHI TIẾT LỊCH SỬ */}
+      <DrawerChiTietLichSu
+        open={lichSuDuocChon !== null}
+        onClose={xuLyDongChiTiet}
+        lichSuDuocChon={lichSuDuocChon}
+        khiPhanHoi={(banGhi) => setXacNhanPhanHoi(banGhi)}
+      />
 
       {/* MODAL XÁC NHẬN PHẢN HỒI */}
       <Modal
@@ -594,6 +546,57 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
               {t("drawer.cancelBtn")}
             </Button>
             <Button
+              color="#1f5ca9"
+              onClick={() => {
+                hienThongBao(t("messages.reportSuccess"), "success");
+                setXacNhanPhanHoi(null);
+              }}
+            >
+              {t("feedbackModal.submitBtn")}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+>>>>>>> Stashed changes
+
+      {/* THÔNG BÁO DẠNG TOAST */}
+      {thongBao && (
+        <Portal>
+          <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
+            <Notification
+              icon={thongBao.kieu === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
+              color={thongBao.kieu === "success" ? "teal" : "red"}
+              title={thongBao.kieu === "success" ? t("messages.success") : t("messages.error")}
+              onClose={() => setThongBao(null)}
+            >
+              {thongBao.tinNhan}
+            </Notification>
+          </div>
+        </Portal>
+      )}
+<<<<<<< Updated upstream
+
+      {/* MODAL XÁC NHẬN PHẢN HỒI */}
+      <Modal
+        opened={xacNhanPhanHoi !== null}
+        onClose={() => setXacNhanPhanHoi(null)}
+        title={t("feedbackModal.title")}
+        centered
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            {t("feedbackModal.body")}{" "}
+            <span className="font-semibold">{xacNhanPhanHoi?.hoVaTen}</span> ({xacNhanPhanHoi?.mssv})?
+          </Text>
+          <Group justify="flex-end" gap="xs">
+            <Button variant="default" onClick={() => setXacNhanPhanHoi(null)}>
+              {t("drawer.cancelBtn")}
+            </Button>
+            <Button
               color="blue"
               onClick={() => {
                 hienThongBao(t("messages.reportSuccess"), "success");
@@ -605,6 +608,26 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           </Group>
         </Stack>
       </Modal>
+
+      {/* DRAWER CHI TIẾT LỊCH SỬ */}
+      <Drawer
+        opened={!!lichSuDuocChon}
+        onClose={xuLyDongChiTiet}
+        title={<span style={{ fontWeight: 700, fontSize: 16, color: '#1f5ca9' }}>{t('card.detailTitle')}</span>}
+        position="right"
+        size={400}
+      >
+        <ChiTietLichSuCard
+          lichSuDuocChon={lichSuDuocChon}
+          loaiTab={loaiTabHienThi}
+          khiDong={xuLyDongChiTiet}
+          khiPhanHoi={xuLyPhanHoiSaiThongTin}
+        />
+      </Drawer>
+
+
+=======
+>>>>>>> Stashed changes
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
     </Box>
   );
@@ -614,7 +637,7 @@ const pageStyles = `
 .history-page-container {
     padding: 1rem;
     min-height: 100vh;
-    font-family: sans-serif;
+    font-family: var(--font-k2d), sans-serif;
 }
 
 .history-title {
@@ -625,9 +648,10 @@ const pageStyles = `
     letter-spacing: -0.025em;
     margin-top: 0;
     margin-bottom: 1rem;
-    font-family: var(--font-k2d);
+    font-family: var(--font-k2d), sans-serif;
 }
 
+<<<<<<< Updated upstream
 .tabs-bar {
     background-color: #f0f4fa;
     padding: 0.25rem;
@@ -663,41 +687,12 @@ const pageStyles = `
     box-shadow: 0 4px 10px rgba(31, 92, 169, 0.25) !important;
 }
 
-.page-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-}
-
-@media (min-width: 1024px) {
-    .page-layout {
-        flex-direction: row;
-    }
-}
-
-.main-content-col {
-    flex: 1;
-    min-width: 0;
-}
-
-.detail-card-col {
+.page-layout-full {
     width: 100%;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
 }
 
-@media (min-width: 1024px) {
-    .detail-card-col {
-        width: 16rem;
-    }
-}
-
-@media (min-width: 1280px) {
-    .detail-card-col {
-        width: 18rem;
-    }
+.main-content-col-full {
+    width: 100%;
 }
 
 /* Statistics tab layouts */
@@ -929,4 +924,18 @@ const pageStyles = `
     font-weight: 600;
     font-size: 0.75rem;
 }
+=======
+.page-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.main-content-col {
+    flex: 1;
+    min-width: 0;
+}
+>>>>>>> Stashed changes
 `;
+

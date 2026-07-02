@@ -82,6 +82,10 @@
     "close": "Đóng",
     "historyWarning": "Lịch sử/Cảnh báo",
     "historyMenu": "Lịch sử ra vào",
+    "history-log": "Lịch sử",
+    "history-statistics": "Thống kê",
+    "history-staff": "Cán bộ",
+    "history-student": "Sinh viên",
     "warningsMenu": "Cảnh báo người lạ",
     "unit": "Đơn vị"
   },
@@ -220,7 +224,7 @@
     "filter": {
       "fromDate": "Từ ngày",
       "toDate": "Đến ngày",
-      "studentId": "MSSV",
+      "studentId": "Mã số",
       "fullName": "Họ tên",
       "dormitory": "Khu KTX",
       "group": "Nhóm",
@@ -270,10 +274,21 @@
       "dormitory": "KTX:",
       "time": "Thời gian:",
       "room": "Phòng:",
+      "device": "Thiết bị:",
       "status": "Trạng thái:",
       "feedbackBtn": "Phản hồi sai thông tin"
     },
     "drawer": {
+<<<<<<< Updated upstream
+      "detailTitle": "Chi tiết lượt ra vào",
+      "portraitCamera": "Ảnh chụp thực tế",
+      "eventLabel": "Sự kiện",
+      "closeBtn": "Đóng",
+      "unitLabel": "Đơn vị",
+=======
+      "detailTitle": "Chi tiết lịch sử ra vào",
+      "detailTitleStranger": "Chi tiết cảnh báo người lạ",
+>>>>>>> Stashed changes
       "createTitle": "Ghi nhận lịch sử ra vào mới",
       "dormLabel": "Khu ký túc xá",
       "dormPlaceholder": "Chọn khu",
@@ -289,7 +304,9 @@
       "notePlaceholder": "Ghi chú sự kiện nếu có",
       "saveBtn": "Lưu ghi nhận",
       "cancelBtn": "Hủy",
-      "studentIdLabel": "Mã số sinh viên (MSSV)",
+      "closeBtn": "Đóng",
+      "eventLabel": "Trạng thái",
+      "studentIdLabel": "Mã số",
       "studentIdPlaceholder": "Nhập mã số sinh viên (ví dụ: B2003789)",
       "fullNameLabel": "Họ và tên sinh viên",
       "fullNamePlaceholder": "Nhập họ và tên sinh viên",
@@ -326,6 +343,22 @@
       "turnsCount": "Số lượt ra vào",
       "topTitle": "Sinh viên ra vào nhiều nhất",
       "viewAll": "Xem tất cả"
+    },
+    "warnings": {
+      "title": "CẢNH BÁO NGƯỜI LẠ",
+      "subtitle": "Giám sát và phát hiện xâm nhập trái phép thời gian thực",
+      "gridFeed": "Grid Feed",
+      "tableList": "Table List",
+      "timeDetect": "GIỜ PHÁT HIỆN",
+      "cameraDetect": "CAMERA PHÁT HIỆN",
+      "dormDetect": "KHU KTX PHÁT HIỆN",
+      "alertIntrusion": "CẢNH BÁO XÂM NHẬP",
+      "noStranger": "Không phát hiện người lạ",
+      "noStrangerDesc": "Hệ thống hiện tại chưa ghi nhận sự xâm nhập nào phù hợp với bộ lọc.",
+      "scanning": "Đang quét dữ liệu lịch sử...",
+      "camera": "Camera phát hiện",
+      "dorm": "Khu KTX phát hiện",
+      "detailStranger": "Chi tiết người lạ"
     }
   }
 }

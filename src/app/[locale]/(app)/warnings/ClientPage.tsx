@@ -1,6 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 
+// Reload client page translations
 const StrangerWarningsPage = dynamic(
     () => import("@/components/pages/warnings/StrangerWarningsPage"),
     {
