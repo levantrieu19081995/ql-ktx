@@ -170,7 +170,7 @@
     "filter": {
       "fromDate": "Từ ngày",
       "toDate": "Đến ngày",
-      "studentId": "MSSV",
+      "studentId": "Mã số",
       "fullName": "Họ tên",
       "dormitory": "Khu KTX",
       "group": "Nhóm",
@@ -225,6 +225,11 @@
       "feedbackBtn": "Phản hồi sai thông tin"
     },
     "drawer": {
+      "detailTitle": "Chi tiết lượt ra vào",
+      "portraitCamera": "Ảnh chụp thực tế",
+      "eventLabel": "Sự kiện",
+      "closeBtn": "Đóng",
+      "unitLabel": "Đơn vị",
       "createTitle": "Ghi nhận lịch sử ra vào mới",
       "dormLabel": "Khu ký túc xá",
       "dormPlaceholder": "Chọn khu",
@@ -277,6 +282,22 @@
       "turnsCount": "Số lượt ra vào",
       "topTitle": "Sinh viên ra vào nhiều nhất",
       "viewAll": "Xem tất cả"
+    },
+    "warnings": {
+      "title": "CẢNH BÁO NGƯỜI LẠ",
+      "subtitle": "Giám sát và phát hiện xâm nhập trái phép thời gian thực",
+      "gridFeed": "Grid Feed",
+      "tableList": "Table List",
+      "timeDetect": "GIỜ PHÁT HIỆN",
+      "cameraDetect": "CAMERA PHÁT HIỆN",
+      "dormDetect": "KHU KTX PHÁT HIỆN",
+      "alertIntrusion": "CẢNH BÁO XÂM NHẬP",
+      "noStranger": "Không phát hiện người lạ",
+      "noStrangerDesc": "Hệ thống hiện tại chưa ghi nhận sự xâm nhập nào phù hợp với bộ lọc.",
+      "scanning": "Đang quét dữ liệu lịch sử...",
+      "camera": "Camera phát hiện",
+      "dorm": "Khu KTX phát hiện",
+      "detailStranger": "Chi tiết người lạ"
     }
   }
 }

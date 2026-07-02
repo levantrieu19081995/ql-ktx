@@ -149,17 +149,24 @@ export const dichVuLichSuRaVao = {
             trangThaiSinhVien = "BI_CAM";
           }
 
+          let duongDanAnh = item.pathimage || "";
+          if (duongDanAnh && !duongDanAnh.startsWith("http") && !duongDanAnh.startsWith("data:")) {
+            const cleanPath = duongDanAnh.startsWith("/") ? duongDanAnh : "/" + duongDanAnh;
+            duongDanAnh = `${BASE_URL}${cleanPath}`;
+          }
+
           return {
             id: String(item.id),
             thoiGian: item.timecheck ? dayjs.unix(item.timecheck).format("YYYY-MM-DD HH:mm:ss") : dayjs().format("YYYY-MM-DD HH:mm:ss"),
             mssv: item.maso || "",
             hoVaTen: item.hoten || "",
-            duongDanAnhChup: item.pathimage || "",
+            duongDanAnhDaiDien: duongDanAnh || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+            duongDanAnhChup: duongDanAnh || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=250",
             loai: loai,
             maKtx: item.maKhu || "",
             tenKtx: item.tenKhu || "",
-            maPhong: "",
-            tenPhong: "",
+            maPhong: item.maPhong || item.phongId || "",
+            tenPhong: item.tenPhong || item.phong || item.donvi || item.tenDonVi || "",
             thietBi: item.cameraName || "",
             loaiDoiTuong: tennhom,
             trangThaiSinhVien,
@@ -251,5 +258,296 @@ export const dichVuLichSuRaVao = {
     const item = danhSachLichSuRaVaoCucBo.find((h) => h.id === guid || (h as any).guid === guid);
     if (item) return item;
     throw new Error("Không tìm thấy bản ghi theo GUID");
+  }
+};
+
+const MOCK_STRANGER_WARNINGS: HistoryItem[] = [
+  {
+    id: "MOCK_WARN_1",
+    thoiGian: "2026-06-27 08:20:00",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300",
+    loai: "IN",
+    maKtx: "A",
+    tenKtx: "Ký túc xá A",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào A1",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_2",
+    thoiGian: "2026-06-27 08:35:12",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300",
+    loai: "IN",
+    maKtx: "B",
+    tenKtx: "Ký túc xá B",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào B2",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_3",
+    thoiGian: "2026-06-28 09:12:44",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300",
+    loai: "OUT",
+    maKtx: "A",
+    tenKtx: "Ký túc xá A",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera ra A1",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_4",
+    thoiGian: "2026-06-28 10:05:19",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300",
+    loai: "IN",
+    maKtx: "C",
+    tenKtx: "Ký túc xá C",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào C1",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_5",
+    thoiGian: "2026-06-29 11:20:30",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300",
+    loai: "OUT",
+    maKtx: "B",
+    tenKtx: "Ký túc xá B",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera ra B1",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_6",
+    thoiGian: "2026-06-30 14:15:02",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300",
+    loai: "IN",
+    maKtx: "A",
+    tenKtx: "Ký túc xá A",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào A2",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_7",
+    thoiGian: "2026-07-01 15:40:55",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300",
+    loai: "OUT",
+    maKtx: "C",
+    tenKtx: "Ký túc xá C",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera ra C2",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_8",
+    thoiGian: "2026-07-01 16:02:11",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300",
+    loai: "IN",
+    maKtx: "B",
+    tenKtx: "Ký túc xá B",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào B1",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_9",
+    thoiGian: "2026-07-02 17:18:33",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300",
+    loai: "OUT",
+    maKtx: "A",
+    tenKtx: "Ký túc xá A",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera ra A2",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  },
+  {
+    id: "MOCK_WARN_10",
+    thoiGian: "2026-07-02 18:05:40",
+    mssv: "NguoiLa",
+    hoVaTen: "Người lạ",
+    duongDanAnhDaiDien: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=150",
+    duongDanAnhChup: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=300",
+    loai: "IN",
+    maKtx: "C",
+    tenKtx: "Ký túc xá C",
+    maPhong: "",
+    tenPhong: "",
+    thietBi: "Camera vào C1",
+    loaiDoiTuong: "Người lạ",
+    trangThaiSinhVien: "BINH_THUONG",
+    trangThaiHienDien: "VANG_MAT"
+  }
+];
+
+export const dichVuCanhBaoNguoiLa = {
+  layDanhSachCanhBao: async (params: {
+    page: number;
+    pageSize: number;
+    tuNgay?: string;
+    denNgay?: string;
+    maKtx?: string;
+  }): Promise<{ items: HistoryItem[]; totalPages: number; totalElements: number }> => {
+    try {
+      let formattedTuNgay = "";
+      let formattedDenNgay = "";
+      
+      if (params.tuNgay) {
+        formattedTuNgay = dayjs(params.tuNgay).format("MM/DD/YYYY");
+      } else {
+        formattedTuNgay = dayjs().subtract(7, 'day').format("MM/DD/YYYY");
+      }
+      
+      if (params.denNgay) {
+        formattedDenNgay = dayjs(params.denNgay).format("MM/DD/YYYY");
+      } else {
+        formattedDenNgay = dayjs().format("MM/DD/YYYY");
+      }
+
+      const requestBody = {
+        page: String(params.page),
+        pageSize: String(params.pageSize),
+        tuNgay: formattedTuNgay,
+        denNgay: formattedDenNgay,
+        maKhu: params.maKtx && params.maKtx !== "-1" ? params.maKtx : "-1"
+      };
+
+      let items: HistoryItem[] = [];
+
+      try {
+        const res = await fetch(`https://qldaotaolaixe.cusc.vn/face-detect-service/face-web-check-time/paginate-nguoi-la`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': AUTH_HEADER
+          },
+          body: JSON.stringify(requestBody)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.status === 'OK') {
+            const payload = data.payload || {};
+            const apiItems = payload.items || [];
+            items = apiItems.map((item: any, index: number) => {
+              const isVao = item.cameraName?.toLowerCase().includes("vào") || item.camera === 1;
+              const loai: 'IN' | 'OUT' = isVao ? "IN" : "OUT";
+              
+              let duongDanAnh = item.pathImage || "";
+              if (duongDanAnh && !duongDanAnh.startsWith("http") && !duongDanAnh.startsWith("data:")) {
+                const cleanPath = duongDanAnh.startsWith("/") ? duongDanAnh : "/" + duongDanAnh;
+                duongDanAnh = `${BASE_URL}${cleanPath}`;
+              }
+
+              return {
+                id: `WARNING_${item.id || index}_${item.timecheck}`,
+                thoiGian: item.timecheck ? dayjs(item.timecheck).format("YYYY-MM-DD HH:mm:ss") : dayjs().format("YYYY-MM-DD HH:mm:ss"),
+                mssv: "NguoiLa",
+                hoVaTen: "Người lạ",
+                duongDanAnhDaiDien: duongDanAnh || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+                duongDanAnhChup: duongDanAnh || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=250",
+                loai: loai,
+                maKtx: item.maKhu || "",
+                tenKtx: item.tenKhu || "",
+                maPhong: "",
+                tenPhong: "",
+                thietBi: item.cameraName || "",
+                loaiDoiTuong: "Người lạ",
+                trangThaiSinhVien: "BINH_THUONG",
+                trangThaiHienDien: "VANG_MAT"
+              };
+            });
+          }
+        }
+      } catch (apiErr) {
+        console.warn("Lỗi API warnings, sử dụng giả lập:", apiErr);
+      }
+
+      // Merge mock data and API data
+      let mergedItems = [...MOCK_STRANGER_WARNINGS, ...items];
+
+      // Apply client-side filters on mock/merged database for consistency
+      if (params.maKtx && params.maKtx !== "-1") {
+        mergedItems = mergedItems.filter(item => item.maKtx === params.maKtx);
+      }
+      if (params.tuNgay) {
+        const afterDate = dayjs(params.tuNgay).startOf('day');
+        mergedItems = mergedItems.filter(item => dayjs(item.thoiGian).isAfter(afterDate) || dayjs(item.thoiGian).isSame(afterDate));
+      }
+      if (params.denNgay) {
+        const beforeDate = dayjs(params.denNgay).endOf('day');
+        mergedItems = mergedItems.filter(item => dayjs(item.thoiGian).isBefore(beforeDate) || dayjs(item.thoiGian).isSame(beforeDate));
+      }
+
+      // Local pagination slice
+      const startIdx = (params.page - 1) * params.pageSize;
+      const endIdx = params.page * params.pageSize;
+      const paginatedItems = mergedItems.slice(startIdx, endIdx);
+      const totalElements = mergedItems.length;
+      const totalPages = Math.ceil(totalElements / params.pageSize);
+
+      return {
+        items: paginatedItems,
+        totalPages,
+        totalElements
+      };
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách cảnh báo người lạ:", error);
+      return { items: [], totalPages: 0, totalElements: 0 };
+    }
   }
 };

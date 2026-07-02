@@ -3,6 +3,7 @@
 import {getRequestConfig} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
 
+// Force rebuild to reload translations
 export default getRequestConfig(async ({locale}) => {
   const supported = new Set(routing.locales);               // ['vi','en']
   const loc = supported.has(locale as any) ? locale! : routing.defaultLocale; 

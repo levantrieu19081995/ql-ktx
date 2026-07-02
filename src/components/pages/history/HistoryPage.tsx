@@ -29,15 +29,19 @@ import {
 
 import BoLocLichSu from "./BoLocLichSu";
 import BangLichSu from "./BangLichSu";
-import ChiTietLichSuCard from "./ChiTietLichSuCard";
+import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
 import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
 import type { LoaiTabHienThi } from "./BangLichSu";
 
+<<<<<<< HEAD
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
+=======
+type LoaiTabChinh = "LICH_SU" | "THONG_KE";
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
 const duLieuBieuDoThoiGian = [
   { ngay: "01/06", luotVao: 110, luotRa: 60 },
@@ -149,6 +153,7 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
     taiDuLieu();
   }, [boLoc]);
 
+<<<<<<< HEAD
   // Removed auto-select useEffect to prevent drawer from opening automatically on load
 
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
@@ -164,14 +169,17 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
         !h.loaiDoiTuong?.toLowerCase().includes("can bo")
       );
     }
+=======
+  // Auto-selection of first item on load has been disabled to prevent drawer from auto-opening
+
+  const duLieuTheoTab = useMemo((): HistoryItem[] => {
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
     return danhSachLichSu;
-  }, [danhSachLichSu, tabActive]);
+  }, [danhSachLichSu]);
 
   const loaiTabHienThi = useMemo((): LoaiTabHienThi => {
-    if (tabActive === "CAN_BO") return "LICH_SU";
-    if (tabActive === "SINH_VIEN") return "LICH_SU";
     return "LICH_SU";
-  }, [tabActive]);
+  }, []);
 
   const xuLyTimKiem = () => {
     taiDuLieu();
@@ -223,6 +231,7 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
     switch (key) {
       case "LICH_SU":
         return danhSachLichSu.length;
+<<<<<<< HEAD
       case "CAN_BO":
         return danhSachLichSu.filter((h) =>
           h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
@@ -233,17 +242,42 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
           !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
           !h.loaiDoiTuong?.toLowerCase().includes("can bo")
         ).length;
+=======
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
       default:
         return undefined;
     }
   };
 
+<<<<<<< HEAD
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
       <h2 className="history-title">
         {t("title")}
       </h2>
+=======
+  const danhSachTabs = useMemo(
+    () => [
+      {
+        key: "LICH_SU" as const,
+        nhan: t("tabs.log"),
+        icon: <IconHistory size={16} />,
+      },
+      {
+        key: "THONG_KE" as const,
+        nhan: t("tabs.statistics"),
+        icon: <IconChartBar size={16} />,
+      },
+    ],
+    [t],
+  );
+
+  return (
+    <Box className="history-page-container">
+      {/* TIÊU ĐỀ TRANG */}
+      <h2 className="history-title">{t("title")}</h2>
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
       {/* BỘ LỌC */}
       {tabActive !== "THONG_KE" && (
@@ -258,6 +292,7 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
         />
       )}
 
+<<<<<<< HEAD
       {/* TAB: LỊCH SỬ | CÓ MẶT | VẮNG MẶT */}
       {(tabActive === "LICH_SU" || tabActive === "CAN_BO" || tabActive === "SINH_VIEN") && (
         <div key={tabActive} className="page-layout">
@@ -396,6 +431,21 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
           </div>
         </div>
       )}
+=======
+      {/* DANH SÁCH LỊCH SỬ */}
+      <div className="page-layout-full">
+        <div className="main-content-col-full">
+          <BangLichSu
+            duLieu={duLieuTheoTab}
+            dangTai={dangTai}
+            loaiTab={loaiTabHienThi}
+            tabActive="LICH_SU"
+            lichSuDuocChon={lichSuDuocChon}
+            datLichSuDuocChon={datLichSuDuocChon}
+          />
+        </div>
+      </div>
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
       {/* DRAWER THÊM DỮ LIỆU */}
       <DrawerBieuMauLichSu
@@ -403,6 +453,14 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
         onClose={() => datMoDrawerBieuMau(false)}
         onSave={xuLyTaoBanGhi}
         dangTao={dangTao}
+      />
+
+      {/* DRAWER CHI TIẾT LỊCH SỬ */}
+      <DrawerChiTietLichSu
+        open={lichSuDuocChon !== null}
+        onClose={xuLyDongChiTiet}
+        lichSuDuocChon={lichSuDuocChon}
+        khiPhanHoi={xuLyPhanHoiSaiThongTin}
       />
 
       {/* THÔNG BÁO DẠNG TOAST */}
@@ -480,7 +538,7 @@ const pageStyles = `
 .history-page-container {
     padding: 1rem;
     min-height: 100vh;
-    font-family: sans-serif;
+    font-family: var(--font-k2d), sans-serif;
 }
 
 .history-title {
@@ -491,7 +549,7 @@ const pageStyles = `
     letter-spacing: -0.025em;
     margin-top: 0;
     margin-bottom: 1rem;
-    font-family: var(--font-k2d);
+    font-family: var(--font-k2d), sans-serif;
 }
 
 .tabs-bar {
@@ -529,41 +587,12 @@ const pageStyles = `
     box-shadow: 0 4px 10px rgba(31, 92, 169, 0.25) !important;
 }
 
-.page-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-}
-
-@media (min-width: 1024px) {
-    .page-layout {
-        flex-direction: row;
-    }
-}
-
-.main-content-col {
-    flex: 1;
-    min-width: 0;
-}
-
-.detail-card-col {
+.page-layout-full {
     width: 100%;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
 }
 
-@media (min-width: 1024px) {
-    .detail-card-col {
-        width: 16rem;
-    }
-}
-
-@media (min-width: 1280px) {
-    .detail-card-col {
-        width: 18rem;
-    }
+.main-content-col-full {
+    width: 100%;
 }
 
 /* Statistics tab layouts */

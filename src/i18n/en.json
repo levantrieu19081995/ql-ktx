@@ -173,7 +173,7 @@
     "filter": {
       "fromDate": "From Date",
       "toDate": "To Date",
-      "studentId": "Student ID",
+      "studentId": "ID",
       "fullName": "Full Name",
       "dormitory": "Dormitory",
       "group": "Group",
@@ -228,6 +228,11 @@
       "feedbackBtn": "Report Incorrect Info"
     },
     "drawer": {
+      "detailTitle": "Access Event Details",
+      "portraitCamera": "Camera Captured Photo",
+      "eventLabel": "Event",
+      "closeBtn": "Close",
+      "unitLabel": "Unit",
       "createTitle": "Record New Access History",
       "dormLabel": "Dormitory Area",
       "dormPlaceholder": "Select area",
@@ -280,6 +285,22 @@
       "turnsCount": "Turns Count",
       "topTitle": "Top Active Students",
       "viewAll": "View All"
+    },
+    "warnings": {
+      "title": "STRANGER WARNINGS",
+      "subtitle": "Real-time monitoring and unauthorized intrusion detection",
+      "gridFeed": "Grid Feed",
+      "tableList": "Table List",
+      "timeDetect": "TIME DETECTED",
+      "cameraDetect": "CAMERA DETECTED",
+      "dormDetect": "DORMITORY DETECTED",
+      "alertIntrusion": "INTRUSION WARNING",
+      "noStranger": "No strangers detected",
+      "noStrangerDesc": "No intrusions matching the current filter have been recorded.",
+      "scanning": "Scanning history records...",
+      "camera": "Camera Detected",
+      "dorm": "Dormitory Detected",
+      "detailStranger": "Stranger Details"
     }
   }
 }

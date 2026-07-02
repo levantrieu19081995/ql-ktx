@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TextInput, Select, Button } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
+import { DatePickerInput } from '@mantine/dates';
 import { useTranslations } from 'next-intl';
 import {
     IconSearch,
@@ -80,32 +80,38 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
     return (
         <div className="modern-filter-container">
             <div className="filter-content-wrapper">
-                {/* HÀNG 1: Họ tên + MSSV + Nhóm nút hành động */}
+                {/* HÀNG 1: Từ ngày + Đến ngày + Nhóm nút hành động */}
                 <div className="filter-row-1">
                     <div className="filter-field-group text-inputs">
-                        {/* Họ tên */}
+                        {/* Từ ngày */}
                         <div className="filter-field w-50">
-                            <label className="filter-label">{t('filter.fullName').toUpperCase()}</label>
-                            <TextInput
-                                placeholder="Nhập họ tên..."
-                                value={boLoc.hoVaTen || ''}
-                                onChange={(e) => datBoLoc({ hoVaTen: e.target.value })}
+                            <label className="filter-label">{t('filter.fromDate').toUpperCase()}</label>
+                            <DatePickerInput
+                                placeholder="DD/MM/YYYY"
+                                valueFormat="DD/MM/YYYY"
+                                value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
+                                onChange={(ngay) =>
+                                    datBoLoc({ tuNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
+                                }
                                 size="sm"
                                 radius="md"
                                 styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
                             />
                         </div>
 
-                        {/* MSSV */}
+                        {/* Đến ngày */}
                         <div className="filter-field w-50">
-                            <label className="filter-label">{t('filter.studentId').toUpperCase()}</label>
-                            <TextInput
-                                placeholder="Nhập MSSV..."
-                                value={boLoc.mssv || ''}
-                                onChange={(e) => datBoLoc({ mssv: e.target.value })}
+                            <label className="filter-label">{t('filter.toDate').toUpperCase()}</label>
+                            <DatePickerInput
+                                placeholder="DD/MM/YYYY"
+                                valueFormat="DD/MM/YYYY"
+                                value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
+                                onChange={(ngay) =>
+                                    datBoLoc({ denNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
+                                }
                                 size="sm"
                                 radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7', fontFamily: 'monospace' } }}
+                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
                             />
                         </div>
                     </div>
@@ -170,38 +176,6 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                 {/* HÀNG 2: Xuất hiện khi bấm Mở rộng bộ lọc */}
                 {moRong && (
                     <div className="filter-row-2">
-                        {/* Từ ngày */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.fromDate').toUpperCase()}</label>
-                            <DateInput
-                                placeholder="mm/dd/yyyy"
-                                valueFormat="DD/MM/YYYY"
-                                value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
-                                onChange={(ngay) =>
-                                    datBoLoc({ tuNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
-                                }
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                            />
-                        </div>
-
-                        {/* Đến ngày */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.toDate').toUpperCase()}</label>
-                            <DateInput
-                                placeholder="mm/dd/yyyy"
-                                valueFormat="DD/MM/YYYY"
-                                value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
-                                onChange={(ngay) =>
-                                    datBoLoc({ denNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
-                                }
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                            />
-                        </div>
-
                         {/* Khu KTX */}
                         <div className="filter-field">
                             <label className="filter-label">{t('filter.dormitory').toUpperCase()}</label>
@@ -245,6 +219,32 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                                 styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
                                 data={optionsNhom}
                                 placeholder="Tất cả"
+                            />
+                        </div>
+
+                        {/* Họ tên */}
+                        <div className="filter-field">
+                            <label className="filter-label">{t('filter.fullName').toUpperCase()}</label>
+                            <TextInput
+                                placeholder="Nhập họ tên..."
+                                value={boLoc.hoVaTen || ''}
+                                onChange={(e) => datBoLoc({ hoVaTen: e.target.value })}
+                                size="sm"
+                                radius="md"
+                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
+                            />
+                        </div>
+
+                        {/* MSSV */}
+                        <div className="filter-field">
+                            <label className="filter-label">{t('filter.studentId').toUpperCase()}</label>
+                            <TextInput
+                                placeholder="Nhập MSSV..."
+                                value={boLoc.mssv || ''}
+                                onChange={(e) => datBoLoc({ mssv: e.target.value })}
+                                size="sm"
+                                radius="md"
+                                styles={{ input: { height: '38px', borderColor: '#e4e4e7', fontFamily: 'monospace' } }}
                             />
                         </div>
                     </div>

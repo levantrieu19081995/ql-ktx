@@ -1,6 +1,14 @@
 // src/app/[locale]/(app)/content/ClientPage.tsx
 "use client";
 import dynamic from "next/dynamic";
+<<<<<<< HEAD
+=======
+type LoaiTabChinh = "LICH_SU" | "THONG_KE";
+
+type ClientPageProps = {
+  tab?: LoaiTabChinh;
+};
+>>>>>>> 226c8f8 (Cập nhật chức năng history)
 
 const HistoryPage = dynamic(
     () => import("@/components/pages/history/HistoryPage"),
