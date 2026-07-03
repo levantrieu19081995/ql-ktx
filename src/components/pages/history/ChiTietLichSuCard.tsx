@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Button } from '@mantine/core';
-import { useTranslations } from 'next-intl';
-import { HistoryItem } from '../../../types/type-history';
-import { layNhanTrangThai } from './BangLichSu';
-import type { LoaiTabHienThi } from './BangLichSu';
-import dayjs from 'dayjs';
+import React from "react";
+import { Button } from "@mantine/core";
+import { useTranslations } from "next-intl";
+import { HistoryItem } from "../../../types/type-history";
+import { layNhanTrangThai } from "./BangLichSu";
+import type { LoaiTabHienThi } from "./BangLichSu";
+import dayjs from "dayjs";
 
 // Định nghĩa giao diện thuộc tính cho Component Chi tiết lịch sử ra vào
 interface ThuocTinhChiTietLichSuCard {
-    // Bản ghi lịch sử ra vào đang được lựa chọn để xem chi tiết
-    lichSuDuocChon: HistoryItem | null;
+  // Bản ghi lịch sử ra vào đang được lựa chọn để xem chi tiết
+  lichSuDuocChon: HistoryItem | null;
 
-    // Loại tab hiện tại để xác định màu trạng thái
-    loaiTab?: LoaiTabHienThi;
+  // Loại tab hiện tại để xác định màu trạng thái
+  loaiTab?: LoaiTabHienThi;
 
-    // Hàm callback khi người dùng bấm nút Đóng
-    khiDong: () => void;
+  // Hàm callback khi người dùng bấm nút Đóng
+  khiDong: () => void;
 
-    // Hàm callback khi người dùng bấm nút Phản hồi sai thông tin
-    khiPhanHoi: (lichSu: HistoryItem) => void;
+  // Hàm callback khi người dùng bấm nút Phản hồi sai thông tin
+  khiPhanHoi: (lichSu: HistoryItem) => void;
 }
 
 /**
@@ -28,104 +28,110 @@ interface ThuocTinhChiTietLichSuCard {
  * Chức năng: Hiển thị ảnh chân dung lớn và thông tin cụ thể của bản ghi được chọn.
  */
 export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
-    lichSuDuocChon,
-    loaiTab = 'LICH_SU',
-    khiDong,
-    khiPhanHoi,
+  lichSuDuocChon,
+  loaiTab = "LICH_SU",
+  khiDong,
+  khiPhanHoi,
 }) => {
-    const t = useTranslations('History');
-    // Nếu không có bản ghi nào được chọn, hiển thị thông báo rỗng
-    if (!lichSuDuocChon) {
-        return (
-            <div className="empty-card">
-                <p className="empty-text">
-                    {t('card.emptyText')}
-                </p>
-                <style dangerouslySetInnerHTML={{ __html: styles }} />
-            </div>
-        );
-    }
-
-    // Xác định đường dẫn ảnh chân dung
-    const duongDanAnh =
-        lichSuDuocChon.duongDanAnhChup ||
-        lichSuDuocChon.duongDanAnhDaiDien ||
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200';
-
-    // Định dạng mốc thời gian hiển thị
-    const thoiGianDinhDang = dayjs(lichSuDuocChon.thoiGian).format('DD/MM/YYYY HH:mm:ss');
-
-    // Lấy nhãn và màu sắc trạng thái theo tab
-    const { nhan: nhanTrangThai, mauSac } = layNhanTrangThai(lichSuDuocChon, loaiTab, t);
-
-    const laCanBo =
-        lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes('cán bộ') ||
-        lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes('can bo');
-
+  const t = useTranslations("History");
+  // Nếu không có bản ghi nào được chọn, hiển thị thông báo rỗng
+  if (!lichSuDuocChon) {
     return (
-        <div className="detail-card">
-            {/* Ảnh chân dung lớn */}
-            <div className="image-container">
-                <div className="image-wrapper">
-                    <img
-                        src={duongDanAnh}
-                        alt={lichSuDuocChon.hoVaTen}
-                        className="portrait-image"
-                    />
-                </div>
-            </div>
-
-            {/* Danh sách thông tin chi tiết */}
-            <div className="info-list">
-                <div className="info-row">
-                    <span className="info-label">{t('filter.studentId')}:</span>
-                    <span className="info-value-strong">{lichSuDuocChon.mssv}</span>
-                </div>
-
-                <div className="info-row">
-                    <span className="info-label">{t('table.fullName')}:</span>
-                    <span className="info-value-strong">{lichSuDuocChon.hoVaTen}</span>
-                </div>
-
-                <div className="info-row">
-                    <span className="info-label">{t('card.dormitory')}</span>
-                    <span className="info-value">{lichSuDuocChon.tenKtx}</span>
-                </div>
-
-                <div className="info-row">
-                    <span className="info-label">{laCanBo ? `${t('table.unit')}:` : t('card.room')}</span>
-                    <span className="info-value">{lichSuDuocChon.tenPhong || 'N/A'}</span>
-                </div>
-
-                <div className="info-row">
-                    <span className="info-label">{t('card.device')}</span>
-                    <span className="info-value">{lichSuDuocChon.thietBi || 'N/A'}</span>
-                </div>
-
-                <div className="info-row">
-                    <span className="info-label">{t('card.time')}</span>
-                    <span className="info-value">{thoiGianDinhDang}</span>
-                </div>
-
-                <div className="info-row">
-                    <span className="info-label">{t('card.status')}</span>
-                    <span className={`info-value-strong ${mauSac}`}>{nhanTrangThai}</span>
-                </div>
-            </div>
-
-            {/* Nút thao tác */}
-            <div className="button-container">
-                <Button
-                    fullWidth
-                    onClick={() => khiPhanHoi(lichSuDuocChon)}
-                    className="action-button"
-                >
-                    {t('card.feedbackBtn')}
-                </Button>
-            </div>
-            <style dangerouslySetInnerHTML={{ __html: styles }} />
-        </div>
+      <div className="empty-card">
+        <p className="empty-text">{t("card.emptyText")}</p>
+        <style dangerouslySetInnerHTML={{ __html: styles }} />
+      </div>
     );
+  }
+
+  // Xác định đường dẫn ảnh chân dung
+  const duongDanAnh =
+    lichSuDuocChon.duongDanAnhChup ||
+    lichSuDuocChon.duongDanAnhDaiDien ||
+    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200";
+
+  // Định dạng mốc thời gian hiển thị
+  const thoiGianDinhDang = dayjs(lichSuDuocChon.thoiGian).format(
+    "DD/MM/YYYY HH:mm:ss",
+  );
+
+  // Lấy nhãn và màu sắc trạng thái theo tab
+  const { nhan: nhanTrangThai, mauSac } = layNhanTrangThai(
+    lichSuDuocChon,
+    loaiTab,
+    t,
+  );
+
+  const laCanBo =
+    lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
+    lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("can bo");
+
+  return (
+    <div className="detail-card">
+      {/* Ảnh chân dung lớn */}
+      <div className="image-container">
+        <div className="image-wrapper">
+          <img
+            src={duongDanAnh}
+            alt={lichSuDuocChon.hoVaTen}
+            className="portrait-image"
+          />
+        </div>
+      </div>
+
+      {/* Danh sách thông tin chi tiết */}
+      <div className="info-list">
+        <div className="info-row">
+          <span className="info-label">{t("filter.studentId")}:</span>
+          <span className="info-value-strong">{lichSuDuocChon.mssv}</span>
+        </div>
+
+        <div className="info-row">
+          <span className="info-label">{t("table.fullName")}:</span>
+          <span className="info-value-strong">{lichSuDuocChon.hoVaTen}</span>
+        </div>
+
+        <div className="info-row">
+          <span className="info-label">{t("card.dormitory")}</span>
+          <span className="info-value">{lichSuDuocChon.tenKtx}</span>
+        </div>
+
+        <div className="info-row">
+          <span className="info-label">
+            {laCanBo ? `${t("table.unit")}:` : t("card.room")}
+          </span>
+          <span className="info-value">{lichSuDuocChon.tenPhong || "N/A"}</span>
+        </div>
+
+        <div className="info-row">
+          <span className="info-label">{t("card.device")}</span>
+          <span className="info-value">{lichSuDuocChon.thietBi || "N/A"}</span>
+        </div>
+
+        <div className="info-row">
+          <span className="info-label">{t("card.time")}</span>
+          <span className="info-value">{thoiGianDinhDang}</span>
+        </div>
+
+        <div className="info-row">
+          <span className="info-label">{t("card.status")}</span>
+          <span className={`info-value-strong ${mauSac}`}>{nhanTrangThai}</span>
+        </div>
+      </div>
+
+      {/* Nút thao tác */}
+      <div className="button-container">
+        <Button
+          fullWidth
+          onClick={() => khiPhanHoi(lichSuDuocChon)}
+          className="action-button"
+        >
+          {t("card.feedbackBtn")}
+        </Button>
+      </div>
+      <style dangerouslySetInnerHTML={{ __html: styles }} />
+    </div>
+  );
 };
 
 const styles = `
