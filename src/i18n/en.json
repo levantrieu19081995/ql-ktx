@@ -4,14 +4,19 @@
     "followers": "{count, plural, =0 {Chưa có người theo dõi} =1 {1 người theo dõi} other {# người theo dõi}}"
   },
   "Login": {
-    "title": "Sign in to QUAN LY DANG KIEM",
+    "title": "Sign in to DORMITORY MANAGEMENT",
     "welcome": "Welcome back. Please sign in to continue.",
     "username": "Username",
     "password": "Password",
+    "captcha": "CAPTCHA",
+    "captchaCode": "6-digit CAPTCHA code",
+    "captchaInput": "Enter CAPTCHA",
+    "captchaInputPh": "Enter the 6 digits shown",
+    "captchaRefresh": "Refresh CAPTCHA",
     "usernamePh": "Enter username",
     "passwordPh": "••••••••",
     "submit": "Sign in",
-    "divider": "QUAN LY DANG KIEM • an internal system",
+    "divider": "DORMITORY MANAGEMENT • an internal system",
     "forgot": "Forgot password? Contact the admin to reset.",
     "errors": {
       "CredentialsSignin": "Incorrect username or password.",
@@ -20,7 +25,9 @@
       "requiredUsername": "Please enter your username",
       "minUsername": "Username must be at least {count} characters",
       "requiredPassword": "Please enter your password",
-      "minPassword": "Password must be at least {count} characters"
+      "minPassword": "Password must be at least {count} characters",
+      "requiredCaptcha": "Please enter the CAPTCHA",
+      "captchaMismatch": "Incorrect CAPTCHA, please try again"
     }
   },
   "Header": {
@@ -31,6 +38,11 @@
   },
   "Menu": {
     "home": "Overview",
+    "statistics": "Statistics",
+    "statInOut": "In/Out Statistics",
+    "statAbsent": "Absent Students",
+    "statStranger": "Stranger Detections",
+    "statBanned": "Banned Students",
     "content": "Content",
     "scheduler": "Scheduler",
     "analytics": "Analytics",
@@ -46,17 +58,22 @@
     "logoutConfirmDesc": "Are you sure you want to log out of this account?",
     "billManagement": "Bill Management",
     "feesmanagement": "Fees Management",
-    "tollManagement": "Road motor vehicle inspection",
+    "tollManagement": "KTX Admission",
     "extraFeesManagement": "Toll Other",
     "inlandWaterwaysFeesManagement": "Inland Waterway Vehicle Fee Collection",
     "specializedMotorbikeFeesManagement": "Specialized Motorbike",
     "inspectionFeesManagement": "Inspection ATLĐ",
     "certificateOfRenovationFeesManagenment": "Certificate of Renovation",
-    "category": "Category system",
+    "category": "Categories",
+    "categoryStudentDorm": "Dormitory student list",
+    "categoryRoomDorm": "Dormitory room list",
+    "categoryAreaDorm": "Dormitory area list",
+    "categoryBannedStudent": "Banned student list",
+    "categoryBannedStudentUpdate": "Add/edit banned students",
     "reportsAndStatistics": "Reports And Statistics",
     "instructionManual": "Instruction Manual",
-    "DocumentVehicleinspection": "Document 1",
-    "DocumentExtraFees": "Document 2",
+    "DocumentVehicleinspection": "KTX Admission Guide",
+    "DocumentExtraFees": "Toll Other",
     "VersionApp": "Version",
     "versionDetails": "Version Details",
     "versionDetailsTitle": "New Version of the Application",
@@ -69,6 +86,7 @@
     "history-staff": "Staff",
     "history-student": "Students",
     "warningsMenu": "Stranger Warnings",
+    "historyWarning": "History/Warnings",
     "unit": "Unit"
   },
   "Integrations": {
@@ -106,29 +124,64 @@
     "backHome": "Back to Home"
   },
   "Dashboard": {
-    "title": "Overview"
+    "title": "DORMITORY MONITORING SYSTEM",
+    "quickStats": "QUICK STATISTICS",
+    "totalTitle": "TOTAL STUDENTS",
+    "totalCaption": "Total number of students",
+    "presentTitle": "PRESENT IN KTX",
+    "presentCaption": "{percent}% of total students",
+    "outTitle": "OUTSIDE",
+    "outCaption": "{percent}% of total students",
+    "debtTitle": "FEE DEBT",
+    "debtCaption": "{percent}% of total students",
+    "bannedTitle": "BANNED STUDENTS",
+    "bannedCaption": "{percent}% of total students",
+    "strangerTitle": "STRANGERS TODAY",
+    "strangerCaption": "Detected today",
+    "historyTitle": "LATEST IN/OUT HISTORY",
+    "viewAll": "View all",
+    "stt": "No.",
+    "time": "Time",
+    "studentId": "Student ID",
+    "avatar": "Avatar",
+    "name": "Full Name",
+    "type": "Direction",
+    "ktx": "Dorm Zone",
+    "room": "Room",
+    "in": "In",
+    "out": "Out",
+    "chartsTitle": "STATISTICS CHARTS",
+    "timeChartTitle": "IN/OUT TRAFFIC BY TIME",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year",
+    "top5Title": "TOP 5 MOST ACTIVE STUDENTS",
+    "top5Subtitle": "Number of card/fingerprint scans recorded this month",
+    "scansCount": "Scans count",
+    "ktxChartTitle": "IN/OUT BY DORMITORY ZONE",
+    "ktxChartSubtitle": "Card scan ratio distributed by dormitory zone",
+    "distributionTitle": "DISTRIBUTION BY ZONE",
+    "totalLabel": "Total:",
+    "totalStudentsText": "Total: {count} students",
+    "viewDetails": "View details",
+    "strangerChartTitle": "STRANGER DETECTION STATISTICS",
+    "strangerChartSubtitle": "Number of times system detected strangers in the last 7 days",
+    "strangerCount": "Detections count",
+    "intrusionTitle": "INTRUSION ALERTS",
+    "intrusionSubtitle": "Number of restricted students attempting to scan into dormitories",
+    "ktxButton": "Dorm Zone",
+    "dayMonthButton": "Day/Month",
+    "alertsCount": "Alerts count"
   },
-  "Analytics": {
-    "title": "Analytics"
-  },
-  "Content": {
-    "title": "Content"
-  },
-  "Scheduler": {
-    "title": "Scheduler"
-  },
-  "Settings": {
-    "title": "Settings"
-  },
+  "Analytics": { "title": "Analytics" },
+  "Content": { "title": "Content" },
+  "Scheduler": { "title": "Scheduler" },
+  "Settings": { "title": "Settings" },
   "Manage-users": {
     "title": "User Management"
   },
-  "TollManagement": {
-    "title": "Road vehicle inspection"
-  },
-  "ExtraFeesManagement": {
-    "title": "Toll Other"
-  },
+  "TollManagement": { "title": "KTX Admission" },
+  "ExtraFeesManagement": { "title": "Toll Other" },
   "InlandWaterwaysFeesManagement": {
     "title": "Inland Waterway Vehicle Fee Collection"
   },

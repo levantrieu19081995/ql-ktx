@@ -4,7 +4,7 @@
 
 import { showNoti } from "@/components/common/showNoti";
 import { fetchMauHoaDonList } from "@/services/danh-muc/dmMauHoaDon";
-import { flushInvoice, postPublic } from "@/services/hoa-don/hoaDonService";
+// import { flushInvoice, postPublic } from "@/services/hoa-don/hoaDonService";
 import { MauHoaDonItem } from "@/types/type-mau-hoa-don";
 import {
   Modal,
@@ -127,24 +127,25 @@ export default function InvoicePreviewModal({
         mauHoaDonMauSo: mauSelected.mauHoadonMauso,
       };
 
-      const res = await postPublic(payload);
-      if (res?.status === "OK" && res?.payload) {
-        const { message, pattern, serial, publishedInvoices } = res.payload;
-        const invoiceNumber = publishedInvoices?.[0]?.invoiceNumber || "—";
+      // const res = await postPublic(payload);
+      // const res = await postPublic(payload);
+      // if (res?.status === "OK" && res?.payload) {
+      //   const { message, pattern, serial, publishedInvoices } = res.payload;
+      //   const invoiceNumber = publishedInvoices?.[0]?.invoiceNumber || "—";
 
-        showNoti(
-          "success",
-          `${message} — Số: ${invoiceNumber}, Mẫu: ${pattern}, Ký hiệu: ${serial}`,
-        );
+      //   showNoti(
+      //     "success",
+      //     `${message} — Số: ${invoiceNumber}, Mẫu: ${pattern}, Ký hiệu: ${serial}`,
+      //   );
 
-        //  Đánh dấu đã xuất thành công
-        setIsPublished(true);
+      //   //  Đánh dấu đã xuất thành công
+      //   setIsPublished(true);
 
-        if (onRefresh) await onRefresh();
-      } else {
-        showNoti("warning", res?.message || "Không thể xuất hoá đơn.");
-        setIsPublished(false);
-      }
+      //   if (onRefresh) await onRefresh();
+      // } else {
+      //   showNoti("warning", res?.message || "Không thể xuất hoá đơn.");
+      //   setIsPublished(false);
+      // }
     } catch (err) {
       console.error("Lỗi xuất hoá đơn:", err);
       showNoti("error", "Không thể kết nối tới máy chủ xuất hoá đơn.");
@@ -173,15 +174,15 @@ export default function InvoicePreviewModal({
         return;
       }
 
-      const res = await flushInvoice(Number(transactionId));
-      if (res?.status === "OK") {
-        showNoti(
-          "success",
-          `Đã xóa hóa đơn tạm (transactionId: ${transactionId})`,
-        );
-      } else {
-        showNoti("warning", "Không thể xóa hóa đơn tạm.");
-      }
+      // const res = await flushInvoice(Number(transactionId));
+      // if (res?.status === "OK") {
+      //   showNoti(
+      //     "success",
+      //     `Đã xóa hóa đơn tạm (transactionId: ${transactionId})`,
+      //   );
+      // } else {
+      //   showNoti("warning", "Không thể xóa hóa đơn tạm.");
+      // }
     } catch (error) {
       showNoti("error", "Lỗi khi gọi API flush invoice.");
       console.error(error);
@@ -658,9 +659,9 @@ export default function InvoicePreviewModal({
                     let message = "";
                     if (onlyHas2) {
                       message =
-                        "⚠ Bạn đang xuất hóa đơn chỉ bao gồm hồ sơ đăng kiểm! ";
+                        "⚠ Bạn đang xuất hóa đơn chỉ bao gồm hồ sơ lưu trú! ";
                     } else if (onlyHas3 || noProduct) {
-                      message = "⚠ Vui lòng nên chọn thêm hồ sơ phí đăng kiểm.";
+                      message = "⚠ Vui lòng nên chọn thêm hồ sơ phí nội trú.";
                     }
 
                     return (

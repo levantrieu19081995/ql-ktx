@@ -109,7 +109,6 @@
 //   );
 // }
 /* eslint-disable prefer-const */
-/* eslint-disable prefer-const */
 "use client";
 
 import { Box } from "@mantine/core";

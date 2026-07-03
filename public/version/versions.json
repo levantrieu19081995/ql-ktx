@@ -38,8 +38,8 @@
     }
   ],
   "ListOfAppFunctions": [
-    "Tổng quan: Hiển thị số lượng tổng phương tiện đăng kiểm, Xe đạt đăng kiểm, Xe không đạt, Tổng thu phí, Lượt đăng kiểm theo loại phương tiện, Tỷ trọng theo loại phương tiện,Danh sách thu phí dịch vụ",
-    "Đăng kiểm PTGT đường bộ: Tiếp nhận hồ sơ, Thu phí đăng kiểm, Thu phí GCN, Hoàn thành",
+    "Tổng quan: Hiển thị số lượng sinh viên nội trú KTX, Danh sách thu phí dịch vụ",
+    "Tiếp nhận nội trú: Tiếp nhận hồ sơ sinh viên, Thu phí nội trú, Hoàn thành",
     "Thu phí khác: Tiếp nhận hồ sơ, Thu phí khác, Hoàn thành",
     "Thu phí PT thủy nội địa: Tiếp nhận hồ sơ, Thu phí, hoàn thành",
     "Kiểm định ATLĐ: Tiếp nhận hồ sơ, Thu phí, hoàn thành",
@@ -48,7 +48,7 @@
     "Quản lý hóa đơn: Danh sách hóa đơn, chi tiết hóa đơn",
     "Danh mục hệ thống: Danh mục loại phí, phí dịch vụ, loại phương tiện, phương tiện, thủ tục, biễu mẫu",
     "Người dùng - Vai trò: Quản lý người dùng, quản lý vai trò",
-    "Tài liệu hướng dẫn: Tài liệu hướng dẫn sử dụng Đăng kiểm PTGT đường bộ, Thu phí khác",
+    "Tài liệu hướng dẫn: Tài liệu hướng dẫn sử dụng Tiếp nhận nội trú KTX, Thu phí khác",
     "Quản trị hệ thống: Thông tin hiển thị, thông tin thanh toán, xem trước giao diện thông tin ",
     "Phiếu tạm thu: Bổ sung thông tin số phiếu (stt)",
     "Đăng xuất: Xác nhận đăng xuất"

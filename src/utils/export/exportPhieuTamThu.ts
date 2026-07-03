@@ -809,11 +809,11 @@ export const exportPhieuTamThu = (data: any) => {
 
     <div class="header">
       <div class="h-left">
-        SỞ XÂY DỰNG ĐỒNG THÁP<br/>
-        <span class="sub">TT ĐĂNG KIỂM PTCG THỦY, BỘ 66-01S</span>
+        BAN QUẢN LÝ KÝ TÚC XÁ<br/>
+        <span class="sub">KÝ TÚC XÁ ĐH CẦN THƠ</span>
         <div class="so-row2">
           <span class="label">Số:</span>
-          <span class="value">${soPhieu}</span> / PTT-ĐKTB
+          <span class="value">${soPhieu}</span> / PTT-KTX
         </div>
       </div>
 
@@ -827,7 +827,7 @@ export const exportPhieuTamThu = (data: any) => {
 
     <div class="para">
       <p class="p">
-        Trung tâm Đăng kiểm Phương tiện cơ giới thủy, bộ 66-01S có tạm thu tiền kiểm định của phương tiện mang biển số: <span class="bold">${bienSo ? bienSo : ""}</span> 
+        Ban quản lý Ký túc xá Đại học Cần Thơ có tạm thu tiền nội trú của sinh viên có MSSV: <span class="bold">${bienSo ? bienSo : ""}</span> 
       </p> 
       <div class="line">
         <div class="label bold">Tổng số tiền:</div> 
@@ -871,9 +871,9 @@ export const exportPhieuTamThu = (data: any) => {
     </div>
 
     <div class="note">
-      <span class="b">Lưu ý:-</span> Xuất trình Phiếu tạm thu này cho đăng kiểm viên kiểm tra khi ra, vào khu vực Trung tâm Đăng kiểm<br/>
-      <div class="li">- Nếu có công đoạn nào không đạt, yêu cầu đưa xe ra ngoài khu vực Trung tâm Đăng kiểm để sửa chữa</div>
-      <div class="li">- Phiếu tạm thu này chỉ có giá trị thanh toán với Trung tâm Đăng Kiểm đến <span class="bold">17h30'</span> cùng ngày.</div>
+      <span class="b">Lưu ý:-</span> Xuất trình Phiếu tạm thu này cho cán bộ quản lý kiểm tra khi ra, vào khu vực Ký túc xá<br/>
+      <div class="li">- Lưu ý giữ gìn vệ sinh và trật tự chung trong khu vực Ký túc xá</div>
+      <div class="li">- Phiếu tạm thu này chỉ có giá trị thanh toán với Ban Quản lý Ký túc xá đến <span class="bold">17h30'</span> cùng ngày.</div>
     </div>
 
     <div class="back-title">

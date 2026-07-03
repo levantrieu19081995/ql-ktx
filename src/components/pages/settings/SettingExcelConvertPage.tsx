@@ -32,8 +32,6 @@ import {
   IconFilter,
 } from "@tabler/icons-react";
 
-import ImportHelpDrawer from "./import/ImportHelpDrawer";
-
 import { convertExcel } from "@/services/Excel/excelService";
 import { fetchLoaiPhuongTienList } from "@/services/danh-muc/dmLoaiPhuongTienService";
 import { fetchPhuongTienList } from "@/services/danh-muc/dmPhuongTienService";
@@ -49,12 +47,12 @@ type Preview = {
 };
 
 const thuTucList = [
-  { value: "1", label: "Đăng kiểm PTCG đường bộ" },
-  { value: "3", label: "Thu phí khác" },
-  { value: "6", label: "Thu phí PT thủy nội địa" },
-  { value: "7", label: "Thủ tục thu phí phương tiện máy chuyên dùng" },
-  { value: "8", label: "Thủ tục kiểm định ATLĐ" },
-  { value: "9", label: "Thủ tục chứng nhận cải tạo" },
+  { value: "1", label: "Đăng ký nội trú sinh viên" },
+  { value: "3", label: "Thu phí dịch vụ khác" },
+  { value: "6", label: "Thu phí phòng ở / điện nước" },
+  { value: "7", label: "Thủ tục đền bù tài sản hư hỏng" },
+  { value: "8", label: "Thủ tục bàn giao thiết bị phòng" },
+  { value: "9", label: "Thủ tục chuyển phòng / đổi phòng" },
 ];
 
 /* ================= Helpers ================= */
@@ -791,11 +789,6 @@ export default function SettingExcelConvertPage() {
           </Card>
         )}
       </Modal>
-
-      <ImportHelpDrawer
-        opened={helpOpened}
-        onClose={() => setHelpOpened(false)}
-      />
     </Stack>
   );
 }

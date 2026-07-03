@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { IconSettings } from "@tabler/icons-react";
 import { useTranslations } from "next-intl";
-import { INFOR_THANHTOAN, GIA_THUPHI } from "@/constants/dataMagic";
+// import { INFOR_THANHTOAN, GIA_THUPHI } from "@/constants/dataMagic";
 
 import SettingSystemInfo from "./SettingSystemInfo";
 import SettingPreview from "./SettingPreview";
@@ -35,14 +35,14 @@ const STORAGE_KEY = "company_settings_v1";
 const DEFAULT_SETTINGS: CompanySettings = {
   title: "QUẢN LÝ KÝ TÚC XÁ",
   primaryColor: "#4C6EF5",
-  address: "Tòa nhà ABC, Quận 1, TP. HCM",
-  phone: "+84 912 345 678",
-  email: "contact@company.vn",
+  address: "Khu II, Đường 3/2, Xuân Khánh, Ninh Kiều, Cần Thơ",
+  phone: "+84 292 3832 663",
+  email: "dhct@ctu.edu.vn",
   description:
-    "Nền tảng quản lý & lên lịch đăng đa kênh. Giúp đội ngũ của bạn vận hành truyền thông hiệu quả.",
+    "Hệ thống quản lý Ký túc xá Đại học Cần Thơ. Vận hành thông minh và theo dõi sinh viên vào ra.",
   logoDataUrl: null,
 };
-type GiaThuPhi = typeof GIA_THUPHI;
+// type GiaThuPhi = typeof GIA_THUPHI;
 
 export default function SettingPage() {
   const router = useRouter();
@@ -50,9 +50,9 @@ export default function SettingPage() {
   const [values, setValues] = useState<CompanySettings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
 
-  const [paymentInfo, setPaymentInfo] = useState(INFOR_THANHTOAN);
+  // const [paymentInfo, setPaymentInfo] = useState(INFOR_THANHTOAN);
 
-  const [feeValues, setFeeValues] = useState<GiaThuPhi>(GIA_THUPHI);
+  // const [feeValues, setFeeValues] = useState<GiaThuPhi>(GIA_THUPHI);
 
   const previewColor = useMemo(
     () => values.primaryColor || "#4C6EF5",
@@ -87,16 +87,6 @@ export default function SettingPage() {
         </Group>
       </Group>
 
-      <Group>
-        <Button
-          color="blue"
-          variant="light"
-          onClick={() => router.push("/vi/settings/import")}
-        >
-          Thêm dữ liệu phương tiện từ Excel
-        </Button>
-      </Group>
-
       {/* Cầu hình thông tin hệ thông  */}
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
         <SettingSystemInfo
@@ -105,20 +95,6 @@ export default function SettingPage() {
           setSaved={setSaved}
         />
         <SettingPreview values={values} previewColor={previewColor} />
-      </SimpleGrid>
-
-      {/* Cấu hình thanh toán */}
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-        <SettingPaymentInfo
-          paymentInfo={paymentInfo}
-          onChange={(key, val) => setPaymentInfo((s) => ({ ...s, [key]: val }))}
-          setSaved={setSaved}
-        />
-        <SettingFeeInfo
-          feeValues={feeValues}
-          onChange={(key, val) => setFeeValues((s) => ({ ...s, [key]: val }))}
-          setSaved={setSaved}
-        />
       </SimpleGrid>
     </Stack>
   );

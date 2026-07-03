@@ -1,9 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 // src\components\shell\AppSidebar.tsx
+// import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+
+import { filterMenuByPermission } from "@/utils/menuPermission";
 import {
   NavLink,
-  ScrollArea,
   Stack,
   Modal,
   Group,
@@ -13,52 +16,39 @@ import {
   Tooltip,
   ActionIcon,
   Title,
-  Flex,
   Card,
   Table,
 } from "@mantine/core";
 import {
   IconHome2,
-  IconSettings,
   IconLogout,
-  IconFileInvoice,
-  IconMenu2,
   IconChevronLeft,
-  IconCar,
-  IconUsersGroup,
-  IconCoins,
   IconChevronDown,
   IconChevronRight,
   IconUser,
-  IconShield,
   IconBooks,
   IconBook2,
   IconCategory,
   IconNote,
-  IconShip,
-  IconMotorbike,
-  IconTestPipeOff,
-  IconShieldPlus,
-  IconTag,
-  IconCash,
-  IconBulldozer,
-  IconTractor,
-  IconCrane,
-  IconForklift,
-  IconTruckDelivery,
-  IconTruckLoading,
-  IconBus,
-  IconCraneOff,
+  IconChartBar,
+  IconArrowsLeftRight,
+  IconUserX,
+  IconEyeExclamation,
+  IconLockFilled,
   IconHistory,
   IconAlertTriangle,
-  IconChartBar,
-  IconUserMinus,
+  IconSettings,
+  IconUsersGroup,
+  IconShieldLock,
+  IconLayoutSidebarLeftExpand,
+  IconLayoutSidebarLeftCollapse,
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
 import { signOut } from "next-auth/react";
 import { useMediaQuery } from "@mantine/hooks";
 import usePermissions from "@/hooks/usePermissions";
+import logo from "@/assets/images/CTU_logo.png";
 
 type Props = {
   onNavigate?: () => void;
@@ -85,7 +75,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   const [listOfAppFunctions, setListOfAppFunctions] = useState<any>([]);
 
   // === State điều khiển mở rộng các menu cha ===
-  const [openParent, setOpenParent] = useState<string | null>(null);
+  const [openParents, setOpenParents] = useState<string[]>([t("category")]);
   const openDocA = () => {
     window.open("/doc/huong_dan1.pdf", "_blank");
   };
@@ -96,97 +86,113 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
+
+    // === Lịch sử/Cảnh báo
     {
       icon: <IconHistory />,
-      label: t("historyMenu"),
+      label: t("historyWarning"),
+      grouped: true,
       children: [
         {
-          label: t("history-log"),
+          label: t("historyMenu"),
           href: "/history/log",
-          icon: <IconHistory size={16} />,
+          icon: <IconArrowsLeftRight size={16} />,
         },
         {
-          label: t("history-statistics"),
-          href: "/history/statistics",
-          icon: <IconChartBar size={16} />,
-        },
-        {
-          label: t("history-staff"),
-          href: "/history/staff",
-          icon: <IconUser size={16} className="text-blue-500" />,
-        },
-        {
-          label: t("history-student"),
-          href: "/history/student",
-          icon: <IconUserMinus size={16} className="text-emerald-500" />,
+          label: t("warningsMenu"),
+          href: "/warnings",
+          icon: <IconAlertTriangle size={16} />,
         },
       ],
     },
-    { icon: <IconAlertTriangle />, label: t("warningsMenu"), href: "/warnings" },
-    { icon: <IconCar />, label: t("tollManagement"), href: "/toll-management" },
 
-    {
-      icon: <IconShip />,
-      label: t("inlandWaterwaysFeesManagement"),
-      href: "/inland-waterways-fees-managenment",
-    },
-    {
-      icon: <IconTestPipeOff />,
-      label: t("inspectionFeesManagement"),
-      href: "/inspection-fees-managenment",
-    },
-    {
-      icon: <IconShieldPlus />,
-      label: t("certificateOfRenovationFeesManagenment"),
-      href: "/certificate-of-renovation-fees-managenment",
-    },
-    {
-      icon: <IconTractor />,
-      label: t("specializedMotorbikeFeesManagement"),
-      href: "/specialized-motorbike-fees-managenment",
-    },
-    {
-      icon: <IconCoins />,
-      label: t("extraFeesManagement"),
-      href: "/extra-fees-management",
-    },
-    {
-      icon: <IconFileInvoice />,
-      label: t("billManagement"),
-      href: "/bill-management",
-    },
-    {
-      icon: <IconCash />,
-      label: t("feesmanagement"),
-      href: "/fees-management",
-    },
+    // === Danh mục ===
     {
       icon: <IconCategory />,
       label: t("category"),
-      href: "/category-management",
+      grouped: true,
+      children: [
+        {
+          label: t("categoryStudentDorm"),
+          href: "/danh-muc/sinh-vien-ktx",
+          icon: <IconUser size={16} />,
+        },
+        {
+          label: t("categoryRoomDorm"),
+          href: "/danh-muc/phong-ktx",
+          icon: <IconHome2 size={16} />,
+        },
+        {
+          label: t("categoryAreaDorm"),
+          href: "/danh-muc/khu-ktx",
+          icon: <IconCategory size={16} />,
+        },
+        {
+          label: t("categoryBannedStudent"),
+          href: "/danh-muc/sinh-vien-bi-cam",
+          icon: <IconLockFilled size={16} />,
+        },
+      ],
     },
 
-    // === menu có cấp con ===
+    // === Thống kê ===
     {
-      icon: <IconUsersGroup />,
-      label: t("users-roles"),
+      icon: <IconChartBar />,
+      label: t("statistics"),
+      grouped: true,
       children: [
+        {
+          label: t("statInOut"),
+          href: "/thong-ke/luot-ra-vao",
+          icon: <IconArrowsLeftRight size={16} />,
+        },
+        {
+          label: t("statAbsent"),
+          href: "/thong-ke/vang-mat",
+          icon: <IconUserX size={16} />,
+        },
+        {
+          label: t("statStranger"),
+          href: "/thong-ke/nguoi-la",
+          icon: <IconEyeExclamation size={16} />,
+        },
+        {
+          label: t("statBanned"),
+          href: "/thong-ke/bi-cam",
+          icon: <IconLockFilled size={16} />,
+        },
+      ],
+    },
+
+    // === Cài đặt ===
+    {
+      icon: <IconSettings />,
+      label: t("settings"),
+      grouped: true,
+      children: [
+        {
+          label: t("settings"),
+          href: "/settings",
+          icon: <IconSettings size={16} />,
+        },
         {
           label: t("manage-users"),
           href: "/manage-users",
-          icon: <IconUser size={16} />,
+          icon: <IconUsersGroup size={16} />,
         },
         {
           label: t("manage-roles"),
           href: "/manage-roles",
-          icon: <IconShield size={16} />,
+          icon: <IconShieldLock size={16} />,
         },
       ],
     },
 
+    // === Hướng dẫn ===
     {
       icon: <IconBooks />,
       label: t("instructionManual"),
+      grouped: true,
       children: [
         {
           label: t("DocumentVehicleinspection"),
@@ -200,26 +206,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
         },
       ],
     },
-
-    { icon: <IconSettings />, label: t("settings"), href: "/settings" },
-
-    {
-      icon: <IconTag />,
-      label: `Phiên bản ${appInfo.appVersion}`,
-      onClick: () => setVersionInfoOpen(true),
-    },
   ];
-
-  // Automatically open the parent menu if a child is active
-  useEffect(() => {
-    const currentParent = items.find((item) =>
-      item.children?.some((child: any) => pathname.startsWith(child.href))
-    );
-    if (currentParent && openParent !== currentParent.label) {
-      setOpenParent(currentParent.label);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   const doLogout = () => {
     setConfirmOpen(false);
@@ -235,14 +222,69 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     onNavigate?.();
   };
 
+  const navLinkStyles = (active: boolean, compact = false) => ({
+    root: {
+      // minHeight: compact ? 44 : 48,
+      // borderRadius: 12,
+      // padding: compact ? 0 : "0 14px 0 12px",
+      minHeight: compact ? 44 : 48,
+      borderRadius: 12,
+      padding: compact ? 0 : "0 14px 0 12px",
+
+      //
+      background: active ? "rgba(37, 99, 235, 0.08)" : "transparent",
+      // borderLeft: active ? "3px solid #2563EB" : "3px solid transparent",
+      fontWeight: active ? 800 : 650,
+      transition: "background-color 150ms ease, color 150ms ease",
+    },
+    label: {
+      fontSize: compact ? 0 : 14,
+      lineHeight: 1.2,
+    },
+    section: {
+      color: active ? "#2563EB" : "#0f172a",
+      marginRight: compact ? 0 : 12,
+    },
+  });
+
+  const toggleParent = (item: any, isActive: boolean) => {
+    const label = item.label;
+
+    setOpenParents((prev) => {
+      const isCurrentlyOpen = prev.includes(label);
+
+      // Đang active thì không cho đóng
+      if (isActive && isCurrentlyOpen) {
+        return prev;
+      }
+
+      // Nếu đang mở mà không active thì cho đóng
+      if (isCurrentlyOpen) {
+        return prev.filter((x) => x !== label);
+      }
+
+      // Nếu mở menu mới:
+      // Giữ lại menu nào đang chứa item active
+      const activeParent = items.find((parent) =>
+        parent.children?.some((child: any) => pathname.startsWith(child.href)),
+      );
+
+      const keepActiveLabel = activeParent?.label;
+
+      const next = prev.filter((x) => x === keepActiveLabel);
+
+      return [...new Set([...next, label])];
+    });
+  };
+
   // === Render menu item (hỗ trợ cấp con) ===
-  const renderNavItem = (item: any) => {
+  const renderNavItem = (item: any, index: number) => {
     const hasChildren = !!item.children;
 
     const isActive = hasChildren
       ? item.children.some((child: any) => pathname.startsWith(child.href))
       : pathname.startsWith(item.href ?? "");
-    const isOpen = openParent === item.label;
+    const isOpen = openParents.includes(item.label);
 
     if (collapsed) {
       // === Dạng mở rộng đầy đủ ===
@@ -272,10 +314,16 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
                   href={item.href}
                   onClick={() => {
                     if (item.onClick) {
-                      item.onClick(); //   Version popup
-                    } else if (hasChildren) {
-                      setOpenParent(isOpen ? null : item.label);
-                    } else if (isMobile) {
+                      item.onClick();
+                      return;
+                    }
+
+                    if (hasChildren) {
+                      toggleParent(item, isActive);
+                      return;
+                    }
+
+                    if (isMobile) {
                       onNavigate?.();
                     }
                   }}
@@ -315,7 +363,34 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     // === Dạng mở rộng đầy đủ ===
     return (
       <Box key={item.label}>
-        {hasChildren ? (
+        {hasChildren && item.grouped ? (
+          <Box>
+            <Group
+              justify="space-between"
+              px={12}
+              mb={8}
+              mt={14}
+              style={{ cursor: "pointer" }}
+              // onClick={() => setOpenParent(isOpen ? null : item.label)}
+              onClick={() => toggleParent(item, isActive)}
+            >
+              <Text
+                tt="uppercase"
+                fz={12}
+                fw={700}
+                c="#7b8798"
+                style={{ letterSpacing: 0 }}
+              >
+                {item.label}
+              </Text>
+              {isOpen ? (
+                <IconChevronDown size={15} color="#64748b" />
+              ) : (
+                <IconChevronRight size={15} color="#64748b" />
+              )}
+            </Group>
+          </Box>
+        ) : hasChildren ? (
           //  MENU CHA
           <NavLink
             label={item.label}
@@ -328,8 +403,17 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
               )
             }
             component="button"
-            onClick={() => setOpenParent(isOpen ? null : item.label)}
+            // onClick={() => setOpenParent(isOpen ? null : item.label)}
+            onClick={() => toggleParent(item, isActive)}
             active={isActive}
+            // styles={navLinkStyles(isActive, false)}
+            styles={{
+              ...navLinkStyles(isActive, false),
+              root: {
+                ...navLinkStyles(isActive, false).root,
+                paddingRight: index === 0 ? 56 : 14,
+              },
+            }}
           />
         ) : item.onClick ? (
           // MENU SYSTEM (VERSION)
@@ -348,12 +432,19 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
             leftSection={item.icon}
             active={isActive}
             onClick={isMobile ? onNavigate : undefined}
+            styles={{
+              ...navLinkStyles(isActive, false),
+              root: {
+                ...navLinkStyles(isActive, false).root,
+                paddingRight: index === 0 ? 56 : 14,
+              },
+            }}
           />
         )}
 
         {/* Hiển thị submenu */}
         {hasChildren && isOpen && (
-          <Stack pl={36} gap={4} mt={4}>
+          <Stack pl={item.grouped ? 0 : 36} gap={4} mt={item.grouped ? 0 : 4}>
             {item.children.map((child: any, index: number) =>
               child.onClick ? (
                 <NavLink
@@ -362,6 +453,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
                   label={child.label}
                   leftSection={child.icon}
                   onClick={child.onClick}
+                  styles={navLinkStyles(false, false)}
                   style={{ fontSize: "14px", paddingTop: 6, paddingBottom: 6 }}
                 />
               ) : (
@@ -373,6 +465,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
                   leftSection={child.icon}
                   active={pathname.startsWith(child.href)}
                   onClick={isMobile ? onNavigate : undefined}
+                  styles={navLinkStyles(pathname.startsWith(child.href), false)}
                   style={{
                     fontSize: "14px",
                     paddingTop: 6,
@@ -388,42 +481,8 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   };
 
   // == bắt item menu theo quyền
-  const canView = (href: string, item?: any) => {
-    // if (item?.onClick) return true;
-    // menu chỉ có onClick (Version, Help, About...)
-    if (item?.onClick && !href) return true;
 
-    if (!href) return false;
-    const alwaysVisible = ["/dashboard", "/history", "/warnings"];
-    if (alwaysVisible.some((v) => href === v || href.startsWith(v + "/"))) return true;
-
-    const found = permissions.find((p: any) => {
-      const slug = (p.dmcnSlug || "").toLowerCase().trim();
-      return slug === href.toLowerCase().trim();
-    });
-
-    return !!(
-      found &&
-      found.listPermission?.some(
-        (perm: any) => perm.psName === "VIEW" && perm.allowed,
-      )
-    );
-  };
-
-  const filteredItems = items
-    .map((item) => {
-      if (item.children) {
-        const allowedChildren = item.children.filter((c: any) =>
-          canView(c.href, c),
-        );
-        return allowedChildren.length > 0
-          ? { ...item, children: allowedChildren }
-          : null;
-      }
-      // return canView(item.href) ? item : null;
-      return canView(item.href ?? "", item) ? item : null;
-    })
-    .filter(Boolean);
+  const filteredItems = filterMenuByPermission(items, permissions);
 
   useEffect(() => {
     fetch("/version/versions.json")
@@ -435,6 +494,20 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       })
       .catch((err) => console.log("Load version json error", err));
   }, []);
+
+  useEffect(() => {
+    const activeParent = items.find((item) =>
+      item.children?.some((child: any) => pathname.startsWith(child.href)),
+    );
+
+    if (activeParent) {
+      setOpenParents((prev) =>
+        prev.includes(activeParent.label)
+          ? prev
+          : [...prev, activeParent.label],
+      );
+    }
+  }, [pathname]);
 
   const [selectedVersion, setSelectedVersion] = useState<any>(null);
   const [showCurrentFeatures, setShowCurrentFeatures] = useState(false);
@@ -456,33 +529,61 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       <div
         ref={sidebarRef}
         style={{
-          height: "85dvh",
+          position: "relative",
+          height: "100dvh",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
-          paddingBottom: 10,
+          paddingBottom: 16,
         }}
       >
-        {/* HEADER */}
-        <div
+        {/* <ActionIcon
+          variant="default"
+          size={34}
+          radius="xl"
+          onClick={toggle}
+          aria-label="Toggle sidebar"
           style={{
-            height: 56,
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "center",
-            padding: "0 12px",
+            position: "absolute",
+            top: 18,
+            right: 12,
+            zIndex: 5,
+            borderColor: "#dfe6f2",
+            color: "#2563EB",
+            background: "#ffffff",
+            boxShadow: "0 8px 20px rgba(15, 23, 42, 0.08)",
           }}
         >
-          <Group justify={collapsed ? "center" : "space-between"}>
-            <ActionIcon variant="light" size="sm" onClick={toggle}>
-              {collapsed ? (
-                <IconMenu2 size={18} />
-              ) : (
-                <IconChevronLeft size={18} />
-              )}
-            </ActionIcon>
-          </Group>
-        </div>
+          {collapsed ? (
+            <IconChevronRight size={18} />
+          ) : (
+            <IconChevronLeft size={18} />
+          )}
+        </ActionIcon> */}
+
+        <ActionIcon
+          variant="subtle"
+          radius="xl"
+          size={34}
+          onClick={toggle}
+          style={{
+            position: "absolute",
+            top: collapsed ? 16 : 29,
+            right: collapsed ? "50%" : 28,
+            transform: collapsed ? "translateX(50%)" : "none",
+            background: "#ffffff",
+            border: "1px solid #e5eaf3",
+            boxShadow: "0 8px 20px rgba(15,23,42,.08)",
+            color: "#2563EB",
+            zIndex: 20,
+          }}
+        >
+          {collapsed ? (
+            <IconLayoutSidebarLeftExpand size={18} stroke={1.8} />
+          ) : (
+            <IconLayoutSidebarLeftCollapse size={18} stroke={1.8} />
+          )}
+        </ActionIcon>
 
         {/* MENU */}
         <div
@@ -491,19 +592,29 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
             flex: 1,
             minHeight: 0,
             overflow: "auto",
-            paddingBottom: 40,
+            // padding: collapsed ? "72px 10px 40px" : "72px 24px 40px",
+            padding: collapsed ? "72px 10px 40px" : "22px 24px 40px",
           }}
         >
-          <Stack p="sm" gap="md">
-            {filteredItems.map((it) => renderNavItem(it))}
-
-            <NavLink
-              leftSection={<IconLogout />}
-              label={t("logout", { default: "Đăng xuất" })}
-              onClick={() => setConfirmOpen(true)}
-            />
+          <Stack gap={collapsed ? 8 : 10}>
+            {/* {filteredItems.map((it) => renderNavItem(it))} */}
+            {filteredItems.map((it, index) => renderNavItem(it, index))}
           </Stack>
         </div>
+        <Box
+          style={{
+            flexShrink: 0,
+            padding: collapsed ? "16px 10px 4px" : "16px 26px 4px",
+            borderTop: "1px solid #edf1f7",
+          }}
+        >
+          <NavLink
+            leftSection={<IconLogout />}
+            label={t("logout", { default: "Đăng xuất" })}
+            onClick={() => setConfirmOpen(true)}
+            styles={navLinkStyles(false, collapsed)}
+          />
+        </Box>
       </div>
 
       {/* Modal xác nhận đăng xuất */}

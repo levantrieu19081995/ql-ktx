@@ -45,7 +45,7 @@ export default function DocumentMenu() {
           onClick={() => window.open("/doc/huong_dan1.pdf", "_blank")}
           c={"#0f2b52ff"}
         >
-          Hướng dẫn 1
+          Hướng dẫn tiếp nhận nội trú
         </Menu.Item>
         <Divider />
         <Menu.Item

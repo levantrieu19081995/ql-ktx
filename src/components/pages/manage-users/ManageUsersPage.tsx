@@ -36,7 +36,7 @@ import {
 
 import "@mantine/notifications/styles.css";
 
-import type { Role, Status, FetchUsersRequest, UserItem } from "@/types/global";
+// import type { Role, Status, FetchUsersRequest, UserItem } from "@/types/global";
 
 import AccountDetailModal from "./AccountDetailModal";
 import AccountUpdateDrawer from "./AccountUpdateDrawer";
@@ -63,7 +63,7 @@ export default function ManageUsersPage() {
   }
 
   // mở drawer sửa
-  function openEdit(user: UserItem) {
+  function openEdit(user: any) {
     setIsEditing(true);
     setDrawerOpen(true);
 
@@ -90,7 +90,7 @@ export default function ManageUsersPage() {
           nationality: data.caNhan?.qtMa || "",
           birth: data.caNhan?.ngaySinh
             ? new Date(Date.parse(data.caNhan.ngaySinh)).toLocaleDateString(
-                "vi-VN"
+                "vi-VN",
               )
             : "",
         });
@@ -105,13 +105,13 @@ export default function ManageUsersPage() {
   >([]);
 
   // const [rows, setRows] = useState<User[]>([]);
-  const [rows, setRows] = useState<UserItem[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
 
   // filters
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [roleFilter, setRoleFilter] = useState<Role | "-1">("-1");
-  const [statusFilter, setStatusFilter] = useState<Status | "-1">("-1");
+  const [roleFilter, setRoleFilter] = useState<any | "-1">("-1");
+  const [statusFilter, setStatusFilter] = useState<any | "-1">("-1");
 
   // pagination
   const [pageSize] = useState<number>(5);
@@ -131,10 +131,10 @@ export default function ManageUsersPage() {
   const loadUsers = async (
     customPage = page,
     customPageSize = pageSize,
-    customFilters?: Partial<FetchUsersRequest>
+    customFilters?: Partial<any>,
   ) => {
     try {
-      const filters: Partial<FetchUsersRequest> = {
+      const filters: Partial<any> = {
         page: customPage,
         pageSize: customPageSize,
         organizationId: 6148,
@@ -154,17 +154,17 @@ export default function ManageUsersPage() {
     }
   };
 
-  function openDetail(u: UserItem) {
+  function openDetail(u: any) {
     const guid = (u as any)?.guid ?? null;
     if (!guid) return;
 
     // Lấy roles sẵn từ user item (nếu có)
     const userRoles =
-      u.organizations?.flatMap((o) =>
-        (o.roles || []).map((r) => ({
+      u.organizations?.flatMap((o: any) =>
+        (o.roles || []).map((r: any) => ({
           org: o.name,
           role: r.roleName,
-        }))
+        })),
       ) ?? [];
 
     setDetailGuid(guid);
@@ -172,7 +172,7 @@ export default function ManageUsersPage() {
     setDetailOpen(true);
   }
 
-  const handleRowClick = (e: React.MouseEvent, u: UserItem) => {
+  const handleRowClick = (e: React.MouseEvent, u: any) => {
     if ((e.target as HTMLElement).closest("[data-stop-propagation]")) return;
     openDetail(u);
   };
@@ -210,7 +210,7 @@ export default function ManageUsersPage() {
       (res) => {
         showNoti(
           "info",
-          `Cập nhật thông tin cán bộ ${userForm.username} thành công`
+          `Cập nhật thông tin cán bộ ${userForm.username} thành công`,
         );
         setDrawerOpen(false);
         loadUsers();
@@ -219,19 +219,19 @@ export default function ManageUsersPage() {
         console.error("Lỗi cập nhật cán bộ:", e);
         showNoti(
           "error",
-          `Cập nhật thông tin cán bộ ${userForm.username} thất bại`
+          `Cập nhật thông tin cán bộ ${userForm.username} thất bại`,
         );
-      }
+      },
     );
   };
 
   // xóa tải khoản
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null);
+  const [userToDelete, setUserToDelete] = useState<any | null>(null);
 
   // Khi click nút Xóa => mở dialog
-  const handleOpenDeleteConfirm = (user: UserItem) => {
+  const handleOpenDeleteConfirm = (user: any) => {
     setUserToDelete(user);
     setConfirmOpen(true);
   };
@@ -248,7 +248,7 @@ export default function ManageUsersPage() {
           "info",
           `Đã xóa tài khoản cán bộ "${
             userToDelete.caNhan?.ten || userToDelete.username
-          }"`
+          }"`,
         );
         // TODO: Gọi load lại danh sách user
         loadUsers();
@@ -268,7 +268,7 @@ export default function ManageUsersPage() {
   // xóa tài khaorn khỏi phòng ban
   const [confirmDetachOpen, setConfirmDetachOpen] = useState(false);
   const [loadingDetach, setLoadingDetach] = useState(false);
-  const [userToDetach, setUserToDetach] = useState<UserItem | null>(null);
+  const [userToDetach, setUserToDetach] = useState<any | null>(null);
 
   // Popup chọn đơn vị khi xóa khỏi tổ chức
   const [orgSelectOpen, setOrgSelectOpen] = useState(false);
@@ -277,9 +277,9 @@ export default function ManageUsersPage() {
     { id: number; name: string }[]
   >([]);
 
-  const handleOpenDetachConfirm = (user: UserItem) => {
+  const handleOpenDetachConfirm = (user: any) => {
     const orgs =
-      user.organizations?.map((o) => ({
+      user.organizations?.map((o: any) => ({
         id: o.id || 0,
         name: o.name || "Chưa rõ tên",
       })) || [];
@@ -313,7 +313,7 @@ export default function ManageUsersPage() {
           "info",
           `Đã xóa người dùng "${
             userToDetach.caNhan?.ten || userToDetach.username
-          }" khỏi tổ chức.`
+          }" khỏi tổ chức.`,
         );
         await loadUsers();
       } else {
@@ -366,7 +366,7 @@ export default function ManageUsersPage() {
             placeholder="Tất cả"
             data={[]}
             value={String(roleFilter)}
-            onChange={(v: any) => setRoleFilter((v as Role | "-1") ?? "-1")}
+            onChange={(v: any) => setRoleFilter((v as any | "-1") ?? "-1")}
             w={160}
           />
 
@@ -380,7 +380,7 @@ export default function ManageUsersPage() {
             ]}
             value={statusFilter}
             onChange={(v: string | null) => {
-              setStatusFilter((v as Status | "-1") ?? "-1");
+              setStatusFilter((v as any | "-1") ?? "-1");
               setPage(1);
             }}
             w={180}

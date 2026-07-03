@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image"; // Import for logo image
-import logo from "@/assets/images/logo.png"; // Path to the logo image
+import logo from "@/assets/images/CTU_logo.png"; // Path to the logo image
 
 const SplashScreen = () => {
   const router = useRouter();
@@ -54,17 +54,11 @@ const SplashScreen = () => {
         }}
       >
         {/* Logo */}
-        <Image
-          src={logo}
-          alt="Quản lý ký túc xá Logo"
-          width={150}
-          height={150}
-          priority
-        />
+        <Image src={logo} alt="CTU Logo" width={150} height={150} priority />
       </div>
 
       <p style={{ fontSize: "16px", textAlign: "center" }}>
-        Chào mừng đến với Đại học Cần Thơ!
+        Chào mừng đến với Hệ thống Ký túc xá Đại học Cần Thơ!
       </p>
       <p
         style={{
@@ -74,7 +68,7 @@ const SplashScreen = () => {
           marginTop: 20,
         }}
       >
-        QUẢN LÝ KÝ TÚC XÁ
+        HỆ THỐNG QUẢN LÝ KÝ TÚC XÁ
       </p>
     </div>
   );
