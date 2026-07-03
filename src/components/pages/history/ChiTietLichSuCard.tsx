@@ -58,7 +58,7 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
     // Lấy nhãn và màu sắc trạng thái theo tab
     const { nhan: nhanTrangThai, mauSac } = layNhanTrangThai(lichSuDuocChon, loaiTab, t);
 
-    const laCanBo = loaiTab === 'CAN_BO' ||
+    const laCanBo =
         lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes('cán bộ') ||
         lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes('can bo');
 

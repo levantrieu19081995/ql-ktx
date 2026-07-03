@@ -2,49 +2,34 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-<<<<<<< Updated upstream
 import React, { useState, useEffect, useMemo } from "react";
-import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
-=======
-import React, { useState, useEffect } from "react";
-import {
-  Portal,
-  Notification,
-  Box,
-  Modal,
-  Stack,
-  Text,
-  Group,
-  Button,
-} from "@mantine/core";
->>>>>>> Stashed changes
+import { Portal, Notification, Modal, Stack, Text, Group, Button, Box } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import {
   IconCheck,
   IconX,
-  IconSearch,
-  IconRefresh,
 } from "@tabler/icons-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Bar,
+  LabelList,
+} from "recharts";
 
 import BoLocLichSu from "./BoLocLichSu";
 import BangLichSu from "./BangLichSu";
 import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
-<<<<<<< Updated upstream
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
-=======
->>>>>>> Stashed changes
 import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
 
-<<<<<<< HEAD
-
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
-=======
-type LoaiTabChinh = "LICH_SU" | "THONG_KE";
->>>>>>> 226c8f8 (Cập nhật chức năng history)
 
-<<<<<<< Updated upstream
 const duLieuBieuDoThoiGian = [
   { ngay: "01/06", luotVao: 110, luotRa: 60 },
   { ngay: "02/06", luotVao: 270, luotRa: 370 },
@@ -77,21 +62,10 @@ export default function HistoryPage({ activeTab = "LICH_SU" }: HistoryPageProps)
   const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
   const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
   const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
-=======
-type HistoryPageProps = {
-  tab?: LoaiTabChinh;
-};
-
-export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
-  const t = useTranslations("History");
-  const [thongBao, setThongBao] = useState<{
-    kieu: "success" | "error";
-    tinNhan: string;
-  } | null>(null);
->>>>>>> Stashed changes
 
   const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
   const [dangTai, setDangTai] = useState<boolean>(false);
+  const [dangTao, setDangTao] = useState<boolean>(false);
 
   const [boLoc, setBoLoc] = useState({
     tuNgay: "",
@@ -106,19 +80,8 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     maNhom: "-1",
   });
 
-<<<<<<< Updated upstream
   const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(null);
   const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
-=======
-  const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(
-    null,
-  );
-
-  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
-    null,
-  );
->>>>>>> Stashed changes
-
 
   useEffect(() => {
     datTabActive(activeTab);
@@ -156,12 +119,12 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
       loai: "ALL",
       trangThai: "ALL",
       loaiDoiTuong: "ALL",
-      maNhom: "-1",
+      maNhom: activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1",
     });
   };
 
   const taiDuLieu = async () => {
-    setDanhSachLichSu([]); // Clear old items to show loading state properly
+    setDanhSachLichSu([]);
     setDangTai(true);
     try {
       const duLieu = await dichVuLichSuRaVao.layDanhSachLichSu(boLoc);
@@ -177,10 +140,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     taiDuLieu();
   }, [boLoc]);
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-  // Removed auto-select useEffect to prevent drawer from opening automatically on load
-
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
     if (tabActive === "CAN_BO") {
       return danhSachLichSu.filter((h) =>
@@ -194,20 +153,13 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         !h.loaiDoiTuong?.toLowerCase().includes("can bo")
       );
     }
-=======
-  // Auto-selection of first item on load has been disabled to prevent drawer from auto-opening
-
-  const duLieuTheoTab = useMemo((): HistoryItem[] => {
->>>>>>> 226c8f8 (Cập nhật chức năng history)
     return danhSachLichSu;
-  }, [danhSachLichSu]);
+  }, [danhSachLichSu, tabActive]);
 
-  const loaiTabHienThi = useMemo((): LoaiTabHienThi => {
+  const loaiTabHienThi = useMemo(() => {
     return "LICH_SU";
   }, []);
 
-=======
->>>>>>> Stashed changes
   const xuLyTimKiem = () => {
     taiDuLieu();
     hienThongBao(t("messages.updated"), "success");
@@ -236,7 +188,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     datLichSuDuocChon(null);
   };
 
-<<<<<<< Updated upstream
   const xuLyTaoBanGhi = async (duLieu: Omit<HistoryItem, "id" | "thoiGian">) => {
     setDangTao(true);
     try {
@@ -251,60 +202,16 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     setXacNhanPhanHoi(lichSu);
   };
 
-  const laySoLuongTab = (key: LoaiTabChinh) => {
-    switch (key) {
-      case "LICH_SU":
-        return danhSachLichSu.length;
-<<<<<<< HEAD
-      case "CAN_BO":
-        return danhSachLichSu.filter((h) =>
-          h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-          h.loaiDoiTuong?.toLowerCase().includes("can bo")
-        ).length;
-      case "SINH_VIEN":
-        return danhSachLichSu.filter((h) =>
-          !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
-          !h.loaiDoiTuong?.toLowerCase().includes("can bo")
-        ).length;
-=======
->>>>>>> 226c8f8 (Cập nhật chức năng history)
-      default:
-        return undefined;
-    }
+  const xuLyThemDuLieu = () => {
+    datMoDrawerBieuMau(true);
   };
 
-<<<<<<< HEAD
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
       <h2 className="history-title">
         {t("title")}
       </h2>
-=======
-  const danhSachTabs = useMemo(
-    () => [
-      {
-        key: "LICH_SU" as const,
-        nhan: t("tabs.log"),
-        icon: <IconHistory size={16} />,
-      },
-      {
-        key: "THONG_KE" as const,
-        nhan: t("tabs.statistics"),
-        icon: <IconChartBar size={16} />,
-      },
-    ],
-    [t],
-  );
-
-=======
->>>>>>> Stashed changes
-  return (
-    <Box className="history-page-container">
-      {/* TIÊU ĐỀ TRANG */}
-      <h2 className="history-title">{t("title")}</h2>
-<<<<<<< Updated upstream
->>>>>>> 226c8f8 (Cập nhật chức năng history)
 
       {/* BỘ LỌC */}
       {tabActive !== "THONG_KE" && (
@@ -319,11 +226,10 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         />
       )}
 
-<<<<<<< HEAD
       {/* TAB: LỊCH SỬ | CÓ MẶT | VẮNG MẶT */}
       {(tabActive === "LICH_SU" || tabActive === "CAN_BO" || tabActive === "SINH_VIEN") && (
         <div key={tabActive} className="page-layout">
-          {/* Cột trái: Bảng dữ liệu */}
+          {/* Bảng dữ liệu */}
           <div className="main-content-col">
             <BangLichSu
               duLieu={duLieuTheoTab}
@@ -334,35 +240,8 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
               datLichSuDuocChon={datLichSuDuocChon}
             />
           </div>
-=======
-
-      {/* BỘ LỌC */}
-      <BoLocLichSu
-        boLoc={boLoc}
-        datBoLoc={datBoLoc}
-        datLaiBoLoc={datLaiBoLoc}
-        khiTimKiem={xuLyTimKiem}
-        khiXuatExcel={xuLyXuatExcel}
-        khiXuatPdf={xuLyXuatPdf}
-        loaiBoLoc="LICH_SU"
-      />
-
-      <div className="page-layout">
-        {/* Cột trái: Bảng dữ liệu chiếm 100% */}
-        <div className="main-content-col">
-          <BangLichSu
-            duLieu={danhSachLichSu}
-            dangTai={dangTai}
-            loaiTab="LICH_SU"
-            tabActive="LICH_SU"
-            lichSuDuocChon={lichSuDuocChon}
-            datLichSuDuocChon={datLichSuDuocChon}
-          />
->>>>>>> Stashed changes
         </div>
-      </div>
-
-<<<<<<< Updated upstream
+      )}
 
       {/* TAB: THỐNG KÊ */}
       {tabActive === "THONG_KE" && (
@@ -484,21 +363,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           </div>
         </div>
       )}
-=======
-      {/* DANH SÁCH LỊCH SỬ */}
-      <div className="page-layout-full">
-        <div className="main-content-col-full">
-          <BangLichSu
-            duLieu={duLieuTheoTab}
-            dangTai={dangTai}
-            loaiTab={loaiTabHienThi}
-            tabActive="LICH_SU"
-            lichSuDuocChon={lichSuDuocChon}
-            datLichSuDuocChon={datLichSuDuocChon}
-          />
-        </div>
-      </div>
->>>>>>> 226c8f8 (Cập nhật chức năng history)
 
       {/* DRAWER THÊM DỮ LIỆU */}
       <DrawerBieuMauLichSu
@@ -515,66 +379,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         lichSuDuocChon={lichSuDuocChon}
         khiPhanHoi={xuLyPhanHoiSaiThongTin}
       />
-=======
-      {/* DRAWER CHI TIẾT LỊCH SỬ */}
-      <DrawerChiTietLichSu
-        open={lichSuDuocChon !== null}
-        onClose={xuLyDongChiTiet}
-        lichSuDuocChon={lichSuDuocChon}
-        khiPhanHoi={(banGhi) => setXacNhanPhanHoi(banGhi)}
-      />
-
-      {/* MODAL XÁC NHẬN PHẢN HỒI */}
-      <Modal
-        opened={xacNhanPhanHoi !== null}
-        onClose={() => setXacNhanPhanHoi(null)}
-        title={t("feedbackModal.title")}
-        centered
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
-      >
-        <Stack gap="md">
-          <Text size="sm">
-            {t("feedbackModal.body")}{" "}
-            <span className="font-semibold">{xacNhanPhanHoi?.hoVaTen}</span> (
-            {xacNhanPhanHoi?.mssv})?
-          </Text>
-          <Group justify="flex-end" gap="xs">
-            <Button variant="default" onClick={() => setXacNhanPhanHoi(null)}>
-              {t("drawer.cancelBtn")}
-            </Button>
-            <Button
-              color="#1f5ca9"
-              onClick={() => {
-                hienThongBao(t("messages.reportSuccess"), "success");
-                setXacNhanPhanHoi(null);
-              }}
-            >
-              {t("feedbackModal.submitBtn")}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
->>>>>>> Stashed changes
-
-      {/* THÔNG BÁO DẠNG TOAST */}
-      {thongBao && (
-        <Portal>
-          <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
-            <Notification
-              icon={thongBao.kieu === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
-              color={thongBao.kieu === "success" ? "teal" : "red"}
-              title={thongBao.kieu === "success" ? t("messages.success") : t("messages.error")}
-              onClose={() => setThongBao(null)}
-            >
-              {thongBao.tinNhan}
-            </Notification>
-          </div>
-        </Portal>
-      )}
-<<<<<<< Updated upstream
 
       {/* MODAL XÁC NHẬN PHẢN HỒI */}
       <Modal
@@ -597,7 +401,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
               {t("drawer.cancelBtn")}
             </Button>
             <Button
-              color="blue"
+              color="#1f5ca9"
               onClick={() => {
                 hienThongBao(t("messages.reportSuccess"), "success");
                 setXacNhanPhanHoi(null);
@@ -609,25 +413,22 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         </Stack>
       </Modal>
 
-      {/* DRAWER CHI TIẾT LỊCH SỬ */}
-      <Drawer
-        opened={!!lichSuDuocChon}
-        onClose={xuLyDongChiTiet}
-        title={<span style={{ fontWeight: 700, fontSize: 16, color: '#1f5ca9' }}>{t('card.detailTitle')}</span>}
-        position="right"
-        size={400}
-      >
-        <ChiTietLichSuCard
-          lichSuDuocChon={lichSuDuocChon}
-          loaiTab={loaiTabHienThi}
-          khiDong={xuLyDongChiTiet}
-          khiPhanHoi={xuLyPhanHoiSaiThongTin}
-        />
-      </Drawer>
+      {/* THÔNG BÁO DẠNG TOAST */}
+      {thongBao && (
+        <Portal>
+          <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
+            <Notification
+              icon={thongBao.kieu === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
+              color={thongBao.kieu === "success" ? "teal" : "red"}
+              title={thongBao.kieu === "success" ? t("messages.success") : t("messages.error")}
+              onClose={() => setThongBao(null)}
+            >
+              {thongBao.tinNhan}
+            </Notification>
+          </div>
+        </Portal>
+      )}
 
-
-=======
->>>>>>> Stashed changes
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
     </Box>
   );
@@ -651,48 +452,23 @@ const pageStyles = `
     font-family: var(--font-k2d), sans-serif;
 }
 
-<<<<<<< Updated upstream
-.tabs-bar {
-    background-color: #f0f4fa;
-    padding: 0.25rem;
-    border-radius: 0.5rem;
+.page-layout {
     display: flex;
-    gap: 0.25rem;
-    width: max-content;
-    margin-bottom: 1.25rem;
-    border: 1px solid #d0e1f4;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: stretch;
 }
 
-.tab-btn {
-    padding: 0.375rem 1.25rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    border: none;
-    background-color: transparent;
-    color: #4b5563;
-    transition: all 0.2s;
-    cursor: pointer;
-    font-family: var(--font-k2d);
+@media (min-width: 1024px) {
+    .page-layout {
+        flex-direction: row;
+        align-items: flex-start;
+    }
 }
 
-.tab-btn:hover {
-    color: #1f5ca9;
-    background-color: rgba(31, 92, 169, 0.08);
-}
-
-.tab-btn-active {
-    background-color: #1f5ca9 !important;
-    color: #ffffff !important;
-    box-shadow: 0 4px 10px rgba(31, 92, 169, 0.25) !important;
-}
-
-.page-layout-full {
-    width: 100%;
-}
-
-.main-content-col-full {
-    width: 100%;
+.main-content-col {
+    flex: 1;
+    min-width: 0;
 }
 
 /* Statistics tab layouts */
@@ -924,18 +700,4 @@ const pageStyles = `
     font-weight: 600;
     font-size: 0.75rem;
 }
-=======
-.page-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-}
-
-.main-content-col {
-    flex: 1;
-    min-width: 0;
-}
->>>>>>> Stashed changes
 `;
-

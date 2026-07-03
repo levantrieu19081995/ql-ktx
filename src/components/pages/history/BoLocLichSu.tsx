@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TextInput, Select, Button } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
+import { DateInput } from '@mantine/dates';
 import { useTranslations } from 'next-intl';
 import {
     IconSearch,
@@ -81,42 +81,6 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
     return (
         <div className="modern-filter-container">
             <div className="filter-content-wrapper">
-<<<<<<< Updated upstream
-                {/* HÀNG 1: Từ ngày + Đến ngày + Nhóm nút hành động */}
-                <div className="filter-row-1">
-                    <div className="filter-field-group text-inputs">
-                        {/* Từ ngày */}
-                        <div className="filter-field w-50">
-                            <label className="filter-label">{t('filter.fromDate').toUpperCase()}</label>
-                            <DatePickerInput
-                                placeholder="DD/MM/YYYY"
-                                valueFormat="DD/MM/YYYY"
-                                value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
-                                onChange={(ngay) =>
-                                    datBoLoc({ tuNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
-                                }
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                            />
-                        </div>
-
-                        {/* Đến ngày */}
-                        <div className="filter-field w-50">
-                            <label className="filter-label">{t('filter.toDate').toUpperCase()}</label>
-                            <DatePickerInput
-                                placeholder="DD/MM/YYYY"
-                                valueFormat="DD/MM/YYYY"
-                                value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
-                                onChange={(ngay) =>
-                                    datBoLoc({ denNgay: ngay ? dayjs(ngay).format('YYYY-MM-DD') : '' })
-                                }
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                            />
-                        </div>
-=======
                 {laTrangLichSu ? (
                     /* BỘ LỌC CŨ CỦA LỊCH SỬ RA VÀO (Hàng 1: Từ ngày, Đến ngày, Khu KTX, Trạng thái, Hàng 2: Đối tượng, Họ tên, MSSV) */
                     <div className="lich-su-filter-wrapper">
@@ -284,7 +248,6 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                                 </div>
                             </div>
                         )}
->>>>>>> Stashed changes
                     </div>
                 ) : (
                     /* BỘ LỌC CŨ CỦA TRANG CẢNH BÁO NGƯỜI LẠ (Từ ngày, Đến ngày, Khu KTX + Buttons) */
@@ -347,84 +310,6 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                                     {t('filter.search')}
                                 </Button>
 
-<<<<<<< Updated upstream
-                        <Button
-                            onClick={khiXuatPdf}
-                            leftSection={<IconFileTypePdf size={15} />}
-                            variant="outline"
-                            className="btn-action btn-pdf"
-                        >
-                            {t('filter.exportPdf')}
-                        </Button>
-
-                        <Button
-                            onClick={khiThemDuLieu}
-                            leftSection={<IconPlus size={15} />}
-                            className="btn-action btn-add-data"
-                        >
-                            {t('filter.addData')}
-                        </Button>
-
-                        {/* Nút mở rộng/thu gọn */}
-                        <Button
-                            variant="subtle"
-                            onClick={() => datMoRong(!moRong)}
-                            className="btn-toggle-expand"
-                            title={moRong ? t('filter.collapse') : t('filter.expand')}
-                        >
-                            {moRong ? <IconChevronUp size={18} /> : <IconChevronDown size={18} />}
-                        </Button>
-                    </div>
-                </div>
-
-                {/* HÀNG 2: Xuất hiện khi bấm Mở rộng bộ lọc */}
-                {moRong && (
-                    <div className="filter-row-2">
-                        {/* Khu KTX */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.dormitory').toUpperCase()}</label>
-                            <Select
-                                value={boLoc.maKtx || '-1'}
-                                onChange={(giaTri) => datBoLoc({ maKtx: giaTri || '-1' })}
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                                data={optionsKhu}
-                                placeholder="Tất cả"
-                            />
-                        </div>
-
-                        {/* Trạng thái (Action: IN/OUT/ALL) */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.status').toUpperCase()}</label>
-                            <Select
-                                value={boLoc.loai || 'ALL'}
-                                onChange={(giaTri) => datBoLoc({ loai: (giaTri as 'IN' | 'OUT' | 'ALL') || 'ALL' })}
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                                data={[
-                                    { value: 'ALL', label: t('filter.all') },
-                                    { value: 'IN', label: t('filter.in') },
-                                    { value: 'OUT', label: t('filter.out') },
-                                ]}
-                                placeholder="Tất cả"
-                            />
-                        </div>
-
-                        {/* Loại đối tượng (Nhóm) */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.objectType').toUpperCase()}</label>
-                            <Select
-                                value={boLoc.maNhom || '-1'}
-                                onChange={(giaTri) => datBoLoc({ maNhom: giaTri || '-1' })}
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                                data={optionsNhom}
-                                placeholder="Tất cả"
-                            />
-=======
                                 <Button
                                     onClick={datLaiBoLoc}
                                     leftSection={<IconRefresh size={15} />}
@@ -434,33 +319,6 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                                     Làm mới
                                 </Button>
                             </div>
->>>>>>> Stashed changes
-                        </div>
-
-                        {/* Họ tên */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.fullName').toUpperCase()}</label>
-                            <TextInput
-                                placeholder="Nhập họ tên..."
-                                value={boLoc.hoVaTen || ''}
-                                onChange={(e) => datBoLoc({ hoVaTen: e.target.value })}
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7' } }}
-                            />
-                        </div>
-
-                        {/* MSSV */}
-                        <div className="filter-field">
-                            <label className="filter-label">{t('filter.studentId').toUpperCase()}</label>
-                            <TextInput
-                                placeholder="Nhập MSSV..."
-                                value={boLoc.mssv || ''}
-                                onChange={(e) => datBoLoc({ mssv: e.target.value })}
-                                size="sm"
-                                radius="md"
-                                styles={{ input: { height: '38px', borderColor: '#e4e4e7', fontFamily: 'monospace' } }}
-                            />
                         </div>
                     </div>
                 )}
