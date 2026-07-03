@@ -3,7 +3,9 @@ import { getSession } from "next-auth/react";
 import { useSessionStore } from "@/context/sessionStore";
 
 // Lấy base URL từ .env
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = typeof window === "undefined"
+  ? process.env.NEXT_PUBLIC_API_BASE_URL
+  : "/api/proxy";
 
 // Instance chuyên cho tải file (PDF, Excel, ZIP…)
 const axiosBlob = axios.create({

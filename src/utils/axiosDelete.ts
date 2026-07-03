@@ -5,7 +5,9 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSessionStore } from "@/context/sessionStore";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+const API_BASE_URL = typeof window === "undefined"
+  ? (process.env.NEXT_PUBLIC_API_BASE_URL || "")
+  : "/api/proxy";
 
 // ================= DELETE CÓ BODY (RIÊNG BIỆT) =================
 export const axiosDeleteWithBody = async <T = any>(

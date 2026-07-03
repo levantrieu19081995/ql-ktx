@@ -40,6 +40,7 @@
     "home": "Overview",
     "statistics": "Statistics",
     "statInOut": "In/Out Statistics",
+    "statByCode": "Statistics by ID Code",
     "statAbsent": "Absent Students",
     "statStranger": "Stranger Detections",
     "statBanned": "Banned Students",

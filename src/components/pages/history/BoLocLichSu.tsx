@@ -264,7 +264,7 @@ const filterStyles = `
     padding: 1.25rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     margin-bottom: 1.25rem;
-    font-family: var(--font-k2d), sans-serif;
+    font-family: var(--font-readex-pro), sans-serif;
 }
 
 .filter-content-wrapper {

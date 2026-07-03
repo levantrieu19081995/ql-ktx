@@ -333,7 +333,7 @@ export default function StrangerWarningsPage() {
                 opened={!!canhBaoDuocChon}
                 onClose={() => datCanhBaoDuocChon(null)}
                 title={
-                    <span style={{ fontWeight: 800, fontSize: 16, color: '#1f5ca9', fontFamily: 'var(--font-k2d), sans-serif', textTransform: 'uppercase' }}>
+                    <span style={{ fontWeight: 800, fontSize: 16, color: '#1f5ca9', fontFamily: 'var(--font-readex-pro), sans-serif', textTransform: 'uppercase' }}>
                         Chi tiết cảnh báo người lạ
                     </span>
                 }

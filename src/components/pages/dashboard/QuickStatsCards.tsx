@@ -9,13 +9,13 @@ import {
   IconBan,
   IconAlertTriangle,
 } from '@tabler/icons-react';
-import { QUICK_STATS, QuickStat } from './mockDashboardData';
+import { INITIAL_QUICK_STATS, QuickStat } from './dashboardTypes';
 
 interface QuickStatsCardsProps {
   stats?: QuickStat[];
 }
 
-export default function QuickStatsCards({ stats = QUICK_STATS }: QuickStatsCardsProps) {
+export default function QuickStatsCards({ stats = INITIAL_QUICK_STATS }: QuickStatsCardsProps) {
   const t = useTranslations("Dashboard");
 
   const getIcon = (type: string, color: string) => {
@@ -57,11 +57,11 @@ export default function QuickStatsCards({ stats = QUICK_STATS }: QuickStatsCards
   };
 
   return (
-    <Stack gap="xs">
-      <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
+    <Stack gap="xs" style={{ fontFamily: 'var(--font-readex-pro), sans-serif' }}>
+      <Text fw={800} size="sm" c="#1f5ca9" style={{ letterSpacing: '0.75px', textTransform: 'uppercase' }}>
         {t("quickStats")}
       </Text>
-      <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 6 }} spacing="md">
+      <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 3, lg: 6 }} spacing="md">
         {stats.map((stat) => {
           const trans = getStatTranslation(stat.id);
           return (
@@ -71,45 +71,76 @@ export default function QuickStatsCards({ stats = QUICK_STATS }: QuickStatsCards
               radius="lg"
               p="md"
               style={{
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.03)',
+                transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
                 cursor: 'pointer',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                borderColor: '#e2e8f0',
+                fontFamily: 'var(--font-readex-pro), sans-serif',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.08)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(31, 92, 169, 0.12)';
+                e.currentTarget.style.borderColor = '#00afef';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.03)';
+                e.currentTarget.style.borderColor = '#e2e8f0';
               }}
             >
-              <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
-                <Stack gap={4} style={{ flex: 1 }}>
-                  <Text size="xs" fw={700} c="dimmed" style={{ whiteSpace: 'nowrap' }}>
-                    {trans.title}
-                  </Text>
-                  <Title order={3} fw={800} c="#1e293b" style={{ fontSize: '20px' }}>
-                    {stat.value}
-                  </Title>
-                </Stack>
-                <Box
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: '50%',
-                    display: 'grid',
-                    placeItems: 'center',
-                    background: stat.gradient,
-                    flexShrink: 0,
-                  }}
-                >
-                  {getIcon(stat.iconType, stat.iconColor)}
-                </Box>
-              </Group>
-              <Text size="xs" c="dimmed" mt="xs" fw={500}>
-                {trans.caption}
-              </Text>
+              <Stack gap="xs" style={{ flexGrow: 1, justifyContent: 'space-between' }}>
+                <Group justify="space-between" align="flex-start" wrap="nowrap" gap="xs">
+                  <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+                    <Text 
+                      size="xs" 
+                      fw={700} 
+                      c="#1f5ca9" 
+                      style={{ 
+                        lineHeight: '1.3',
+                        minHeight: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '11px',
+                        letterSpacing: '0.2px'
+                      }}
+                    >
+                      {trans.title}
+                    </Text>
+                    <Title 
+                      order={3} 
+                      fw={800} 
+                      c="#1e293b" 
+                      style={{ 
+                        fontSize: '22px', 
+                        fontFamily: 'var(--font-readex-pro), sans-serif',
+                        letterSpacing: '-0.5px'
+                      }}
+                    >
+                      {stat.value}
+                    </Title>
+                  </Stack>
+                  <Box
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      display: 'grid',
+                      placeItems: 'center',
+                      background: stat.gradient,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {getIcon(stat.iconType, stat.iconColor)}
+                  </Box>
+                </Group>
+                <Text size="xs" c="dimmed" fw={500} style={{ lineHeight: '1.4' }}>
+                  {stat.caption || trans.caption}
+                </Text>
+              </Stack>
             </Card>
           );
         })}

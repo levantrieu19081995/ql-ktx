@@ -15,7 +15,7 @@ const ThongKePage = dynamic(
 );
 
 interface ClientPageProps {
-  type?: "luot-ra-vao" | "vang-mat" | "nguoi-la" | "bi-cam";
+  type?: "luot-ra-vao" | "vang-mat" | "nguoi-la" | "bi-cam" | "theo-ma-so";
 }
 
 export default function ClientPage({ type = "luot-ra-vao" }: ClientPageProps) {

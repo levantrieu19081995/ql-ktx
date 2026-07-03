@@ -4,7 +4,7 @@ import { DatePicker } from '@mantine/dates';
 import { IconCalendar, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TIME_CHART_DATA, TimeChartData } from './mockDashboardData';
+import { TimeChartData } from './dashboardTypes';
 import dayjs from 'dayjs';
 
 interface TimeInOutChartProps {
@@ -16,7 +16,7 @@ interface TimeInOutChartProps {
 }
 
 export default function TimeInOutChart({
-  data = TIME_CHART_DATA,
+  data = [],
   date,
   onDateChange,
   timeUnit: propTimeUnit,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Group, Text, Table, Badge, Avatar, Anchor, ScrollArea } from '@mantine/core';
 import { useTranslations } from 'next-intl';
-import { IN_OUT_HISTORY, InOutHistory } from './mockDashboardData';
+import { InOutHistory } from './dashboardTypes';
 
 interface RecentHistoryTableProps {
   history?: InOutHistory[];
@@ -9,7 +9,7 @@ interface RecentHistoryTableProps {
 }
 
 export default function RecentHistoryTable({
-  history = IN_OUT_HISTORY,
+  history = [],
   onViewAll,
 }: RecentHistoryTableProps) {
   const t = useTranslations("Dashboard");

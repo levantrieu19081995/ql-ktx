@@ -2,13 +2,13 @@ import React, { useState } from 'react';
 import { Card, Text, Box, Group, Button, UnstyledButton } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { INTRUSION_ALERTS, IntrusionAlert } from './mockDashboardData';
+import { IntrusionAlert } from './dashboardTypes';
 
 interface IntrusionAlertsChartProps {
   data?: IntrusionAlert[];
 }
 
-export default function IntrusionAlertsChart({ data = INTRUSION_ALERTS }: IntrusionAlertsChartProps) {
+export default function IntrusionAlertsChart({ data = [] }: IntrusionAlertsChartProps) {
   const [filterType, setFilterType] = useState<'area' | 'time'>('area');
   const t = useTranslations("Dashboard");
 

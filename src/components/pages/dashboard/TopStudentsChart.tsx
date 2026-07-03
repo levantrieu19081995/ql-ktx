@@ -2,13 +2,13 @@ import React from 'react';
 import { Card, Text, Box, Stack } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TOP_STUDENTS, StudentActivity } from './mockDashboardData';
+import { StudentActivity } from './dashboardTypes';
 
 interface TopStudentsChartProps {
   data?: StudentActivity[];
 }
 
-export default function TopStudentsChart({ data = TOP_STUDENTS }: TopStudentsChartProps) {
+export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
   const t = useTranslations("Dashboard");
 
   return (

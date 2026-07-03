@@ -575,7 +575,7 @@ const pageStyles = `
     letter-spacing: -0.025em;
     margin-top: 0;
     margin-bottom: 1rem;
-    font-family: var(--font-k2d);
+    font-family: var(--font-readex-pro);
 }
 
 .tabs-bar {
@@ -599,7 +599,7 @@ const pageStyles = `
     color: #4b5563;
     transition: all 0.2s;
     cursor: pointer;
-    font-family: var(--font-k2d);
+    font-family: var(--font-readex-pro);
 }
 
 .tab-btn:hover {
@@ -680,7 +680,7 @@ const pageStyles = `
     background-color: #ffffff;
     color: #4b5563;
     border: 1px solid #e4e4e7;
-    font-family: var(--font-k2d);
+    font-family: var(--font-readex-pro);
 }
 
 .chart-tab-btn:hover {
@@ -711,7 +711,7 @@ const pageStyles = `
     border: none;
     background-color: #f4f4f5;
     color: #4b5563;
-    font-family: var(--font-k2d);
+    font-family: var(--font-readex-pro);
 }
 
 .chart-filter-btn:hover {

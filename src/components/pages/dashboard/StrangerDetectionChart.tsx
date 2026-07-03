@@ -2,13 +2,13 @@ import React from 'react';
 import { Card, Text, Box } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { STRANGER_DETECTION, StrangerDetection } from './mockDashboardData';
+import { StrangerDetection } from './dashboardTypes';
 
 interface StrangerDetectionChartProps {
   data?: StrangerDetection[];
 }
 
-export default function StrangerDetectionChart({ data = STRANGER_DETECTION }: StrangerDetectionChartProps) {
+export default function StrangerDetectionChart({ data = [] }: StrangerDetectionChartProps) {
   const t = useTranslations("Dashboard");
 
   return (

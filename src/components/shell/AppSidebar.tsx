@@ -44,6 +44,7 @@ import {
   IconLayoutSidebarLeftExpand,
   IconLayoutSidebarLeftCollapse,
   IconCar,
+  IconId,
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -166,6 +167,11 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           label: t("statInOut"),
           href: "/thong-ke/luot-ra-vao",
           icon: <IconArrowsLeftRight size={16} />,
+        },
+        {
+          label: t("statByCode"),
+          href: "/thong-ke/theo-ma-so",
+          icon: <IconId size={16} />,
         },
         {
           label: t("statAbsent"),

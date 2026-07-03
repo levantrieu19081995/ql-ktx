@@ -5,7 +5,9 @@ import axios from "axios";
 import { useSessionStore } from "@/context/sessionStore";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: typeof window === "undefined"
+    ? process.env.NEXT_PUBLIC_API_BASE_URL
+    : "/api/proxy",
 });
 
 // luôn lấy token mới nhất
