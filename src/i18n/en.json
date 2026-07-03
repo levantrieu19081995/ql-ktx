@@ -228,16 +228,12 @@
       "feedbackBtn": "Report Incorrect Info"
     },
     "drawer": {
-<<<<<<< Updated upstream
-      "detailTitle": "Access Event Details",
       "portraitCamera": "Camera Captured Photo",
       "eventLabel": "Event",
       "closeBtn": "Close",
       "unitLabel": "Unit",
-=======
       "detailTitle": "Access History Details",
       "detailTitleStranger": "Stranger Warning Details",
->>>>>>> Stashed changes
       "createTitle": "Record New Access History",
       "dormLabel": "Dormitory Area",
       "dormPlaceholder": "Select area",
@@ -253,8 +249,6 @@
       "notePlaceholder": "Enter event note if any",
       "saveBtn": "Save Record",
       "cancelBtn": "Cancel",
-      "closeBtn": "Close",
-      "eventLabel": "Access Status",
       "studentIdLabel": "ID",
       "studentIdPlaceholder": "Enter student ID (e.g. B2003789)",
       "fullNameLabel": "Student Full Name",
