@@ -32,7 +32,7 @@ export default function DateFilterInput({
   onChange,
   clearable = true,
   size = "sm",
-  valueFormat = "DD/MM/YYYY", // 🧩 mặc định nếu không truyền
+  valueFormat = "MM/DD/YYYY", // 🧩 mặc định nếu không truyền
 }: DateFilterInputProps) {
   const [value, setValue] = useState<string | null>(defaultValue);
 

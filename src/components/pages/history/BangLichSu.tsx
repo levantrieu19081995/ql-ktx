@@ -3,15 +3,7 @@
 import React, { useState } from 'react';
 import { Table, Avatar, Select, Box } from '@mantine/core';
 import { useTranslations } from 'next-intl';
-import {
-    IconArrowRight,
-    IconArrowLeft,
-    IconCircleX,
-    IconUser,
-    IconBan,
-    IconCircleCheck,
-    IconClock,
-} from '@tabler/icons-react';
+
 import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 
@@ -39,71 +31,6 @@ interface ThuocTinhBangLichSu {
     tabActive?: string;
 }
 
-/**
- * Hàm render badge cột Loại tuỳ theo dữ liệu và tab đang active.
- * Chức năng: Hiển thị đúng nhãn trạng thái theo ảnh mockup.
- */
-const renderCotLoai = (banGhi: HistoryItem, loaiTab: LoaiTabHienThi, t: any) => {
-    // Ưu tiên hiển thị theo tab
-    if (loaiTab === 'CO_MAT') {
-        return (
-            <span className="badge-status status-emerald">
-                <IconCircleCheck size={14} /> {t('filter.present')}
-            </span>
-        );
-    }
-
-    if (loaiTab === 'VANG_MAT') {
-        return (
-            <span className="badge-status status-amber">
-                <IconClock size={14} /> {t('filter.absent')}
-            </span>
-        );
-    }
-
-    // Tab LICH_SU hoặc CANH_BAO: hiển thị theo phân loại của bản ghi
-    if (banGhi.loaiDoiTuong === 'Người lạ') {
-        return (
-            <span className="badge-status status-red">
-                <IconCircleX size={14} /> {t('filter.stranger')}
-            </span>
-        );
-    }
-
-    if (banGhi.trangThaiSinhVien === 'NO_PHI') {
-        return (
-            <span className="badge-status status-blue">
-                <IconUser size={14} /> {t('filter.unpaid')}
-            </span>
-        );
-    }
-
-    if (banGhi.trangThaiSinhVien === 'BI_CAM') {
-        return (
-            <span className="badge-status status-orange">
-                <IconBan size={14} /> {t('filter.banned')}
-            </span>
-        );
-    }
-
-    // Sinh viên bình thường: hiển thị hướng di chuyển Vào / Ra
-    const laVao = banGhi.loai === 'IN';
-    return (
-        <span
-            className={`badge-status ${laVao ? 'status-blue' : 'status-emerald'}`}
-        >
-            {laVao ? (
-                <>
-                    <IconArrowRight size={14} /> {t('filter.in')}
-                </>
-            ) : (
-                <>
-                    <IconArrowLeft size={14} /> {t('filter.out')}
-                </>
-            )}
-        </span>
-    );
-};
 
 /**
  * Hàm lấy nhãn trạng thái hiện diện cho bảng Thông tin chi tiết.
@@ -167,17 +94,18 @@ export default function BangLichSu({
         <div className="history-table-wrapper">
             {/* BẢNG DỮ LIỆU */}
             <div className="scroll-container">
-                <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md" className="history-table">
+                <Table highlightOnHover verticalSpacing="md" horizontalSpacing="md" className="history-table">
                     <Table.Thead className="table-header">
                         <Table.Tr>
-                            <Table.Th style={{ width: 48, textAlign: 'center' }}>{t('table.no')}</Table.Th>
-                            <Table.Th style={{ width: 145 }}>{t('table.time')}</Table.Th>
-                            <Table.Th style={{ width: 155 }}>{t('table.fullName')}</Table.Th>
-                            <Table.Th style={{ width: 80, textAlign: 'center' }}>{t('table.image')}</Table.Th>
-                            <Table.Th style={{ width: 110 }}>{t('table.type')}</Table.Th>
-                            <Table.Th style={{ width: 75 }}>{t('table.dormitory')}</Table.Th>
+                            <Table.Th style={{ width: 60, textAlign: 'center' }}>{t('table.no')}</Table.Th>
+                            <Table.Th style={{ width: 180 }}>{t('table.time')}</Table.Th>
+                            <Table.Th style={{ width: 220 }}>{t('table.fullName')}</Table.Th>
+                            <Table.Th style={{ width: 160, textAlign: 'center' }}>{t('table.image')}</Table.Th>
+                            <Table.Th style={{ width: 200 }}>{t('table.device')}</Table.Th>
+                            <Table.Th style={{ width: 150 }}>{t('table.group')}</Table.Th>
+                            <Table.Th style={{ width: 120 }}>{t('table.dormitory')}</Table.Th>
                             {tabActive !== 'LICH_SU' && (
-                                <Table.Th style={{ width: 80 }}>
+                                <Table.Th style={{ width: 110 }}>
                                     {tabActive === 'CAN_BO' ? t('table.unit') : t('table.room')}
                                 </Table.Th>
                             )}
@@ -186,13 +114,13 @@ export default function BangLichSu({
                     <Table.Tbody>
                         {dangTai ? (
                             <Table.Tr>
-                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 6 : 7} className="table-cell-empty">
+                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 7 : 8} className="table-cell-empty">
                                     {t('table.loading')}
                                 </Table.Td>
                             </Table.Tr>
                         ) : danhSachHienThi.length === 0 ? (
                             <Table.Tr>
-                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 6 : 7} className="table-cell-empty">
+                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 7 : 8} className="table-cell-empty">
                                     {t('table.noData')}
                                 </Table.Td>
                             </Table.Tr>
@@ -219,12 +147,18 @@ export default function BangLichSu({
                                                 <Avatar
                                                     src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
                                                     radius="sm"
-                                                    size={44}
+                                                    size={60}
                                                     className="avatar-image"
+                                                    styles={{ image: { objectFit: 'cover' } }}
                                                 />
                                             </Box>
                                         </Table.Td>
-                                        <Table.Td>{renderCotLoai(banGhi, loaiTab, t)}</Table.Td>
+                                        <Table.Td className={`${banGhi.loai === 'IN' ? 'status-blue' : 'status-emerald'} cell-text-medium`}>
+                                            {banGhi.thietBi || 'N/A'}
+                                        </Table.Td>
+                                        <Table.Td className="cell-text-medium">
+                                            {banGhi.loaiDoiTuong || 'N/A'}
+                                        </Table.Td>
                                         <Table.Td className="cell-text-medium">
                                             {banGhi.tenKtx}
                                         </Table.Td>

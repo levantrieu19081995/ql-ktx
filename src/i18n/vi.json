@@ -263,6 +263,8 @@
       "dormitory": "KTX",
       "room": "Phòng",
       "unit": "Đơn vị",
+      "device": "Thiết bị",
+      "group": "Nhóm",
       "noData": "Không có dữ liệu",
       "loading": "Đang tải dữ liệu...",
       "paginationInfo": "Hiển thị {start} - {end} của {total} bản ghi",

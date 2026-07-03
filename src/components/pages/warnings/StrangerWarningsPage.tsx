@@ -321,8 +321,9 @@ export default function StrangerWarningsPage() {
                           banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien
                         }
                         radius="md"
-                        size={56}
+                        size={60}
                         className="avatar-warning"
+                        styles={{ image: { objectFit: 'cover' } }}
                       />
                     </Box>
                   </Table.Td>

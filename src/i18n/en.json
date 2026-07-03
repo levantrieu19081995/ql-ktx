@@ -265,6 +265,8 @@
       "dormitory": "Dormitory",
       "room": "Room",
       "unit": "Unit",
+      "device": "Device",
+      "group": "Group",
       "noData": "No data available",
       "loading": "Loading data...",
       "paginationInfo": "Showing {start} - {end} of {total} records",

@@ -6,7 +6,8 @@ import { DateInput } from '@mantine/dates';
 import { useTranslations } from 'next-intl';
 import { IconSearch, IconRefresh, IconFileSpreadsheet, IconFileTypePdf } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import { dichVuDanhMucKhu, KhuItem } from '../history/historyService';
+// Import services and interfaces
+import { dichVuDanhMucKhu, KhuItem } from './strangerService';
 
 interface ThuocTinhBoLocNguoiLa {
     boLoc: {
@@ -83,9 +84,9 @@ export const BoLocNguoiLa: React.FC<ThuocTinhBoLocNguoiLa> = ({
                                 />
                             </div>
 
-                            {/* Khu KTX Phát hiện */}
+                            {/* Khu KTX phát hiện */}
                             <div className="filter-field">
-                                <label className="filter-label">KHU KTX PHÁT HIỆN</label>
+                                <label className="filter-label">KHU KTX</label>
                                 <Select
                                     value={boLoc.maKtx || '-1'}
                                     onChange={(giaTri) => datBoLoc({ maKtx: giaTri || '-1' })}
