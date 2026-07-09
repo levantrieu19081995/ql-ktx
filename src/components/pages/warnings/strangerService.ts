@@ -1,9 +1,7 @@
 import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 import { duLieuGiaLapLichSuRaVao } from '../history/history.mock';
-
-const AUTH_HEADER = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
-const BASE_URL = 'https://qldaotaolaixe.cusc.vn/face-detect-service';
+import { get, post } from "@/utils/axios";
 
 export const dichVuNguoiLa = {
   layDanhSachNguoiLa: async (boLoc?: {
@@ -30,28 +28,14 @@ export const dichVuNguoiLa = {
       };
       console.log("layDanhSachNguoiLa Request Body:", reqBody);
 
-      const res = await fetch(`${BASE_URL}/face-web-check-time/paginate-nguoi-la`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
-        },
-        body: JSON.stringify(reqBody)
-      });
+      const res = await post<any>("/face-detect-service/face-web-check-time/paginate-nguoi-la", reqBody);
 
-      if (!res.ok) {
-        console.error(`layDanhSachNguoiLa API error: ${res.status}`);
+      if (res?.status !== 'OK') {
+        console.error(`layDanhSachNguoiLa status not OK:`, res);
         return { items: [], totalPages: 1, totalElements: 0 };
       }
 
-      const data = await res.json();
-      console.log("layDanhSachNguoiLa Response Data:", JSON.stringify(data, null, 2));
-      if (data?.status !== 'OK') {
-        console.error(`layDanhSachNguoiLa status not OK:`, data);
-        return { items: [], totalPages: 1, totalElements: 0 };
-      }
-
-      const items = data?.payload?.items || [];
+      const items = res?.payload?.items || [];
       const mappedItems = items.map((item: any): HistoryItem => {
         const timeStr = item.timecheck ? dayjs(item.timecheck).format("YYYY-MM-DD HH:mm:ss") : `${dayjs(item.ngay, "DD/MM/YYYY").format("YYYY-MM-DD")} ${item.thoigian}`;
         return {
@@ -77,20 +61,17 @@ export const dichVuNguoiLa = {
       });
 
       let finalItems = mappedItems;
-      let finalTotalElements = data?.payload?.totalElements || 0;
-      let finalTotalPages = data?.payload?.totalPages || 1;
+      let finalTotalElements = res?.payload?.totalElements || 0;
+      let finalTotalPages = res?.payload?.totalPages || 1;
 
       if (finalItems.length === 0) {
-        // Fallback to mock data for demonstration when database has no records
         const mockStrangers = duLieuGiaLapLichSuRaVao.filter(item => item.loaiDoiTuong === "Người lạ");
         
-        // Apply client-side filters on mock data
         let filteredMock = mockStrangers;
         if (boLoc?.maKtx && boLoc.maKtx !== "-1" && boLoc.maKtx !== "") {
           filteredMock = filteredMock.filter(item => item.maKtx === boLoc.maKtx);
         }
         
-        // Simple pagination for mock data
         const startIdx = (Number(page) - 1) * Number(pageSize);
         const endIdx = startIdx + Number(pageSize);
         finalItems = filteredMock.slice(startIdx, endIdx);
@@ -119,17 +100,9 @@ export interface KhuItem {
 export const dichVuDanhMucKhu = {
   layDanhSach: async (): Promise<KhuItem[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/face-web-ktx-khu/index`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
-        }
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
-      if (data?.status && data.status !== 'OK') return [];
-      const payload = data?.payload || data;
+      const res = await get<any>("/face-detect-service/face-web-ktx-khu/index");
+      if (res?.status && res.status !== 'OK') return [];
+      const payload = res?.payload || res;
       return (Array.isArray(payload) ? payload : []) as KhuItem[];
     } catch {
       return [];

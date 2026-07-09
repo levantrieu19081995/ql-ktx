@@ -6,7 +6,6 @@ import { DateInput } from '@mantine/dates';
 import { useTranslations } from 'next-intl';
 import { IconSearch, IconRefresh, IconFileSpreadsheet, IconFileTypePdf } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-// Import services and interfaces
 import { dichVuDanhMucKhu, KhuItem } from './strangerService';
 
 interface ThuocTinhBoLocNguoiLa {

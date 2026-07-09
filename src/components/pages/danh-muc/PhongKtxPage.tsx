@@ -43,21 +43,17 @@ export default function PhongKtxPage() {
   };
 
   const loadDanhMucPhongOptions = async (khuValue: string | null) => {
-    if (!khuValue || khuValue === "-1") {
-      setDsPhong([{ value: "-1", label: "Tất cả" }]);
-      return;
-    }
     try {
       const res = await fetchDanhSachPhongKtx({
         page: 1,
         pageSize: 9999,
-        maKhu: khuValue,
+        maKhu: khuValue || "-1",
         maPhong: "-1",
       });
       setDsPhong([
         { value: "-1", label: "Tất cả" },
         ...(res?.items || []).map((item: PhongKtx) => ({
-          value: item.phongMa || item.maPhong || "",
+          value: item.maPhong || item.phongMa || "",
           label: item.tenPhong || item.phongMa || item.maPhong || "",
         })),
       ]);
@@ -138,43 +134,47 @@ export default function PhongKtxPage() {
       icon={<IconBuildingTunnel size={20} />}
       searchControls={
         <>
-          <Select
-            label="Khu ký túc xá"
-            placeholder="Chọn khu..."
-            data={dsKhu}
-            value={maKhu}
-            onChange={(value) => setMaKhu(value)}
-            clearable={false}
-            style={{ minWidth: 180 }}
-          />
+          <div className="filter-inputs-custom">
+            <Select
+              label="Khu ký túc xá"
+              placeholder="Chọn khu..."
+              data={dsKhu}
+              value={maKhu}
+              onChange={(value) => setMaKhu(value)}
+              clearable={false}
+              style={{ minWidth: 180 }}
+            />
 
-          <Select
-            label="Phòng"
-            placeholder="Chọn phòng..."
-            data={dsPhong}
-            value={maPhong}
-            onChange={(value) => setMaPhong(value)}
-            clearable={false}
-            style={{ minWidth: 180 }}
-          />
+            <Select
+              label="Phòng"
+              placeholder="Chọn phòng..."
+              data={dsPhong}
+              value={maPhong}
+              onChange={(value) => setMaPhong(value)}
+              clearable={false}
+              style={{ minWidth: 180 }}
+            />
+          </div>
 
-          <Button
-            leftSection={<IconSearch size={18} />}
-            color="blue"
-            radius="md"
-            onClick={handleSearch}
-          >
-            Tìm kiếm
-          </Button>
+          <div className="filter-actions-custom">
+            <Button
+              leftSection={<IconSearch size={18} />}
+              color="blue"
+              radius="md"
+              onClick={handleSearch}
+            >
+              Tìm kiếm
+            </Button>
 
-          <Button
-            leftSection={<IconRefresh size={18} />}
-            variant="default"
-            radius="md"
-            onClick={handleReset}
-          >
-            Làm mới
-          </Button>
+            <Button
+              leftSection={<IconRefresh size={18} />}
+              variant="default"
+              radius="md"
+              onClick={handleReset}
+            >
+              Làm mới
+            </Button>
+          </div>
         </>
       }
       pagination={

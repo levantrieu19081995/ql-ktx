@@ -27,7 +27,7 @@ export default function PhongKtxTable({ items }: PhongKtxTableProps) {
               <Table.Tr key={item.phongId || item.guid || index}>
                 <Table.Td style={{ textAlign: "center" }}>{index + 1}</Table.Td>
                 <Table.Td>{item.phongMa || item.maPhong || "-"}</Table.Td>
-                <Table.Td>{item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "-"}</Table.Td>
+                <Table.Td>{item.tenKhu || item.maKhu || "-"}</Table.Td>
                 <Table.Td>{item.sucChua ?? "-"}</Table.Td>
                 <Table.Td>{item.soChoDangCo ?? item.soNguoiHienTai ?? "-"}</Table.Td>
               </Table.Tr>

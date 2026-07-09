@@ -270,42 +270,46 @@ export default function SinhVienBiCamPage() {
         icon={<IconLockFilled size={20} />}
         searchControls={
           <>
-            <TextInput
-              label="Mã sinh viên"
-              placeholder="Nhập mã sinh viên..."
-              style={{ minWidth: 200 }}
-              value={maSinhVienSearch}
-              onChange={(event) =>
-                setMaSinhVienSearch(event.currentTarget.value)
-              }
-            />
+            <div className="filter-inputs-custom">
+              <TextInput
+                label="Mã sinh viên"
+                placeholder="Nhập mã sinh viên..."
+                style={{ minWidth: 200 }}
+                value={maSinhVienSearch}
+                onChange={(event) =>
+                  setMaSinhVienSearch(event.currentTarget.value)
+                }
+              />
+            </div>
 
-            <Button
-              leftSection={<IconSearch size={18} />}
-              color="blue"
-              radius="md"
-              onClick={handleSearch}
-            >
-              Tìm kiếm
-            </Button>
+            <div className="filter-actions-custom">
+              <Button
+                leftSection={<IconSearch size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleSearch}
+              >
+                Tìm kiếm
+              </Button>
 
-            <Button
-              leftSection={<IconRefresh size={18} />}
-              variant="default"
-              radius="md"
-              onClick={handleReset}
-            >
-              Làm mới
-            </Button>
+              <Button
+                leftSection={<IconRefresh size={18} />}
+                variant="default"
+                radius="md"
+                onClick={handleReset}
+              >
+                Làm mới
+              </Button>
 
-            <Button
-              leftSection={<IconAdOff size={18} />}
-              color="blue"
-              radius="md"
-              onClick={handleAdd}
-            >
-              Thêm sinh viên
-            </Button>
+              <Button
+                leftSection={<IconAdOff size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleAdd}
+              >
+                Thêm sinh viên
+              </Button>
+            </div>
           </>
         }
         pagination={

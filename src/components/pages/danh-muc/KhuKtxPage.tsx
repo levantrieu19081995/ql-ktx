@@ -349,42 +349,46 @@ export default function KhuKtxPage() {
         icon={<IconCategory size={20} />}
         searchControls={
           <>
-            <Select
-              label="Mã khu"
-              placeholder="Chọn mã khu"
-              clearable={false}
-              style={{ minWidth: 200 }}
-              value={maKhu}
-              onChange={setMaKhu}
-              data={dsKhu}
-            />
+            <div className="filter-inputs-custom">
+              <Select
+                label="Mã khu"
+                placeholder="Chọn mã khu"
+                clearable={false}
+                style={{ minWidth: 200 }}
+                value={maKhu}
+                onChange={setMaKhu}
+                data={dsKhu}
+              />
+            </div>
 
-            <Button
-              leftSection={<IconSearch size={18} />}
-              color="blue"
-              radius="md"
-              onClick={handleSearch}
-            >
-              Tìm kiếm
-            </Button>
+            <div className="filter-actions-custom">
+              <Button
+                leftSection={<IconSearch size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleSearch}
+              >
+                Tìm kiếm
+              </Button>
 
-            <Button
-              leftSection={<IconRefresh size={18} />}
-              variant="default"
-              radius="md"
-              onClick={handleReset}
-            >
-              Làm mới
-            </Button>
+              <Button
+                leftSection={<IconRefresh size={18} />}
+                variant="default"
+                radius="md"
+                onClick={handleReset}
+              >
+                Làm mới
+              </Button>
 
-            <Button
-              leftSection={<IconCloudDownload size={18} />}
-              color="green"
-              radius="md"
-              onClick={handleOpenSync}
-            >
-              Đồng bộ từ UIIS
-            </Button>
+              <Button
+                leftSection={<IconCloudDownload size={18} />}
+                color="green"
+                radius="md"
+                onClick={handleOpenSync}
+              >
+                Đồng bộ từ UIIS
+              </Button>
+            </div>
           </>
         }
         pagination={

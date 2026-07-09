@@ -68,7 +68,7 @@ export default function DanhMucFeaturePage({
 
       {searchControls && (
         <Card withBorder radius="md" p="md">
-          <Group align="end">{searchControls}</Group>
+          <div className="filter-row-custom">{searchControls}</div>
         </Card>
       )}
 
@@ -86,6 +86,41 @@ export default function DanhMucFeaturePage({
   justify-content: center;
   color: #1f5ca9;
   background: #eff6ff;
+}
+
+.filter-row-custom {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 20px;
+  width: 100%;
+}
+
+.filter-inputs-custom {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1;
+  min-width: 250px;
+  max-width: 800px;
+}
+
+.filter-inputs-custom > * {
+  flex: 1;
+  min-width: 200px;
+  max-width: 450px;
+}
+
+.filter-actions-custom {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
 }
 `,
         }}

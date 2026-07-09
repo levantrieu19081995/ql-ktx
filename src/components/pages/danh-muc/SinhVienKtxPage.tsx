@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Select, TextInput } from "@mantine/core";
+import { Button, Group, Select, Stack, TextInput } from "@mantine/core";
 import { IconRefresh, IconSearch, IconUsers } from "@tabler/icons-react";
 
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
@@ -199,61 +199,65 @@ export default function SinhVienKtxPage() {
       items={mappedItems}
       icon={<IconUsers size={20} />}
       searchControls={
-        <>
-          <Select
-            label="Khu ký túc xá"
-            placeholder="Chọn khu..."
-            data={dsKhu}
-            value={maKhu}
-            onChange={(value) => setMaKhu(value)}
-            clearable={false}
-            style={{ minWidth: 150 }}
-          />
+        <Stack gap="md" w="100%">
+          <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
+            <Select
+              label="Khu ký túc xá"
+              placeholder="Chọn khu..."
+              data={dsKhu}
+              value={maKhu}
+              onChange={(value) => setMaKhu(value)}
+              clearable={false}
+              style={{ minWidth: 150, flexGrow: 1 }}
+            />
 
-          <Select
-            label="Phòng"
-            placeholder="Chọn phòng..."
-            data={dsPhong}
-            value={maPhong}
-            onChange={(value) => setMaPhong(value)}
-            clearable={false}
-            style={{ minWidth: 150 }}
-          />
+            <Select
+              label="Phòng"
+              placeholder="Chọn phòng..."
+              data={dsPhong}
+              value={maPhong}
+              onChange={(value) => setMaPhong(value)}
+              clearable={false}
+              style={{ minWidth: 150, flexGrow: 1 }}
+            />
 
-          <TextInput
-            label="Mã sinh viên"
-            placeholder="Nhập mã sinh viên..."
-            value={maSinhVien}
-            onChange={(event) => setMaSinhVien(event.currentTarget.value)}
-            style={{ minWidth: 180 }}
-          />
+            <TextInput
+              label="Mã sinh viên"
+              placeholder="Nhập mã sinh viên..."
+              value={maSinhVien}
+              onChange={(event) => setMaSinhVien(event.currentTarget.value)}
+              style={{ minWidth: 180, flexGrow: 1 }}
+            />
 
-          <TextInput
-            label="Họ tên"
-            placeholder="Nhập họ tên..."
-            value={hoTen}
-            onChange={(event) => setHoTen(event.currentTarget.value)}
-            style={{ minWidth: 200 }}
-          />
+            <TextInput
+              label="Họ tên"
+              placeholder="Nhập họ tên..."
+              value={hoTen}
+              onChange={(event) => setHoTen(event.currentTarget.value)}
+              style={{ minWidth: 200, flexGrow: 1 }}
+            />
+          </Group>
 
-          <Button
-            leftSection={<IconSearch size={18} />}
-            color="blue"
-            radius="md"
-            onClick={handleSearch}
-          >
-            Tìm kiếm
-          </Button>
+          <Group justify="flex-end" gap="sm">
+            <Button
+              leftSection={<IconSearch size={18} />}
+              color="blue"
+              radius="md"
+              onClick={handleSearch}
+            >
+              Tìm kiếm
+            </Button>
 
-          <Button
-            leftSection={<IconRefresh size={18} />}
-            variant="default"
-            radius="md"
-            onClick={handleReset}
-          >
-            Làm mới
-          </Button>
-        </>
+            <Button
+              leftSection={<IconRefresh size={18} />}
+              variant="default"
+              radius="md"
+              onClick={handleReset}
+            >
+              Làm mới
+            </Button>
+          </Group>
+        </Stack>
       }
       pagination={
         <CustomPagination
