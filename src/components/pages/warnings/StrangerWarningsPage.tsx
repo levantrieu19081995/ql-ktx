@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -223,20 +224,271 @@ export default function StrangerWarningsPage() {
                                     CẢNH BÁO XÂM NHẬP
                                 </Badge>
                             </div>
+=======
+"use client";
 
-                            {/* Thông tin chi tiết */}
-                            <div className="card-details">
-                                {/* Giờ phát hiện */}
-                                <div className="detail-item">
-                                    <IconClock size={16} className="detail-icon icon-red" />
-                                    <div>
-                                        <Text size="xs" c="dimmed" fw={600}>GIỜ PHÁT HIỆN</Text>
-                                        <Text size="sm" fw={700}>
-                                            {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
-                                        </Text>
-                                    </div>
-                                </div>
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Card,
+  Group,
+  Text,
+  Button,
+  Table,
+  Avatar,
+  Badge,
+  Loader,
+  Pagination,
+  Portal,
+  Notification,
+} from "@mantine/core";
+import { useTranslations } from "next-intl";
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconX,
+} from "@tabler/icons-react";
+import dayjs from "dayjs";
+import { HistoryItem } from "../../../types/type-history";
+import { dichVuNguoiLa } from "./strangerService";
+import BoLocNguoiLa from "./BoLocNguoiLa";
+import DrawerChiTietLichSu from "../history/DrawerChiTietLichSu";
+import { xuatRaFileExcel } from "../history/excelHelper";
 
+export default function StrangerWarningsPage() {
+  const t = useTranslations("History");
+  const [dangTai, setDangTai] = useState(false);
+  const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
+
+  // Trạng thái phân trang
+  const [trangHienTai, setTrangHienTai] = useState(1);
+  const [tongSoTrang, setTongSoTrang] = useState(1);
+  const [tongSoPhanTu, setTongSoPhanTu] = useState(0);
+  const sizeTrang = 8;
+
+  // Bộ lọc — bắt đầu rỗng để hiện toàn bộ dữ liệu
+  const [boLoc, setBoLoc] = useState({
+    tuNgay: "",
+    denNgay: "",
+    maKtx: "-1",
+  });
+
+  const [strangerDuocChon, setStrangerDuocChon] = useState<HistoryItem | null>(
+    null,
+  );
+  const [thongBao, setThongBao] = useState<{
+    tinNhan: string;
+    kieu: "success" | "error";
+  } | null>(null);
+
+  const hienThongBao = (
+    tinNhan: string,
+    kieu: "success" | "error" = "success",
+  ) => {
+    setThongBao({ tinNhan, kieu });
+  };
+
+  useEffect(() => {
+    if (thongBao) {
+      const timer = setTimeout(() => setThongBao(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [thongBao]);
+
+  const xuLyXuatExcel = () => {
+    const duLieuXuat = danhSachCanhBao.map((h, i) => ({
+      [t("table.no")]: i + 1,
+      "Thời gian": h.thoiGian,
+      "Đối tượng": h.loaiDoiTuong || "Người lạ",
+      "Khu KTX": h.tenKtx || "N/A",
+      "Thiết bị/Camera": h.thietBi || "N/A",
+      "Ngày phát hiện": h.ngayNguoiLa || "",
+      "Giờ phát hiện": h.gioNguoiLa || "",
+    }));
+    xuatRaFileExcel(
+      duLieuXuat,
+      `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
+      "Cảnh báo người lạ",
+    );
+    hienThongBao(t("messages.exportExcelSuccess"), "success");
+  };
+
+  const xuLyXuatPdf = () => {
+    hienThongBao(t("messages.exportPdfSuccess"), "success");
+  };
+
+  const taiDuLieu = async () => {
+    setDangTai(true);
+    try {
+      const response = await dichVuNguoiLa.layDanhSachNguoiLa({
+        tuNgay: boLoc.tuNgay,
+        denNgay: boLoc.denNgay,
+        maKtx: boLoc.maKtx,
+        page: trangHienTai,
+        pageSize: sizeTrang,
+      });
+
+      if (response && response.items) {
+        setDanhSachCanhBao(response.items);
+        setTongSoTrang(response.totalPages);
+        setTongSoPhanTu(response.totalElements);
+      } else {
+        setDanhSachCanhBao([]);
+        setTongSoTrang(1);
+        setTongSoPhanTu(0);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải cảnh báo người lạ:", err);
+      setDanhSachCanhBao([]);
+      setTongSoTrang(1);
+      setTongSoPhanTu(0);
+    } finally {
+      setDangTai(false);
+    }
+  };
+
+  const datLaiBoLoc = () => {
+    setBoLoc({
+      tuNgay: "",
+      denNgay: "",
+      maKtx: "-1",
+    });
+    setTrangHienTai(1);
+  };
+
+  const datBoLocVaResetPage = (boLocMoi: any) => {
+    setBoLoc((prev) => ({ ...prev, ...boLocMoi }));
+    setTrangHienTai(1);
+  };
+
+  // Tự động tải lại dữ liệu khi bộ lọc hoặc số trang thay đổi
+  useEffect(() => {
+    taiDuLieu();
+  }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx, trangHienTai]);
+
+  return (
+    <Box className="stranger-page-container">
+      <div className="stranger-header-row">
+        <h2 className="stranger-page-title">CẢNH BÁO NGƯỜI LẠ</h2>
+      </div>
+
+      <BoLocNguoiLa
+        boLoc={boLoc}
+        datBoLoc={datBoLocVaResetPage}
+        datLaiBoLoc={datLaiBoLoc}
+        khiTimKiem={taiDuLieu}
+        khiXuatExcel={xuLyXuatExcel}
+        khiXuatPdf={xuLyXuatPdf}
+      />
+
+      {/* HIỂN THỊ DỮ LIỆU */}
+      {dangTai ? (
+        <div className="loader-box">
+          <Loader color="#1f5ca9" size="md" />
+          <Text size="sm" c="dimmed" mt="sm">
+            {t("warnings.scanning")}
+          </Text>
+        </div>
+      ) : danhSachCanhBao.length === 0 ? (
+        <Card className="empty-alert-card">
+          <IconAlertTriangle size={48} className="empty-icon" />
+          <Text fw={700} size="lg" mt="md" c="dimmed">
+            {t("warnings.noStranger")}
+          </Text>
+          <Text size="sm" c="dimmed" mt={4}>
+            {t("warnings.noStrangerDesc")}
+          </Text>
+        </Card>
+      ) : (
+        <div className="table-wrapper">
+          <Table
+            highlightOnHover
+            verticalSpacing="md"
+            className="stranger-table"
+          >
+            <Table.Thead className="table-thead">
+              <Table.Tr>
+                <Table.Th style={{ width: 60, textAlign: "center" }}>
+                  {t("table.no")}
+                </Table.Th>
+                <Table.Th style={{ width: 200 }}>{t("table.time")}</Table.Th>
+                <Table.Th style={{ width: 120, textAlign: "center" }}>
+                  {t("table.image")}
+                </Table.Th>
+                <Table.Th>{t("warnings.camera")}</Table.Th>
+                <Table.Th>{t("warnings.dorm")}</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {danhSachCanhBao.map((banGhi, index) => (
+                <Table.Tr
+                  key={banGhi.id}
+                  className="table-tr"
+                  onClick={() => setStrangerDuocChon(banGhi)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <Table.Td style={{ textAlign: "center" }} className="td-stt">
+                    {(trangHienTai - 1) * sizeTrang + index + 1}
+                  </Table.Td>
+                  <Table.Td className="td-highlight">
+                    {dayjs(banGhi.thoiGian).format("DD/MM/YYYY HH:mm:ss")}
+                  </Table.Td>
+                  <Table.Td>
+                    <Box style={{ display: "flex", justifyContent: "center" }}>
+                      <Avatar
+                        src={
+                          banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien
+                        }
+                        radius="md"
+                        size={60}
+                        className="avatar-warning"
+                        styles={{ image: { objectFit: 'cover' } }}
+                      />
+                    </Box>
+                  </Table.Td>
+                  <Table.Td className="td-camera">{banGhi.thietBi}</Table.Td>
+                  <Table.Td className="td-ktx">
+                    <Badge color="#1f5ca9" variant="light" size="md">
+                      {banGhi.tenKtx}
+                    </Badge>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {tongSoTrang > 1 && (
+        <div
+          className="pagination-wrapper"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "1.5rem",
+          }}
+        >
+          <Pagination
+            value={trangHienTai}
+            onChange={setTrangHienTai}
+            total={tongSoTrang}
+            color="#1f5ca9"
+            radius="md"
+          />
+        </div>
+      )}
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
+
+      {/* Drawer chi tiết người lạ */}
+      <DrawerChiTietLichSu
+        open={strangerDuocChon !== null}
+        onClose={() => setStrangerDuocChon(null)}
+        lichSuDuocChon={strangerDuocChon}
+        isStranger={true}
+      />
+
+<<<<<<< HEAD
                                 {/* Camera phát hiện */}
                                 <div className="detail-item">
                                     <IconCamera size={16} className="detail-icon icon-blue" />
@@ -339,34 +591,34 @@ export default function StrangerWarningsPage() {
                 }
                 position="right"
                 size={400}
+=======
+      {thongBao && (
+        <Portal>
+          <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">
+            <Notification
+              icon={
+                thongBao.kieu === "success" ? (
+                  <IconCheck size={18} />
+                ) : (
+                  <IconX size={18} />
+                )
+              }
+              color={thongBao.kieu === "success" ? "teal" : "red"}
+              title={
+                thongBao.kieu === "success"
+                  ? t("messages.success")
+                  : t("messages.error")
+              }
+              onClose={() => setThongBao(null)}
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
             >
-                {canhBaoDuocChon && (
-                    <Stack gap="lg" p="sm" style={{ fontFamily: 'var(--font-readex-pro), sans-serif' }}>
-                        {/* Ảnh chụp người lạ */}
-                        <Box
-                            style={{
-                                width: '100%',
-                                height: 260,
-                                borderRadius: 8,
-                                border: '1px solid #e2e8f0',
-                                backgroundColor: '#f8fafc',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            <img
-                                src={canhBaoDuocChon.duongDanAnhChup || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400'}
-                                alt="Stranger Intrusion"
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    objectFit: 'contain'
-                                }}
-                            />
-                        </Box>
+              {thongBao.tinNhan}
+            </Notification>
+          </div>
+        </Portal>
+      )}
 
+<<<<<<< HEAD
                         {/* Danh sách thông tin tối giản, dễ nhìn */}
                         <Stack gap="sm" mt="xs">
                             {/* Đối tượng */}
@@ -453,6 +705,11 @@ export default function StrangerWarningsPage() {
             <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
         </Box>
     );
+=======
+      <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
+    </Box>
+  );
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
 }
 
 const pageStyles = `
@@ -463,121 +720,28 @@ const pageStyles = `
     font-family: var(--font-readex-pro), sans-serif;
 }
 
-.alert-header {
+.stranger-header-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
-.alert-title-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.pulse-alert-icon {
-    background-color: #e0f2fe;
-    border: 1px solid #bae6fd;
-    color: #00afef;
-    width: 3.5rem;
-    height: 3.5rem;
-    border-radius: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 0 0 rgba(0, 175, 239, 0.4);
-    animation: alertPulse 1.5s infinite;
-}
-
-.alert-title {
+.stranger-page-title {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #27272a;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #1f5ca9;
-    letter-spacing: -0.02em;
-}
-
-.alert-subtitle {
-    margin: 0.25rem 0 0 0;
-    font-size: 0.875rem;
-    color: #64748b;
-    font-weight: 500;
+    font-family: var(--font-k2d), sans-serif;
 }
 
 .view-toggle-btn {
     border-radius: 0.5rem !important;
     font-weight: 600 !important;
-}
-
-.alert-filter-bar {
-    background-color: #ffffff;
-    border-radius: 1rem;
-    border: 1px solid #e2e8f0;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.005);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-@media (min-width: 768px) {
-    .alert-filter-bar {
-        flex-direction: row;
-        align-items: flex-end;
-    }
-}
-
-.filter-grid {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 1rem;
-    width: 100%;
-}
-
-@media (min-width: 640px) {
-    .filter-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-.filter-col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-}
-
-.filter-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-    letter-spacing: 0.05em;
-}
-
-.filter-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: flex-end;
-    flex-shrink: 0;
-}
-
-.btn-alert-search {
-    height: 38px !important;
-    background-color: #1f5ca9 !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-    border-radius: 0.5rem !important;
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
-}
-
-.btn-alert-search:hover {
-    background-color: #154580 !important;
 }
 
 .loader-box {
@@ -638,8 +802,8 @@ const pageStyles = `
 
 .stranger-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(31, 92, 169, 0.05), 0 4px 6px -2px rgba(31, 92, 169, 0.03);
-    border-color: #93c5fd;
+    box-shadow: 0 10px 15px -3px rgba(31, 92, 169, 0.08), 0 4px 6px -2px rgba(31, 92, 169, 0.04);
+    border-color: #00afef;
 }
 
 .image-wrapper {
@@ -680,13 +844,13 @@ const pageStyles = `
 .detail-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .detail-icon {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.375rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -694,8 +858,8 @@ const pageStyles = `
 }
 
 .icon-red {
-    background-color: #e0f2fe;
-    color: #00afef;
+    background-color: #eff6ff;
+    color: #1f5ca9;
 }
 
 .icon-blue {
@@ -775,13 +939,13 @@ const pageStyles = `
 
 @keyframes alertPulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(0, 175, 239, 0.4);
+        box-shadow: 0 0 0 0 rgba(31, 92, 169, 0.4);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(0, 175, 239, 0);
+        box-shadow: 0 0 0 10px rgba(31, 92, 169, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(0, 175, 239, 0);
+        box-shadow: 0 0 0 0 rgba(31, 92, 169, 0);
     }
 }
 `;

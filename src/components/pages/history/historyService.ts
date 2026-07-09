@@ -3,8 +3,8 @@ import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 
 
-const AUTH_HEADER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
-const BASE_URL = 'http://172.16.20.177:53009';
+const AUTH_HEADER = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
+const BASE_URL = 'https://qldaotaolaixe.cusc.vn/face-detect-service';
 
 const moPhongDoTre = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -25,13 +25,14 @@ export const dichVuDanhMucKhu = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': AUTH_HEADER
+          'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
         }
       });
       if (!res.ok) return [];
       const data = await res.json();
-      if (data?.status !== 'OK') return [];
-      return (data?.payload || []) as KhuItem[];
+      if (data?.status && data.status !== 'OK') return [];
+      const payload = data?.payload || data;
+      return (Array.isArray(payload) ? payload : []) as KhuItem[];
     } catch {
       return [];
     }
@@ -52,7 +53,7 @@ export const dichVuDanhMucNhom = {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': AUTH_HEADER
+          'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
         }
       });
       if (!res.ok) return [];
@@ -114,7 +115,7 @@ export const dichVuLichSuRaVao = {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': AUTH_HEADER
+            'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
           },
           body: JSON.stringify({
             page: 1,
@@ -132,12 +133,12 @@ export const dichVuLichSuRaVao = {
         }
 
         const data = await response.json();
-        if (data?.status !== 'OK') {
+        if (data?.status && data.status !== 'OK') {
           console.error(`API response status not OK for date ${dateStr}:`, data);
           return [];
         }
 
-        const items = data?.payload?.items || [];
+        const items = data?.payload?.items || data?.items || (Array.isArray(data) ? data : []);
         return items.map((item: any): HistoryItem => {
           const isVao = item.cameraName?.toLowerCase().includes("vào") || item.cameraIdId === 1;
           const loai: 'IN' | 'OUT' = isVao ? "IN" : "OUT";
@@ -150,17 +151,24 @@ export const dichVuLichSuRaVao = {
             trangThaiSinhVien = "BI_CAM";
           }
 
+          let duongDanAnh = item.pathimage || "";
+          if (duongDanAnh && !duongDanAnh.startsWith("http") && !duongDanAnh.startsWith("data:")) {
+            const cleanPath = duongDanAnh.startsWith("/") ? duongDanAnh : "/" + duongDanAnh;
+            duongDanAnh = `${BASE_URL}${cleanPath}`;
+          }
+
           return {
             id: String(item.id),
             thoiGian: item.timecheck ? dayjs.unix(item.timecheck).format("YYYY-MM-DD HH:mm:ss") : dayjs().format("YYYY-MM-DD HH:mm:ss"),
             mssv: item.maso || "",
             hoVaTen: item.hoten || "",
-            duongDanAnhChup: item.pathimage || "",
+            duongDanAnhDaiDien: duongDanAnh || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150",
+            duongDanAnhChup: duongDanAnh || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=250",
             loai: loai,
             maKtx: item.maKhu || "",
             tenKtx: item.tenKhu || "",
-            maPhong: "",
-            tenPhong: "",
+            maPhong: item.maPhong || item.phongId || "",
+            tenPhong: item.tenPhong || item.phong || item.donvi || item.tenDonVi || "",
             thietBi: item.cameraName || "",
             loaiDoiTuong: tennhom,
             trangThaiSinhVien,
@@ -254,3 +262,5 @@ export const dichVuLichSuRaVao = {
     throw new Error("Không tìm thấy bản ghi theo GUID");
   }
 };
+
+

@@ -227,7 +227,7 @@
     "filter": {
       "fromDate": "From Date",
       "toDate": "To Date",
-      "studentId": "Student ID",
+      "studentId": "ID",
       "fullName": "Full Name",
       "dormitory": "Dormitory",
       "group": "Group",
@@ -266,6 +266,8 @@
       "dormitory": "Dormitory",
       "room": "Room",
       "unit": "Unit",
+      "device": "Device",
+      "group": "Group",
       "noData": "No data available",
       "loading": "Loading data...",
       "paginationInfo": "Showing {start} - {end} of {total} records",
@@ -282,6 +284,12 @@
       "feedbackBtn": "Report Incorrect Info"
     },
     "drawer": {
+      "portraitCamera": "Camera Captured Photo",
+      "eventLabel": "Event",
+      "closeBtn": "Close",
+      "unitLabel": "Unit",
+      "detailTitle": "Access History Details",
+      "detailTitleStranger": "Stranger Warning Details",
       "createTitle": "Record New Access History",
       "dormLabel": "Dormitory Area",
       "dormPlaceholder": "Select area",
@@ -297,7 +305,7 @@
       "notePlaceholder": "Enter event note if any",
       "saveBtn": "Save Record",
       "cancelBtn": "Cancel",
-      "studentIdLabel": "Student ID ",
+      "studentIdLabel": "ID",
       "studentIdPlaceholder": "Enter student ID (e.g. B2003789)",
       "fullNameLabel": "Student Full Name",
       "fullNamePlaceholder": "Enter student full name",
@@ -334,6 +342,22 @@
       "turnsCount": "Turns Count",
       "topTitle": "Top Active Students",
       "viewAll": "View All"
+    },
+    "warnings": {
+      "title": "STRANGER WARNINGS",
+      "subtitle": "Real-time monitoring and unauthorized intrusion detection",
+      "gridFeed": "Grid Feed",
+      "tableList": "Table List",
+      "timeDetect": "TIME DETECTED",
+      "cameraDetect": "CAMERA DETECTED",
+      "dormDetect": "DORMITORY DETECTED",
+      "alertIntrusion": "INTRUSION WARNING",
+      "noStranger": "No strangers detected",
+      "noStrangerDesc": "No intrusions matching the current filter have been recorded.",
+      "scanning": "Scanning history records...",
+      "camera": "Camera Detected",
+      "dorm": "Dormitory Detected",
+      "detailStranger": "Stranger Details"
     }
   }
 }

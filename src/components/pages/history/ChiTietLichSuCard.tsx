@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -64,15 +63,15 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
   );
 
   const laCanBo =
+<<<<<<< HEAD
     loaiTab === "CAN_BO" ||
+=======
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
     lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
     lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("can bo");
 
   return (
     <div className="detail-card">
-      {/* Tiêu đề */}
-      <h3 className="detail-card-title">{t("card.detailTitle")}</h3>
-
       {/* Ảnh chân dung lớn */}
       <div className="image-container">
         <div className="image-wrapper">

@@ -3,39 +3,40 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+<<<<<<< HEAD
 import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
+=======
+import {
+  Portal,
+  Notification,
+  Modal,
+  Stack,
+  Text,
+  Group,
+  Button,
+  Box,
+} from "@mantine/core";
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
 import { useTranslations } from "next-intl";
+import { IconCheck, IconX } from "@tabler/icons-react";
 import {
-  IconAlertTriangle,
-  IconHistory,
-  IconChartBar,
-  IconUser,
-  IconUserMinus,
-  IconCheck,
-  IconX,
-  IconSearch,
-  IconRefresh,
-} from "@tabler/icons-react";
-import {
+  ResponsiveContainer,
   BarChart,
-  Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
-  ResponsiveContainer,
+  Bar,
   LabelList,
 } from "recharts";
 
 import BoLocLichSu from "./BoLocLichSu";
 import BangLichSu from "./BangLichSu";
-import ChiTietLichSuCard from "./ChiTietLichSuCard";
+import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
 import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
-import type { LoaiTabHienThi } from "./BangLichSu";
-
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
 
@@ -60,6 +61,7 @@ const duLieuTopSinhVien = [
   { mssv: "TM565488", hoVaTen: "Trịnh Thị Mỹ Ái", luotRaVao: 33 },
 ];
 
+<<<<<<< HEAD
 type HistoryPageProps = {
   tab?: LoaiTabChinh;
 };
@@ -70,6 +72,27 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
   const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
   const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
+=======
+interface HistoryPageProps {
+  activeTab?: LoaiTabChinh;
+}
+
+export default function HistoryPage({
+  activeTab = "LICH_SU",
+}: HistoryPageProps) {
+  const t = useTranslations("History");
+  const [tabActive, datTabActive] = useState<LoaiTabChinh>(activeTab);
+  const [thongBao, setThongBao] = useState<{
+    kieu: "success" | "error";
+    tinNhan: string;
+  } | null>(null);
+  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
+    null,
+  );
+  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">(
+    "NGAY",
+  );
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
   const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
 
   const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
@@ -97,7 +120,12 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   useEffect(() => {
     datTabActive(tab);
     datLichSuDuocChon(null);
+<<<<<<< HEAD
     const targetMaNhom = tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1";
+=======
+    const targetMaNhom =
+      activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1";
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
     setBoLoc((prev) => {
       if (prev.maNhom === targetMaNhom) return prev;
       return { ...prev, maNhom: targetMaNhom };
@@ -133,11 +161,13 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
       loai: "ALL",
       trangThai: "ALL",
       loaiDoiTuong: "ALL",
-      maNhom: "-1",
+      maNhom:
+        activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1",
     });
   };
 
   const taiDuLieu = async () => {
+    setDanhSachLichSu([]);
     setDangTai(true);
     try {
       const duLieu = await dichVuLichSuRaVao.layDanhSachLichSu(boLoc);
@@ -152,8 +182,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   useEffect(() => {
     taiDuLieu();
   }, [boLoc]);
-
-  // Removed auto-select useEffect to prevent drawer from opening automatically on load
 
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
     if (tabActive === "CAN_BO") {
@@ -173,11 +201,9 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     return danhSachLichSu;
   }, [danhSachLichSu, tabActive]);
 
-  const loaiTabHienThi = useMemo((): LoaiTabHienThi => {
-    if (tabActive === "CAN_BO") return "LICH_SU";
-    if (tabActive === "SINH_VIEN") return "LICH_SU";
+  const loaiTabHienThi = useMemo(() => {
     return "LICH_SU";
-  }, [tabActive]);
+  }, []);
 
   const xuLyTimKiem = () => {
     taiDuLieu();
@@ -185,7 +211,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   };
 
   const xuLyXuatExcel = () => {
-    const duLieuXuat = duLieuTheoTab.map((h, i) => ({
+    const duLieuXuat = danhSachLichSu.map((h, i) => ({
       [t("table.no")]: i + 1,
       [t("table.time")]: h.thoiGian,
       [t("filter.studentId")]: h.mssv,
@@ -210,10 +236,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     hienThongBao(t("messages.exportPdfSuccess"), "success");
   };
 
-  const xuLyThemDuLieu = () => {
-    datMoDrawerBieuMau(true);
-  };
-
   const xuLyDongChiTiet = () => {
     datLichSuDuocChon(null);
   };
@@ -234,28 +256,14 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     setXacNhanPhanHoi(lichSu);
   };
 
-  const laySoLuongTab = (key: LoaiTabChinh) => {
-    switch (key) {
-      case "LICH_SU":
-        return danhSachLichSu.length;
-      case "CAN_BO":
-        return danhSachLichSu.filter(
-          (h) =>
-            h.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-            h.loaiDoiTuong?.toLowerCase().includes("can bo"),
-        ).length;
-      case "SINH_VIEN":
-        return danhSachLichSu.filter(
-          (h) =>
-            !h.loaiDoiTuong?.toLowerCase().includes("cán bộ") &&
-            !h.loaiDoiTuong?.toLowerCase().includes("can bo"),
-        ).length;
-      default:
-        return undefined;
-    }
+  const xuLyThemDuLieu = () => {
+    datMoDrawerBieuMau(true);
   };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
@@ -279,7 +287,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         tabActive === "CAN_BO" ||
         tabActive === "SINH_VIEN") && (
         <div key={tabActive} className="page-layout">
-          {/* Cột trái: Bảng dữ liệu */}
+          {/* Bảng dữ liệu */}
           <div className="main-content-col">
             <BangLichSu
               duLieu={duLieuTheoTab}
@@ -292,7 +300,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           </div>
         </div>
       )}
-
 
       {/* TAB: THỐNG KÊ */}
       {tabActive === "THONG_KE" && (
@@ -478,6 +485,48 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         dangTao={dangTao}
       />
 
+      {/* DRAWER CHI TIẾT LỊCH SỬ */}
+      <DrawerChiTietLichSu
+        open={lichSuDuocChon !== null}
+        onClose={xuLyDongChiTiet}
+        lichSuDuocChon={lichSuDuocChon}
+        khiPhanHoi={xuLyPhanHoiSaiThongTin}
+      />
+
+      {/* MODAL XÁC NHẬN PHẢN HỒI */}
+      <Modal
+        opened={xacNhanPhanHoi !== null}
+        onClose={() => setXacNhanPhanHoi(null)}
+        title={t("feedbackModal.title")}
+        centered
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            {t("feedbackModal.body")}{" "}
+            <span className="font-semibold">{xacNhanPhanHoi?.hoVaTen}</span> (
+            {xacNhanPhanHoi?.mssv})?
+          </Text>
+          <Group justify="flex-end" gap="xs">
+            <Button variant="default" onClick={() => setXacNhanPhanHoi(null)}>
+              {t("drawer.cancelBtn")}
+            </Button>
+            <Button
+              color="#1f5ca9"
+              onClick={() => {
+                hienThongBao(t("messages.reportSuccess"), "success");
+                setXacNhanPhanHoi(null);
+              }}
+            >
+              {t("feedbackModal.submitBtn")}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       {/* THÔNG BÁO DẠNG TOAST */}
       {thongBao && (
         <Portal>
@@ -504,57 +553,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         </Portal>
       )}
 
-      {/* MODAL XÁC NHẬN PHẢN HỒI */}
-      <Modal
-        opened={xacNhanPhanHoi !== null}
-        onClose={() => setXacNhanPhanHoi(null)}
-        title={t("feedbackModal.title")}
-        centered
-        overlayProps={{
-          backgroundOpacity: 0.55,
-          blur: 3,
-        }}
-      >
-        <Stack gap="md">
-          <Text size="sm">
-            {t("feedbackModal.body")}{" "}
-            <span className="font-semibold">{xacNhanPhanHoi?.hoVaTen}</span> (
-            {xacNhanPhanHoi?.mssv})?
-          </Text>
-          <Group justify="flex-end" gap="xs">
-            <Button variant="default" onClick={() => setXacNhanPhanHoi(null)}>
-              {t("drawer.cancelBtn")}
-            </Button>
-            <Button
-              color="blue"
-              onClick={() => {
-                hienThongBao(t("messages.reportSuccess"), "success");
-                setXacNhanPhanHoi(null);
-              }}
-            >
-              {t("feedbackModal.submitBtn")}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      {/* DRAWER CHI TIẾT LỊCH SỬ */}
-      <Drawer
-        opened={!!lichSuDuocChon}
-        onClose={xuLyDongChiTiet}
-        title={<span style={{ fontWeight: 700, fontSize: 16, color: '#1f5ca9' }}>{t('card.detailTitle')}</span>}
-        position="right"
-        size={400}
-      >
-        <ChiTietLichSuCard
-          lichSuDuocChon={lichSuDuocChon}
-          loaiTab={loaiTabHienThi}
-          khiDong={xuLyDongChiTiet}
-          khiPhanHoi={xuLyPhanHoiSaiThongTin}
-        />
-      </Drawer>
-
-
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
     </Box>
   );
@@ -564,7 +562,7 @@ const pageStyles = `
 .history-page-container {
     padding: 1rem;
     min-height: 100vh;
-    font-family: sans-serif;
+    font-family: var(--font-k2d), sans-serif;
 }
 
 .history-title {
@@ -575,6 +573,7 @@ const pageStyles = `
     letter-spacing: -0.025em;
     margin-top: 0;
     margin-bottom: 1rem;
+<<<<<<< HEAD
     font-family: var(--font-readex-pro);
 }
 
@@ -611,43 +610,28 @@ const pageStyles = `
     background-color: #1f5ca9 !important;
     color: #ffffff !important;
     box-shadow: 0 4px 10px rgba(31, 92, 169, 0.25) !important;
+=======
+    font-family: var(--font-k2d), sans-serif;
+>>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
 }
 
 .page-layout {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     align-items: stretch;
 }
 
 @media (min-width: 1024px) {
     .page-layout {
         flex-direction: row;
+        align-items: flex-start;
     }
 }
 
 .main-content-col {
     flex: 1;
     min-width: 0;
-}
-
-.detail-card-col {
-    width: 100%;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-@media (min-width: 1024px) {
-    .detail-card-col {
-        width: 16rem;
-    }
-}
-
-@media (min-width: 1280px) {
-    .detail-card-col {
-        width: 18rem;
-    }
 }
 
 /* Statistics tab layouts */

@@ -9,12 +9,16 @@ import type {
   DanhMucKtxPaginateRequest,
  
   DanhMucKtxResponse,
+  DanhSachLoaiSuKienKtxRequest,
   DanhSachSinhVienBiCamRequest,
+  DanhSachSinhVienKtxRequest,
   KhuKtx,
+  LoaiSuKienKtx,
   PhongKtx,
   SinhVienBiCam, 
   SinhVienBiCamRequest, 
   SinhVienKtx,
+  UiisKhuPayload,
 } from "@/types/type-danh-muc-ktx";
 
 const taoThamSoPhanTrang = ({
@@ -28,27 +32,52 @@ const taoThamSoPhanTrang = ({
   keyword: keyword ?? keyWord ?? "",
 });
 
-// export const fetchDanhSachSinhVienKtx = async (
-//   params?: DanhMucKtxPaginateRequest,
-// ): Promise<DanhMucKtxPaginateResponse<SinhVienKtx>> => {
-//   try {
-//     return await get(API_URLS.danhMucKtx.sinhVien.paginate, taoThamSoPhanTrang(params));
-//   } catch (error) {
-//     console.error("Error fetching dormitory student list:", error);
-//     throw error;
-//   }
-// };
+ 
 
-// export const fetchDanhSachPhongKtx = async (
-//   params?: DanhMucKtxPaginateRequest,
-// ): Promise<DanhMucKtxPaginateResponse<PhongKtx>> => {
-//   try {
-//     return await get(API_URLS.danhMucKtx.phong.paginate, taoThamSoPhanTrang(params));
-//   } catch (error) {
-//     console.error("Error fetching dormitory room list:", error);
-//     throw error;
-//   }
-// };
+export const fetchDanhSachSinhVienKtx = async (
+  params?: DanhSachSinhVienKtxRequest
+): Promise<DanhMucKtxPaginatePayload<SinhVienKtx>> => {
+  const res = await post<ApiResponse<DanhMucKtxPaginatePayload<SinhVienKtx>>>(
+    API_URLS.danhMucKtx.sinhVien.paginate,
+    {
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
+      maKhu: params?.maKhu ?? "-1",
+      maPhong: params?.maPhong ?? "-1",
+      maSinhVien: params?.maSinhVien || undefined,
+      hoTen: params?.hoTen || undefined,
+    }
+  );
+
+  return res.payload;
+};
+
+export interface DanhSachPhongKtxRequest {
+  page?: number;
+  pageSize?: number;
+  maKhu?: string;
+  maPhong?: string;
+}
+
+export const fetchDanhSachPhongKtx = async (
+  params?: DanhSachPhongKtxRequest
+): Promise<DanhMucKtxPaginatePayload<PhongKtx>> => {
+  try {
+    const res = await post<
+      ApiResponse<DanhMucKtxPaginatePayload<PhongKtx>>
+    >(API_URLS.danhMucKtx.phong.paginate, {
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
+      maKhu: params?.maKhu || "-1",
+      maPhong: params?.maPhong || "-1",
+    });
+
+    return res.payload;
+  } catch (error) {
+    console.error("Error fetching dormitory room list:", error);
+    throw error;
+  }
+};
 
 export const fetchDanhSachKhuKtx = async (
   params?: DanhMucKhuKtxPaginateRequest
@@ -57,9 +86,9 @@ export const fetchDanhSachKhuKtx = async (
     const res = await post<
       ApiResponse<DanhMucKtxPaginatePayload<KhuKtx>>
     >(API_URLS.danhMucKtx.khu.paginate, {
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 20,
-      maKhu: params?.maKhu || undefined,
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
+      maKhu: params?.maKhu ?? "-1",
     });
 
     return res.payload;
@@ -91,8 +120,8 @@ export const fetchDanhSachSinhVienBiCam = async (
     const res = await post<
       ApiResponse<DanhMucKtxPaginatePayload<SinhVienBiCam>>
     >(API_URLS.danhMucKtx.sinhVienBiCam.paginate, {
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 20,
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
       maSinhVien: params?.maSinhVien || "-1",
     });
 
@@ -145,13 +174,29 @@ export const updateSinhVienBiCam = async (
     throw error;
   }
 };
-// export const updateSinhVienBiCam = async (
-//   data: SinhVienBiCamRequest,
-// ): Promise<DanhMucKtxResponse<SinhVienBiCam>> => {
-//   try {
-//     return await post(API_URLS.danhMucKtx.sinhVienBiCam.update, data);
-//   } catch (error) {
-//     console.error("Error updating banned student:", error);
-//     throw error;
-//   }
-// };
+
+
+// === Loại sự kiện ===
+ export const fetchDanhSachLoaiSuKienKtx = async (
+  params?: DanhSachLoaiSuKienKtxRequest
+): Promise<DanhMucKtxPaginatePayload<LoaiSuKienKtx>> => {
+  const res = await get<ApiResponse<DanhMucKtxPaginatePayload<LoaiSuKienKtx>>>(
+    API_URLS.danhMucKtx.loaiSuKien.paginate,
+    {
+      page: params?.page ?? 1,
+      pageSize: params?.pageSize ?? 20,
+      keyword: params?.keyword || undefined,
+    }
+  );
+
+  return res.payload;
+};
+
+// SYNC - ĐỒNG BỘ DANH SÁCH SINH VIÊN
+export const fetchDanhSachKhuUiis = async (data: UiisKhuPayload) => {
+  return await post(API_URLS.danhMucKtx.khu.uiisDanhSach, data);
+};
+
+export const syncDanhSachKhuUiis = async (data: UiisKhuPayload) => {
+  return await post(API_URLS.danhMucKtx.khu.uiisSync, data);
+};
