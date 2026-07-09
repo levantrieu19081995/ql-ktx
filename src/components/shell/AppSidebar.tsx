@@ -20,6 +20,7 @@ import {
   Table,
 } from "@mantine/core";
 import {
+  IconId,
   IconHome2,
   IconLogout,
   IconChevronLeft,
@@ -28,6 +29,7 @@ import {
   IconUser,
   IconBooks,
   IconBook2,
+  IconCar,
   IconCategory,
   IconNote,
   IconChartBar,
@@ -37,20 +39,13 @@ import {
   IconLockFilled,
   IconHistory,
   IconAlertTriangle,
-<<<<<<< HEAD
-  IconUserMinus,
-=======
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
+
   IconSettings,
   IconUsersGroup,
   IconShieldLock,
   IconLayoutSidebarLeftExpand,
   IconLayoutSidebarLeftCollapse,
-<<<<<<< HEAD
-  IconCar,
-  IconId,
-=======
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
+
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -95,10 +90,7 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   // === Danh sách menu ===
   const items = [
     { icon: <IconHome2 />, label: t("home"), href: "/dashboard" },
-<<<<<<< HEAD
-=======
 
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
     // === Lịch sử/Cảnh báo
     {
       icon: <IconHistory />,
@@ -106,30 +98,6 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       grouped: true,
       children: [
         {
-<<<<<<< HEAD
-          label: t("history-log"),
-          href: "/history/log",
-          icon: <IconHistory size={16} />,
-        },
-        {
-          label: t("history-statistics"),
-          href: "/history/statistics",
-          icon: <IconChartBar size={16} />,
-        },
-        {
-          label: t("history-staff"),
-          href: "/history/staff",
-          icon: <IconUser size={16} className="text-blue-500" />,
-        },
-        {
-          label: t("history-student"),
-          href: "/history/student",
-          icon: <IconUserMinus size={16} className="text-emerald-500" />,
-=======
-          label: t("historyMenu"),
-          href: "/history/log",
-          icon: <IconArrowsLeftRight size={16} />,
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
         },
         {
           label: t("warningsMenu"),
