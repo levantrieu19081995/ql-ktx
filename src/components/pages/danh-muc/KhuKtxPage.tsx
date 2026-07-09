@@ -22,6 +22,7 @@ import {
   IconCategory,
   IconCloudDownload,
   IconEye,
+  IconRefresh,
   IconSearch,
 } from "@tabler/icons-react";
 
@@ -105,8 +106,8 @@ export default function KhuKtxPage() {
       setDsKhu([
         { value: "-1", label: "Tất cả" },
         ...res.map((item) => ({
-          value: item.maKhu || "",
-          label: item.tenKhu || item.maKhu || "",
+          value: item.khuMa || item.maKhu || "",
+          label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
         })),
       ]);
     } catch (error) {
@@ -137,6 +138,28 @@ export default function KhuKtxPage() {
   const handleSearch = () => {
     setPage(1);
     loadData(1, pageSize);
+  };
+
+  const handleReset = async () => {
+    setMaKhu("-1");
+    setPage(1);
+
+    try {
+      const res = await fetchDanhSachKhuKtx({
+        page: 1,
+        pageSize: pageSize,
+        maKhu: "-1",
+      });
+
+      setItems(res?.items || []);
+      setTotalItems(res?.totalElements || 0);
+      setTotalPages(res?.totalPages || 0);
+    } catch (error) {
+      console.error("Lỗi làm mới danh sách khu KTX:", error);
+      setItems([]);
+      setTotalItems(0);
+      setTotalPages(0);
+    }
   };
 
   const handlePreviewKhuUiis = async () => {
@@ -198,9 +221,9 @@ export default function KhuKtxPage() {
 
       const isChanged =
         !!currentItem &&
-        (normalizeString(currentItem.maKhu) !==
+        (normalizeString(currentItem.khuMa || currentItem.maKhu) !==
           normalizeString(uiisItem.ma_khu) ||
-          normalizeString(currentItem.tenKhu) !==
+          normalizeString(currentItem.khuTen || currentItem.tenKhu) !==
             normalizeString(uiisItem.ten_khu) ||
           normalizeNumberText(currentItem.soLuongPhong) !==
             normalizeNumberText(uiisItem.so_luong_phong));
@@ -215,7 +238,7 @@ export default function KhuKtxPage() {
         },
         current: currentItem
           ? {
-              tenKhu: displayText(currentItem.tenKhu),
+              tenKhu: displayText(currentItem.khuTen || currentItem.tenKhu),
               soLuongPhong: displayText(String(currentItem.soLuongPhong ?? "")),
               moTa: displayText(currentItem.moTa),
             }
@@ -321,7 +344,7 @@ export default function KhuKtxPage() {
       <DanhMucFeaturePage
         type="khu"
         title="Lấy danh sách khu ký túc xá"
-        description="Quản lý danh mục khu, dảy nhà trong ký túc xá."
+        description="Quản lý danh mục khu, dãy nhà trong ký túc xá."
         items={items}
         icon={<IconCategory size={20} />}
         searchControls={
@@ -330,24 +353,31 @@ export default function KhuKtxPage() {
               label="Mã khu"
               placeholder="Chọn mã khu"
               clearable={false}
-              flex={1}
+              style={{ minWidth: 200 }}
               value={maKhu}
               onChange={setMaKhu}
               data={dsKhu}
             />
 
             <Button
-              mt={25}
               leftSection={<IconSearch size={18} />}
               color="blue"
               radius="md"
               onClick={handleSearch}
             >
-              Tìm kím
+              Tìm kiếm
             </Button>
 
             <Button
-              mt={25}
+              leftSection={<IconRefresh size={18} />}
+              variant="default"
+              radius="md"
+              onClick={handleReset}
+            >
+              Làm mới
+            </Button>
+
+            <Button
               leftSection={<IconCloudDownload size={18} />}
               color="green"
               radius="md"
@@ -380,7 +410,7 @@ export default function KhuKtxPage() {
       >
         <Group align="end" grow mb="md">
           <TextInput
-            label="Năn học"
+            label="Năm học"
             placeholder="Nhập năm học"
             value={namHoc}
             onChange={(e) => setNamHoc(e.currentTarget.value)}

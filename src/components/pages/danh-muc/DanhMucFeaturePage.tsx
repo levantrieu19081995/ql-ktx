@@ -5,6 +5,8 @@ import { IconCategory } from "@tabler/icons-react";
 import { ReactNode } from "react";
 import KhuKtxTable from "./Table/KhuKtxTable";
 import SinhVienBiCamTable from "./Table/SinhVienBiCamTable";
+import SinhVienKtxTable from "./Table/SinhVienKtxTable";
+import PhongKtxTable from "./Table/PhongKtxTable";
 
 type DanhMucType =
   | "khu"
@@ -40,6 +42,10 @@ export default function DanhMucFeaturePage({
         return <KhuKtxTable items={items} />;
       case "sinhVienBiCam":
         return <SinhVienBiCamTable items={items} onEdit={onEdit} />;
+      case "sinhVienKtx":
+        return <SinhVienKtxTable items={items} />;
+      case "phongKtx":
+        return <PhongKtxTable items={items} />;
       default:
         return null;
     }
