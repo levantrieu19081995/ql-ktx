@@ -21,6 +21,7 @@ import {
   Pagination,
   Paper,
   Box,
+  Divider,
 } from "@mantine/core";
 import {
   IconSearch,
@@ -311,60 +312,53 @@ export default function TheoMaSoSubPage() {
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md" ref={searchRef} style={{ position: "relative" }}>
-          <Grid gutter="md">
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <TextInput
-                label="HỌ TÊN"
-                placeholder="Nhập họ tên để lọc..."
-                value={hoTen}
-                onChange={(e) => handleInputChange(e.currentTarget.value, "hoTen")}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <TextInput
-                label="MSSV / MÃ SỐ *"
-                placeholder="Nhập MSSV hoặc mã số..."
-                value={mssv}
-                onChange={(e) => handleInputChange(e.currentTarget.value, "mssv")}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <DateInput
-                label="TỪ NGÀY"
-                placeholder="Chọn ngày..."
-                value={tuNgay}
-                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <DateInput
-                label="ĐẾN NGÀY"
-                placeholder="Chọn ngày..."
-                value={denNgay}
-                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-          </Grid>
+          {/* Row 1: 4 filter fields */}
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
+            <TextInput
+              label="HỌ TÊN"
+              placeholder="Nhập họ tên để lọc..."
+              value={hoTen}
+              onChange={(e) => handleInputChange(e.currentTarget.value, "hoTen")}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <TextInput
+              label="MSSV / MÃ SỐ *"
+              placeholder="Nhập MSSV hoặc mã số..."
+              value={mssv}
+              onChange={(e) => handleInputChange(e.currentTarget.value, "mssv")}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <DateInput
+              label="TỪ NGÀY"
+              placeholder="MM/DD/YYYY"
+              value={tuNgay}
+              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <DateInput
+              label="ĐẾN NGÀY"
+              placeholder="MM/DD/YYYY"
+              value={denNgay}
+              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+          </SimpleGrid>
 
           {/* Autocomplete Suggestions Dropdown */}
           {showSuggestions && svSuggestions.length > 0 && (
@@ -407,23 +401,41 @@ export default function TheoMaSoSubPage() {
             </Paper>
           )}
 
-          <Group gap="xs" justify="flex-end" wrap="wrap" mt="xs">
+          {/* Dotted divider */}
+          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
+
+          {/* Row 2: Search buttons */}
+          <Group justify="flex-end" gap="sm">
             {svLoading && <Loader size="xs" color="blue" />}
             <Button
               leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif" }}
+              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
               onClick={handleSearch}
               disabled={loading}
             >
               Tìm kiếm
             </Button>
-            <Button leftSection={<IconRefresh size={16} />} variant="outline" color="gray" onClick={handleReset} style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              variant="outline"
+              color="gray"
+              onClick={handleReset}
+              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
               Làm mới
             </Button>
-            <Button leftSection={<IconDownload size={16} />} variant="outline" style={{ borderColor: "#22c55e", color: "#16a34a", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
               Xuất Excel
             </Button>
-            <Button leftSection={<IconDownload size={16} />} variant="outline" style={{ borderColor: "#ef4444", color: "#dc2626", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
               Xuất PDF
             </Button>
           </Group>

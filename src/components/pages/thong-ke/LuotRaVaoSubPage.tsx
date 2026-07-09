@@ -25,6 +25,9 @@ import {
   Loader,
   Center,
   Pagination,
+  SimpleGrid,
+  Divider,
+  ActionIcon,
 } from "@mantine/core";
 import {
   IconSearch,
@@ -518,150 +521,200 @@ export default function LuotRaVaoSubPage() {
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-      <Group gap="md">
-        <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
-          <IconReportAnalytics size={20} color="#1f5ca9" />
-        </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-          THỐNG KÊ LƯỢT RA VÀO
-        </Title>
+      <Group justify="space-between" align="center">
+        <Group gap="md">
+          <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
+            <IconReportAnalytics size={20} color="#1f5ca9" />
+          </ThemeIcon>
+          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            THỐNG KÊ LƯỢT RA VÀO
+          </Title>
+        </Group>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
+          onClick={() => setModalOpened(true)}
+        >
+          Thêm dữ liệu
+        </Button>
       </Group>
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">
-          <Grid gutter="md">
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <DateInput
-                label="TỪ NGÀY"
-                placeholder="Chọn ngày..."
-                value={tuNgay}
-                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <DateInput
-                label="ĐẾN NGÀY"
-                placeholder="Chọn ngày..."
-                value={denNgay}
-                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Select
-                label="KHU KTX"
-                value={khuKtx}
-                onChange={(val) => setKhuKtx(val || "Tất cả")}
-                data={["Tất cả", "Khu A", "Khu B"]}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-              <Select
-                label="TRẠNG THÁI"
-                value={trangThai}
-                onChange={(val) => setTrangThai(val || "Tất cả")}
-                data={["Tất cả", "Hợp lệ", "Nghi vấn", "Không hợp lệ"]}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-          </Grid>
+          {/* Row 1: 5 filter fields */}
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing="md">
+            <DateInput
+              label="TỪ NGÀY"
+              placeholder="MM/DD/YYYY"
+              value={tuNgay}
+              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <DateInput
+              label="ĐẾN NGÀY"
+              placeholder="MM/DD/YYYY"
+              value={denNgay}
+              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <Select
+              label="KHU KTX"
+              value={khuKtx}
+              onChange={(val) => setKhuKtx(val || "Tất cả")}
+              data={["Tất cả", "Khu A", "Khu B"]}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <Select
+              label="TRẠNG THÁI"
+              value={trangThai}
+              onChange={(val) => setTrangThai(val || "Tất cả")}
+              data={["Tất cả", "Hợp lệ", "Nghi vấn", "Không hợp lệ"]}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <Select
+              label="LOẠI ĐỐI TƯỢNG"
+              value={loaiDoiTuong}
+              onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
+              data={["Tất cả", "Sinh viên", "Cán bộ"]}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+          </SimpleGrid>
 
-          {/* Advanced filter toggle button */}
-          <Group justify="flex-start" mt={-4}>
-            <Button
-              variant="subtle"
-              size="xs"
-              color="blue"
-              leftSection={showAdvancedFilter ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
-              onClick={() => setShowAdvancedFilter((v) => !v)}
-              style={{ fontFamily: "var(--font-readex-pro), sans-serif", color: "#1f5ca9", paddingLeft: 0 }}
-            >
-              {showAdvancedFilter ? "Ẩn bộ lọc nâng cao" : "Mở rộng bộ lọc"}
-            </Button>
-          </Group>
+          {/* Dotted divider */}
+          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
 
-          {/* Advanced filters: Loại đối tượng, Họ tên, MSSV */}
-          {showAdvancedFilter && (
-            <Grid gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
-                <Select
-                  label="LOẠI ĐỐI TƯỢNG"
-                  value={loaiDoiTuong}
-                  onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
-                  data={["Tất cả", "Sinh viên", "Cán bộ"]}
-                  styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 4 }}>
+          {/* Row 2: Search buttons (collapsed) or advanced inputs + buttons (expanded) */}
+          {!showAdvancedFilter ? (
+            <Group justify="flex-end" gap="sm">
+              <Button
+                leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                onClick={() => loadThongKeData()}
+                disabled={loading}
+              >
+                Tìm kiếm
+              </Button>
+              <Button
+                leftSection={<IconRefresh size={16} />}
+                variant="outline"
+                color="gray"
+                onClick={handleReset}
+                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              >
+                Làm mới
+              </Button>
+              <ActionIcon
+                variant="outline"
+                color="gray"
+                size="lg"
+                onClick={() => setShowAdvancedFilter(true)}
+                style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+              >
+                <IconChevronDown size={18} color="#64748b" />
+              </ActionIcon>
+            </Group>
+          ) : (
+            <Grid align="flex-end" gutter="md">
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                 <TextInput
                   label="HỌ TÊN"
                   placeholder="Nhập họ tên..."
                   value={hoTen}
                   onChange={(e) => setHoTen(e.currentTarget.value)}
                   styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
+                    label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
                 />
               </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
+              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
                 <TextInput
-                  label="MSSV / MÃ SỐ"
-                  placeholder="Nhập MSSV hoặc mã cán bộ..."
+                  label="MÃ SỐ"
+                  placeholder="Nhập mã số..."
                   value={mssv}
                   onChange={(e) => setMssv(e.currentTarget.value)}
                   styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
+                    label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
                 />
               </Grid.Col>
+              <Grid.Col span={{ base: 12, md: 6 }}>
+                <Group
+                  gap="sm"
+                  style={{
+                    width: "100%",
+                    flexWrap: "wrap",
+                    justifyContent: "flex-start",
+                    "@media (min-width: 48em)": {
+                      flexWrap: "nowrap",
+                      justifyContent: "flex-end",
+                    }
+                  }}
+                >
+                  <Button
+                    leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                    style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    onClick={() => loadThongKeData()}
+                    disabled={loading}
+                  >
+                    Tìm kiếm
+                  </Button>
+                  <Button
+                    leftSection={<IconRefresh size={16} />}
+                    variant="outline"
+                    color="gray"
+                    onClick={handleReset}
+                    style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    Làm mới
+                  </Button>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    Xuất Excel
+                  </Button>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    Xuất PDF
+                  </Button>
+                  <ActionIcon
+                    variant="outline"
+                    color="gray"
+                    size="lg"
+                    onClick={() => setShowAdvancedFilter(false)}
+                    style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+                  >
+                    <IconChevronUp size={18} color="#64748b" />
+                  </ActionIcon>
+                </Group>
+              </Grid.Col>
             </Grid>
           )}
-
-          <Group gap="xs" justify="flex-end" wrap="wrap" mt="xs">
-            <Button
-              leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif" }}
-              onClick={() => loadThongKeData()}
-              disabled={loading}
-            >
-              Tìm kiếm
-            </Button>
-            <Button leftSection={<IconRefresh size={16} />} variant="outline" color="gray" onClick={handleReset} style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-              Làm mới
-            </Button>
-            <Button leftSection={<IconDownload size={16} />} variant="outline" style={{ borderColor: "#22c55e", color: "#16a34a", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-              Xuất Excel
-            </Button>
-            <Button leftSection={<IconDownload size={16} />} variant="outline" style={{ borderColor: "#ef4444", color: "#dc2626", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-              Xuất PDF
-            </Button>
-            <Button leftSection={<IconPlus size={16} />} style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif" }} onClick={() => setModalOpened(true)}>
-              Thêm dữ liệu
-            </Button>
-          </Group>
         </Stack>
       </Card>
 

@@ -20,6 +20,8 @@ import {
   Loader,
   Pagination,
   Center,
+  SimpleGrid,
+  Divider,
 } from "@mantine/core";
 import {
   IconSearch,
@@ -183,60 +185,78 @@ export default function NguoiLaSubPage() {
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">
-          <Grid gutter="md">
-            <Grid.Col span={{ base: 12, sm: 4, md: 4 }}>
-              <DateInput
-                label="TỪ NGÀY"
-                placeholder="Chọn ngày..."
-                value={tuNgay}
-                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 4, md: 4 }}>
-              <DateInput
-                label="ĐẾN NGÀY"
-                placeholder="Chọn ngày..."
-                value={denNgay}
-                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 4, md: 4 }}>
-              <Select
-                label="KHU KTX"
-                value={khuKtx}
-                onChange={(val) => setKhuKtx(val || "Tất cả")}
-                data={["Tất cả", "Khu A", "Khu B"]}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" }
-                }}
-              />
-            </Grid.Col>
-          </Grid>
+          {/* Row 1: 3 filter fields */}
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
+            <DateInput
+              label="TỪ NGÀY"
+              placeholder="MM/DD/YYYY"
+              value={tuNgay}
+              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <DateInput
+              label="ĐẾN NGÀY"
+              placeholder="MM/DD/YYYY"
+              value={denNgay}
+              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+            <Select
+              label="KHU KTX"
+              value={khuKtx}
+              onChange={(val) => setKhuKtx(val || "Tất cả")}
+              data={["Tất cả", "Khu A", "Khu B"]}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+              }}
+            />
+          </SimpleGrid>
 
-          <Group gap="xs" justify="flex-end" wrap="wrap" mt="xs">
-            <Button leftSection={<IconSearch size={16} />} style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif" }} onClick={handleNguoiLaSearch} loading={nguoiLaLoading}>
+          {/* Dotted divider */}
+          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
+
+          {/* Row 2: Search buttons */}
+          <Group justify="flex-end" gap="sm">
+            <Button
+              leftSection={nguoiLaLoading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              onClick={handleNguoiLaSearch}
+              loading={nguoiLaLoading}
+            >
               Tìm kiếm
             </Button>
-            <Button leftSection={<IconRefresh size={16} />} variant="outline" color="gray" onClick={handleReset} style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              variant="outline"
+              color="gray"
+              onClick={handleReset}
+              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
               Làm mới
             </Button>
-            <Button leftSection={<IconDownload size={16} />} variant="outline" style={{ borderColor: "#22c55e", color: "#16a34a", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
               Xuất Excel
             </Button>
-            <Button leftSection={<IconDownload size={16} />} variant="outline" style={{ borderColor: "#ef4444", color: "#dc2626", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
               Xuất PDF
             </Button>
           </Group>

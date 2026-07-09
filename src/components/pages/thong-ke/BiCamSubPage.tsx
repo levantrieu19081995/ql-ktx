@@ -26,6 +26,7 @@ import {
   Paper,
   Box,
   Transition,
+  SimpleGrid,
 } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import {
@@ -446,84 +447,84 @@ export default function BiCamSubPage() {
       )}
 
       {/* Header */}
-      <Group gap="md">
-        <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
-          <IconReportAnalytics size={20} color="#1f5ca9" />
-        </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-          THỐNG KÊ SINH VIÊN BỊ CẤM / CẢNH BÁO XÂM NHẬP
-        </Title>
+      <Group justify="space-between" align="center">
+        <Group gap="md">
+          <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
+            <IconReportAnalytics size={20} color="#1f5ca9" />
+          </ThemeIcon>
+          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+            THỐNG KÊ SINH VIÊN BỊ CẤM / CẢNH BÁO XÂM NHẬP
+          </Title>
+        </Group>
+        <Button
+          leftSection={<IconPlus size={16} />}
+          style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
+          onClick={openAddModal}
+        >
+          Thêm lệnh cấm
+        </Button>
       </Group>
 
       {/* Filter Card */}
-      <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.02)", borderColor: "#e2e8f0" }}>
+      <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">
-          <Grid gutter="md">
-            <Grid.Col span={{ base: 12, sm: 5, md: 5 }}>
-              <TextInput
-                label="HỌ TÊN"
-                placeholder="Nhập họ tên..."
-                value={hoTenFilter}
-                onChange={(e) => setHoTenFilter(e.currentTarget.value)}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" },
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 5, md: 5 }}>
-              <TextInput
-                label="MSSV / MÃ SỐ"
-                placeholder="Nhập MSSV để tìm kiếm..."
-                value={mssvFilter}
-                onChange={(e) => setMssvFilter(e.currentTarget.value)}
-                styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" },
-                }}
-              />
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 2, md: 2 }} style={{ display: "flex", alignItems: "flex-end" }}>
-              <Button
-                fullWidth
-                leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                style={{ backgroundColor: "#1f5ca9" }}
-                onClick={handleSearch}
-                disabled={loading}
-              >
-                Tìm
-              </Button>
-            </Grid.Col>
-          </Grid>
+          {/* Row 1: 2 filter fields */}
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+            <TextInput
+              label="HỌ TÊN"
+              placeholder="Nhập họ tên..."
+              value={hoTenFilter}
+              onChange={(e) => setHoTenFilter(e.currentTarget.value)}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
+              }}
+            />
+            <TextInput
+              label="MSSV / MÃ SỐ"
+              placeholder="Nhập MSSV để tìm kiếm..."
+              value={mssvFilter}
+              onChange={(e) => setMssvFilter(e.currentTarget.value)}
+              styles={{
+                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
+              }}
+            />
+          </SimpleGrid>
 
-          <Group gap="xs" justify="flex-end" wrap="wrap" mt="xs">
+          {/* Dotted divider */}
+          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
+
+          {/* Row 2: Search buttons */}
+          <Group justify="flex-end" gap="sm">
             <Button
-              leftSection={<IconPlus size={16} />}
-              style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif" }}
-              onClick={openAddModal}
+              leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              onClick={handleSearch}
+              disabled={loading}
             >
-              Thêm lệnh cấm
+              Tìm kiếm
             </Button>
             <Button
               leftSection={<IconRefresh size={16} />}
               variant="outline"
               color="gray"
               onClick={handleReset}
-              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif" }}
+              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
               Làm mới
             </Button>
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
-              style={{ borderColor: "#22c55e", color: "#16a34a", fontFamily: "var(--font-readex-pro), sans-serif" }}
+              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
               Xuất Excel
             </Button>
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
-              style={{ borderColor: "#ef4444", color: "#dc2626", fontFamily: "var(--font-readex-pro), sans-serif" }}
+              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
               Xuất PDF
             </Button>
