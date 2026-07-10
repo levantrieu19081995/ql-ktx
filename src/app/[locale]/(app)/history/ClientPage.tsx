@@ -1,11 +1,6 @@
-// src/app/[locale]/(app)/content/ClientPage.tsx
+// src/app/[locale]/(app)/history/ClientPage.tsx
 "use client";
 import dynamic from "next/dynamic";
-type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
-
-type ClientPageProps = {
-  tab?: LoaiTabChinh;
-};
 
 const HistoryPage = dynamic(
   () => import("@/components/pages/history/HistoryPage"),
@@ -19,8 +14,7 @@ const HistoryPage = dynamic(
   },
 );
 
-export default function ClientPage({
-  tab,
-}: ClientPageProps) {
-  return <HistoryPage tab={tab} />;
+export default function ClientPage() {
+  return <HistoryPage />;
 }
+

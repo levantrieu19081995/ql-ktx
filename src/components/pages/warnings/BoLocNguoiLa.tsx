@@ -200,15 +200,21 @@ const filterStyles = `
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
     gap: 1rem;
-    flex: 1;
+    flex: 3;
     min-width: 280px;
+}
+
+.filter-inputs-group-row-1.stranger-fields .filter-field {
+    min-width: 180px;
 }
 
 @media (min-width: 640px) {
     .filter-inputs-group-row-1.stranger-fields {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+        min-width: 580px;
     }
 }
+
 
 .btn-action {
     height: 38px !important;
