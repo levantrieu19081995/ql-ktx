@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { NotificationsProviderClient } from "@/providers/NotificationsProviderClient";
 import { Suspense } from "react";
+import { FONT } from "@/constants/theme";
 
 type Props = { children: React.ReactNode; params: { locale: string } };
 
@@ -35,9 +36,11 @@ export default async function RootLayout({ children, params }: Props) {
         <MantineProvider
           defaultColorScheme="light"
           theme={{
-            fontFamily: "var(--font-readex-pro), sans-serif",
+            // fontFamily: "var(--font-readex-pro), sans-serif",
+            fontFamily: FONT.family,
             headings: {
-              fontFamily: "var(--font-k2d), sans-serif",
+              fontFamily: FONT.family,
+              // fontFamily: "var(--font-k2d), sans-serif",
             },
             components: {
               Drawer: {
