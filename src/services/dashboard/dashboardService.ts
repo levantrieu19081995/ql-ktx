@@ -74,7 +74,7 @@ export interface NguoiLaPagedResponse {
   payload?: {
     items?: NguoiLaItem[];
     content?: NguoiLaItem[];
-    numberOfElements?: number;  // Actual API field
+    numberOfElements?: number;  //  API field
     totalElements?: number;     // Fallback
     totalPages?: number;
     size?: number;
@@ -83,7 +83,7 @@ export interface NguoiLaPagedResponse {
   };
 }
 
-// 1. Paginate danh sách người lạ
+// Paginate danh sách người lạ
 export const fetchNguoiLaPaginate = async (params: NguoiLaPaginateRequest): Promise<NguoiLaPagedResponse> => {
   try {
     const res = await post<NguoiLaPagedResponse>("/face-detect-service/face-web-check-time/paginate-nguoi-la", params);
@@ -94,7 +94,7 @@ export const fetchNguoiLaPaginate = async (params: NguoiLaPaginateRequest): Prom
   }
 };
 
-// 2. Lấy danh sách sinh viên ký túc xá
+// Lấy danh sách sinh viên ký túc xá
 export const fetchSinhVienPaginate = async (params: PaginateRequest): Promise<PaginatedResponse<any>> => {
   try {
     const res = await post<PaginatedResponse<any>>("/ktx-service/ktx-dm-sinh-vien/paginate", params);
@@ -105,7 +105,7 @@ export const fetchSinhVienPaginate = async (params: PaginateRequest): Promise<Pa
   }
 };
 
-// 3. Lấy danh sách phòng ký túc xá
+// Lấy danh sách phòng ký túc xá
 export const fetchPhongPaginate = async (params: PaginateRequest): Promise<PaginatedResponse<any>> => {
   try {
     const res = await post<PaginatedResponse<any>>("/ktx-service/ktx-dm-phong/paginate", params);
@@ -248,15 +248,9 @@ export const fetchThongKeNguoiLa = async (params: { tuNgay: string; denNgay: str
   }
 };
 
-// 12. Thống kê chi tiết người lạ (POST)
-export const fetchThongKeChiTietNguoiLa = async (params: { Ngay: string; maKhu: string }): Promise<any> => {
-  try {
-    const res = await post<any>("/ktx-service/thong-ke/nguoi-la", params);
-    return res;
-  } catch (error) {
-    console.error("Error fetching detail stranger statistics:", error);
-    throw error;
-  }
+// 12. Thống kê chi tiết người lạ (GET)
+export const fetchThongKeChiTietNguoiLa = async (params: any): Promise<any> => {
+  return get<any>("/ktx-service/thong-ke/nguoi-la", params);
 };
 
 // 13. Dashboard summary (POST) - sử dụng endpoint thong-ke/luot-ra-vao để lấy tổng quan

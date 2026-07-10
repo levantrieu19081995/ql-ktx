@@ -25,4 +25,4 @@ export interface SinhVienCamRequest {
 export const fetchSinhVienCamPaginate = async (params: SinhVienCamRequest) => {
   const response = await post<any>("/ktx-service/ktx-sinh-vien-cam/paginate", params);
   return response;
-};
+}; 

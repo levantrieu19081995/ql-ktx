@@ -341,9 +341,8 @@ export default function TheoMaSoSubPage() {
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <div ref={searchRef} style={{ position: "relative" }}>
-          {/* Single unified row: 4 inputs + action buttons */}
-          <Grid align="flex-end" gutter="md">
-            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+          <Grid columns={24} align="flex-end" gutter="md">
+            <Grid.Col span={{ base: 24, sm: 12, md: 4 }}>
               <TextInput
                 label={t("fullName")}
                 placeholder={t("enterFullName") + "..."}
@@ -355,7 +354,7 @@ export default function TheoMaSoSubPage() {
                 }}
               />
             </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+            <Grid.Col span={{ base: 24, sm: 12, md: 4 }}>
               <div ref={mssvInputRef}>
                 <TextInput
                   label={t("studentId") + " *"}
@@ -369,7 +368,7 @@ export default function TheoMaSoSubPage() {
                 />
               </div>
             </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+            <Grid.Col span={{ base: 24, sm: 12, md: 3 }}>
               <DateInput
                 label={t("fromDate")}
                 placeholder="MM/DD/YYYY"
@@ -383,7 +382,7 @@ export default function TheoMaSoSubPage() {
                 }}
               />
             </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+            <Grid.Col span={{ base: 24, sm: 12, md: 3 }}>
               <DateInput
                 label={t("toDate")}
                 placeholder="MM/DD/YYYY"
@@ -397,9 +396,9 @@ export default function TheoMaSoSubPage() {
                 }}
               />
             </Grid.Col>
-            <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
-              <Group gap="xs" wrap="nowrap" align="center" style={{ height: "40px" }}>
-                {svLoading && <Loader size="xs" color="blue" />}
+            <Grid.Col span={{ base: 24, sm: 24, md: 10 }}>
+              <Group justify="flex-end" gap="sm" wrap="wrap">
+                {svLoading && <Loader size="xs" color="blue" style={{ marginRight: "auto" }} />}
                 <Button
                   leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                   style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
@@ -408,21 +407,19 @@ export default function TheoMaSoSubPage() {
                 >
                   {t("search")}
                 </Button>
-                <Tooltip label={t("reset")} withArrow position="top">
-                  <ActionIcon
-                    variant="outline"
-                    color="gray"
-                    size="lg"
-                    onClick={handleReset}
-                    style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px", flexShrink: 0 }}
-                  >
-                    <IconRefresh size={18} color="#64748b" />
-                  </ActionIcon>
-                </Tooltip>
+                <Button
+                  leftSection={<IconRefresh size={16} />}
+                  variant="outline"
+                  color="gray"
+                  onClick={handleReset}
+                  style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                >
+                  {t("reset")}
+                </Button>
                 <Button
                   leftSection={<IconDownload size={16} />}
                   variant="outline"
-                  style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px", flexShrink: 0 }}
+                  style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
                 >
                   {t("exportPdf")}
                 </Button>

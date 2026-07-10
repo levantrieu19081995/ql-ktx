@@ -714,7 +714,7 @@ export default function LuotRaVaoSubPage() {
                 />
               </Grid.Col>
               <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
-                <Group gap="xs" justify="flex-start" wrap="nowrap" style={{ height: "40px" }}>
+                <Group justify="flex-end" gap="sm" wrap="wrap">
                   <Button
                     leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                     style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
@@ -845,7 +845,7 @@ export default function LuotRaVaoSubPage() {
                   />
                 </Grid.Col>
                 <Grid.Col span={{ base: 12, md: 7 }}>
-                  <Group gap="sm" wrap="wrap" style={{ height: "40px" }}>
+                  <Group justify="flex-end" gap="sm" wrap="wrap">
                     <Button
                       leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                       style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
