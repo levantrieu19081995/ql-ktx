@@ -47,10 +47,10 @@ import {
   NguoiLaItem,
   fetchThongKeNguoiLa,
   fetchThongKeChiTietNguoiLa,
+  fetchNguoiLaPaginate,
 } from "@/services/dashboard/dashboardService";
 import { fetchDanhSachKhuKtx } from "@/services/danh-muc/danhMucKtxService";
 import { KhuKtx } from "@/types/type-danh-muc-ktx";
-import { get, post } from "@/utils/axios";
 
 const getDefaultDates = () => {
   const den = new Date();
@@ -180,7 +180,7 @@ export default function NguoiLaSubPage() {
           maKhu: activeKhu,
         };
 
-        const res = await post<any>("/face-detect-service/face-web-check-time/paginate-nguoi-la", body);
+        const res = await fetchNguoiLaPaginate(body);
         const payload = res?.payload;
         const items = payload?.items ?? payload?.content ?? [];
         setNguoiLaList(items);
@@ -241,19 +241,12 @@ export default function NguoiLaSubPage() {
         return;
       }
 
-      // Try different date formats and parameter naming conventions sequentially
       const formats = [
-        // 1. MM/dd/yyyy with Ngay (spec)
         { Ngay: formatDateToMMDDYYYY(activeDate, new Date()), maKhu: activeKhu },
-        // 2. MM/dd/yyyy with ngay (lowercase)
         { ngay: formatDateToMMDDYYYY(activeDate, new Date()), maKhu: activeKhu },
-        // 3. dd/MM/yyyy with Ngay
         { Ngay: formatDateToDDMMYYYY(activeDate, new Date()), maKhu: activeKhu },
-        // 4. dd/MM/yyyy with ngay
         { ngay: formatDateToDDMMYYYY(activeDate, new Date()), maKhu: activeKhu },
-        // 5. yyyy-MM-dd with Ngay
         { Ngay: formatDateToYYYYMMDD(activeDate, new Date()), maKhu: activeKhu },
-        // 6. yyyy-MM-dd with ngay
         { ngay: formatDateToYYYYMMDD(activeDate, new Date()), maKhu: activeKhu },
       ];
 
@@ -263,7 +256,7 @@ export default function NguoiLaSubPage() {
           const res = await fetchThongKeChiTietNguoiLa(params);
           setDetailList(res?.payload || []);
           setDetailLoading(false);
-          return; // Success, exit function
+          return;
         } catch (err: any) {
           lastErr = err;
           // Continue loop to try other formats
