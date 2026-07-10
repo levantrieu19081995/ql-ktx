@@ -248,15 +248,9 @@ export const fetchThongKeNguoiLa = async (params: { tuNgay: string; denNgay: str
   }
 };
 
-// 12. Thống kê chi tiết người lạ (POST)
-export const fetchThongKeChiTietNguoiLa = async (params: { Ngay: string; maKhu: string }): Promise<any> => {
-  try {
-    const res = await post<any>("/ktx-service/thong-ke/nguoi-la", params);
-    return res;
-  } catch (error) {
-    console.error("Error fetching detail stranger statistics:", error);
-    throw error;
-  }
+// 12. Thống kê chi tiết người lạ (GET)
+export const fetchThongKeChiTietNguoiLa = async (params: any): Promise<any> => {
+  return get<any>("/ktx-service/thong-ke/nguoi-la", params);
 };
 
 // 13. Dashboard summary (POST) - sử dụng endpoint thong-ke/luot-ra-vao để lấy tổng quan

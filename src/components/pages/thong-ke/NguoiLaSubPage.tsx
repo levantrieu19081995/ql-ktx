@@ -45,13 +45,16 @@ import {
 } from "./mockThongKeData";
 import {
   NguoiLaItem,
+  fetchThongKeNguoiLa,
+  fetchThongKeChiTietNguoiLa,
 } from "@/services/dashboard/dashboardService";
-import { post } from "@/utils/axios";
+import { fetchDanhSachKhuKtx } from "@/services/danh-muc/danhMucKtxService";
+import { KhuKtx } from "@/types/type-danh-muc-ktx";
+import { get, post } from "@/utils/axios";
 
 const getDefaultDates = () => {
   const den = new Date();
-  const tu = new Date();
-  tu.setDate(tu.getDate() - 30); // 30 ngày trước (1 tháng)
+  const tu = new Date(2026, 4, 5); // Ngày 5 tháng 5 năm 2026
   return { tu, den };
 };
 
@@ -65,7 +68,13 @@ export default function NguoiLaSubPage() {
     return statusName;
   };
 
+  // State for dynamic zones list loaded from API
+  const [danhSachKhu, setDanhSachKhu] = useState<KhuKtx[]>([]);
+  const [zonesLoading, setZonesLoading] = useState(false);
+
   const getTranslatedKhu = (khu: string) => {
+    const matched = danhSachKhu.find((z) => z.maKhu === khu);
+    if (matched) return matched.tenKhu;
     if (khu === "Khu A" || khu === "A") return t("dormA");
     if (khu === "Khu B" || khu === "B") return t("dormB");
     return khu;
@@ -73,58 +82,105 @@ export default function NguoiLaSubPage() {
 
   const [tuNgay, setTuNgay] = useState<Date | null>(() => getDefaultDates().tu);
   const [denNgay, setDenNgay] = useState<Date | null>(() => getDefaultDates().den);
-  const [khuKtx, setKhuKtx] = useState("Tất cả");
+  const [khuKtx, setKhuKtx] = useState("-1");
 
+  // State for paginated history table
   const [nguoiLaList, setNguoiLaList] = useState<NguoiLaItem[]>([]);
   const [nguoiLaLoading, setNguoiLaLoading] = useState(false);
   const [nguoiLaError, setNguoiLaError] = useState<string | null>(null);
   const [nguoiLaPage, setNguoiLaPage] = useState(1);
-  const [nguoiLaPageSize] = useState(10);
+  const [nguoiLaPageSize] = useState(1000);
   const [nguoiLaTotalPages, setNguoiLaTotalPages] = useState(1);
   const [nguoiLaTotalElements, setNguoiLaTotalElements] = useState(0);
 
-  const loadNguoiLa = useCallback(
-    async (page: number, overrides?: { tuNgay?: Date | null; denNgay?: Date | null }) => {
+  // State for daily quantity chart
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [chartError, setChartError] = useState<string | null>(null);
+
+  // State for daily detailed strangers appearance
+  const [detailDate, setDetailDate] = useState<Date | null>(() => new Date());
+  const [detailList, setDetailList] = useState<any[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+
+  // Format utility (returns MM/dd/yyyy)
+  const formatDateToMMDDYYYY = (dateVal: Date | null, fallbackDate: Date): string => {
+    const target = dateVal && !isNaN(dateVal.getTime()) ? dateVal : fallbackDate;
+    const mm = String(target.getMonth() + 1).padStart(2, "0");
+    const dd = String(target.getDate()).padStart(2, "0");
+    const yyyy = target.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  };
+
+  // Format utility (returns dd/MM/yyyy)
+  const formatDateToDDMMYYYY = (dateVal: Date | null, fallbackDate: Date): string => {
+    const target = dateVal && !isNaN(dateVal.getTime()) ? dateVal : fallbackDate;
+    const dd = String(target.getDate()).padStart(2, "0");
+    const mm = String(target.getMonth() + 1).padStart(2, "0");
+    const yyyy = target.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
+  // Format utility (returns yyyy-MM-dd)
+  const formatDateToYYYYMMDD = (dateVal: Date | null, fallbackDate: Date): string => {
+    const target = dateVal && !isNaN(dateVal.getTime()) ? dateVal : fallbackDate;
+    const yyyy = target.getFullYear();
+    const mm = String(target.getMonth() + 1).padStart(2, "0");
+    const dd = String(target.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  // Parse helper for chart active label
+  const parseDateStr = (dateStr: string): Date | null => {
+    if (!dateStr) return null;
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      const part0 = parseInt(parts[0], 10);
+      const part1 = parseInt(parts[1], 10);
+      const part2 = parseInt(parts[2], 10);
+      // Determine if DD/MM/YYYY or MM/DD/YYYY
+      if (part0 > 12) {
+        return new Date(part2, part1 - 1, part0); // DD/MM/YYYY
+      } else {
+        return new Date(part2, part0 - 1, part1); // MM/DD/YYYY
+      }
+    }
+    return null;
+  };
+
+  // 1. Fetch Zones List
+  const loadZones = async () => {
+    setZonesLoading(true);
+    try {
+      const res = await fetchDanhSachKhuKtx({ page: 1, pageSize: 1000, maKhu: "-1" });
+      setDanhSachKhu(res?.items || []);
+    } catch (err) {
+      console.error("Lỗi khi tải danh sách khu:", err);
+    } finally {
+      setZonesLoading(false);
+    }
+  };
+
+  // 2. Fetch Paginated History Table
+  const loadNguoiLaHistory = useCallback(
+    async (page: number, overrides?: { tuNgay?: Date | null; denNgay?: Date | null; maKhu?: string }) => {
       setNguoiLaLoading(true);
       setNguoiLaError(null);
       try {
         const activeTu = (overrides && overrides.tuNgay !== undefined) ? overrides.tuNgay : tuNgay;
         const activeDen = (overrides && overrides.denNgay !== undefined) ? overrides.denNgay : denNgay;
-
-        const formatDate = (dateVal: Date | null, isStart: boolean): string => {
-          if (dateVal && !isNaN(dateVal.getTime())) {
-            const mm = String(dateVal.getMonth() + 1).padStart(2, "0");
-            const dd = String(dateVal.getDate()).padStart(2, "0");
-            const yyyy = dateVal.getFullYear();
-            return `${mm}/${dd}/${yyyy}`;
-          }
-          const fallbackDate = isStart ? getDefaultDates().tu : getDefaultDates().den;
-          const mm = String(fallbackDate.getMonth() + 1).padStart(2, "0");
-          const dd = String(fallbackDate.getDate()).padStart(2, "0");
-          const yyyy = fallbackDate.getFullYear();
-          return `${mm}/${dd}/${yyyy}`;
-        };
-
-        // Chuẩn hóa khu KTX theo yêu cầu API ("Khu A" -> "A", "Khu B" -> "B", "Tất cả" -> "-1")
-        let maKhu = "-1";
-        if (khuKtx === "Khu A") maKhu = "A";
-        else if (khuKtx === "Khu B") maKhu = "B";
+        const activeKhu = (overrides && overrides.maKhu !== undefined) ? overrides.maKhu : khuKtx;
 
         const body = {
           page: String(page),
           pageSize: String(nguoiLaPageSize),
-          tuNgay: formatDate(activeTu, true),
-          denNgay: formatDate(activeDen, false),
-          maKhu,
+          tuNgay: formatDateToMMDDYYYY(activeTu, getDefaultDates().tu),
+          denNgay: formatDateToMMDDYYYY(activeDen, getDefaultDates().den),
+          maKhu: activeKhu,
         };
 
-        console.log("[NguoiLa] Sending body:", JSON.stringify(body, null, 2));
         const res = await post<any>("/face-detect-service/face-web-check-time/paginate-nguoi-la", body);
-        console.log("[NguoiLa] API response:", res);
-        console.log("[NguoiLa] res.payload:", res?.payload);
-        console.log("[NguoiLa] res.payload.items:", res?.payload?.items);
-        console.log("[NguoiLa] res.payload.items length:", res?.payload?.items?.length);
-
         const payload = res?.payload;
         const items = payload?.items ?? payload?.content ?? [];
         setNguoiLaList(items);
@@ -133,60 +189,152 @@ export default function NguoiLaSubPage() {
           payload?.totalElements ?? payload?.numberOfElements ?? items.length
         );
       } catch (err: any) {
-        setNguoiLaError(err?.message ?? "Lỗi khi tải dữ liệu người lạ");
+        setNguoiLaError(err?.message ?? "Lỗi khi tải lịch sử người lạ");
         setNguoiLaList([]);
       } finally {
         setNguoiLaLoading(false);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [khuKtx, tuNgay, denNgay, nguoiLaPageSize]
   );
 
-  useEffect(() => {
-    loadNguoiLa(nguoiLaPage);
-  }, [nguoiLaPage, loadNguoiLa]);
+  // 3. Fetch Chart Data (Quantity count)
+  const loadChartData = useCallback(
+    async (overrides?: { tuNgay?: Date | null; denNgay?: Date | null; maKhu?: string }) => {
+      setChartLoading(true);
+      setChartError(null);
+      try {
+        const activeTu = (overrides && overrides.tuNgay !== undefined) ? overrides.tuNgay : tuNgay;
+        const activeDen = (overrides && overrides.denNgay !== undefined) ? overrides.denNgay : denNgay;
+        const activeKhu = (overrides && overrides.maKhu !== undefined) ? overrides.maKhu : khuKtx;
 
-  const handleNguoiLaSearch = () => {
+        const body = {
+          tuNgay: formatDateToMMDDYYYY(activeTu, getDefaultDates().tu),
+          denNgay: formatDateToMMDDYYYY(activeDen, getDefaultDates().den),
+          maKhu: activeKhu,
+        };
+
+        const res = await fetchThongKeNguoiLa(body);
+        setChartData(res?.payload || []);
+      } catch (err: any) {
+        setChartError(err?.message ?? "Lỗi khi tải biểu đồ lượt ra vào");
+        setChartData([]);
+      } finally {
+        setChartLoading(false);
+      }
+    },
+    [khuKtx, tuNgay, denNgay]
+  );
+
+  // 4. Fetch Stranger Daily Details List
+  const loadStrangerDailyDetails = useCallback(
+    async (overrides?: { detailDate?: Date | null; maKhu?: string }) => {
+      setDetailLoading(true);
+      setDetailError(null);
+      
+      const activeDate = (overrides && overrides.detailDate !== undefined) ? overrides.detailDate : detailDate;
+      const activeKhu = (overrides && overrides.maKhu !== undefined) ? overrides.maKhu : khuKtx;
+
+      if (!activeDate) {
+        setDetailList([]);
+        setDetailLoading(false);
+        return;
+      }
+
+      // Try different date formats and parameter naming conventions sequentially
+      const formats = [
+        // 1. MM/dd/yyyy with Ngay (spec)
+        { Ngay: formatDateToMMDDYYYY(activeDate, new Date()), maKhu: activeKhu },
+        // 2. MM/dd/yyyy with ngay (lowercase)
+        { ngay: formatDateToMMDDYYYY(activeDate, new Date()), maKhu: activeKhu },
+        // 3. dd/MM/yyyy with Ngay
+        { Ngay: formatDateToDDMMYYYY(activeDate, new Date()), maKhu: activeKhu },
+        // 4. dd/MM/yyyy with ngay
+        { ngay: formatDateToDDMMYYYY(activeDate, new Date()), maKhu: activeKhu },
+        // 5. yyyy-MM-dd with Ngay
+        { Ngay: formatDateToYYYYMMDD(activeDate, new Date()), maKhu: activeKhu },
+        // 6. yyyy-MM-dd with ngay
+        { ngay: formatDateToYYYYMMDD(activeDate, new Date()), maKhu: activeKhu },
+      ];
+
+      let lastErr = null;
+      for (const params of formats) {
+        try {
+          const res = await fetchThongKeChiTietNguoiLa(params);
+          setDetailList(res?.payload || []);
+          setDetailLoading(false);
+          return; // Success, exit function
+        } catch (err: any) {
+          lastErr = err;
+          // Continue loop to try other formats
+        }
+      }
+
+      setDetailError(lastErr?.message ?? "Lỗi khi tải chi tiết người lạ trong ngày");
+      setDetailList([]);
+      setDetailLoading(false);
+    },
+    [khuKtx, detailDate]
+  );
+
+  // Load zones on mount, and trigger initial data load
+  useEffect(() => {
+    loadZones();
+  }, []);
+
+  useEffect(() => {
+    loadNguoiLaHistory(nguoiLaPage);
+  }, [nguoiLaPage, loadNguoiLaHistory]);
+
+  useEffect(() => {
+    loadChartData();
+  }, [loadChartData]);
+
+  useEffect(() => {
+    loadStrangerDailyDetails();
+  }, [loadStrangerDailyDetails]);
+
+  // Search Handler
+  const handleSearch = () => {
     setNguoiLaPage(1);
-    loadNguoiLa(1);
+    loadNguoiLaHistory(1);
+    loadChartData();
+    loadStrangerDailyDetails();
   };
 
+  // Reset Handler
   const handleReset = () => {
     const defaults = getDefaultDates();
     setTuNgay(defaults.tu);
     setDenNgay(defaults.den);
-    setKhuKtx("Tất cả");
+    setKhuKtx("-1");
     setNguoiLaPage(1);
-    loadNguoiLa(1, { tuNgay: defaults.tu, denNgay: defaults.den });
+    setDetailDate(new Date());
+
+    loadNguoiLaHistory(1, { tuNgay: defaults.tu, denNgay: defaults.den, maKhu: "-1" });
+    loadChartData({ tuNgay: defaults.tu, denNgay: defaults.den, maKhu: "-1" });
+    loadStrangerDailyDetails({ detailDate: new Date(), maKhu: "-1" });
   };
 
-  // Group stranger occurrences by date for the chart
-  const computeChartData = () => {
-    const dateGroups: { [key: string]: { date: string; "Khu A": number; "Khu B": number; "Tổng": number } } = {};
-    
-    nguoiLaList.forEach((item) => {
-      const date = item.ngay || "--";
-      if (!dateGroups[date]) {
-        dateGroups[date] = { date, "Khu A": 0, "Khu B": 0, "Tổng": 0 };
+  // Handle chart node click to view details of that clicked date
+  const handleChartClick = (nextState: any) => {
+    if (nextState && nextState.activeLabel) {
+      const parsedDate = parseDateStr(nextState.activeLabel);
+      if (parsedDate) {
+        setDetailDate(parsedDate);
+        loadStrangerDailyDetails({ detailDate: parsedDate });
       }
-      const isKhuA = String(item.maKhu || "").toLowerCase().includes("a") || String(item.tenKhu || "").toLowerCase().includes("a");
-      if (isKhuA) {
-        dateGroups[date]["Khu A"]++;
-      } else {
-        dateGroups[date]["Khu B"]++;
-      }
-      dateGroups[date]["Tổng"]++;
-    });
-
-    const list = Object.values(dateGroups);
-    if (list.length === 0) {
-      return [{ date: t("noData"), "Khu A": 0, "Khu B": 0, "Tổng": 0 }];
     }
-    return list.slice(0, 10);
   };
-  
-  const chartData = nguoiLaList.length > 0 ? computeChartData() : [{ date: t("noData"), "Khu A": 0, "Khu B": 0, "Tổng": 0 }];
+
+  // Dynamic dropdown list mapping
+  const zonesDropdownData = [
+    { value: "-1", label: t("all") },
+    ...danhSachKhu.map((k) => ({
+      value: k.maKhu || "",
+      label: k.tenKhu || `Khu ${k.maKhu}`,
+    })),
+  ];
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
@@ -199,10 +347,10 @@ export default function NguoiLaSubPage() {
         </Title>
       </Group>
 
+      {/* Filter Card */}
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-        <Stack gap="md">
-          {/* Row 1: 3 filter fields */}
-          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
+        <Grid align="flex-end" gutter="md">
+          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
             <DateInput
               label={t("fromDate").toUpperCase()}
               placeholder="MM/DD/YYYY"
@@ -215,6 +363,8 @@ export default function NguoiLaSubPage() {
                 input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
               }}
             />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
             <DateInput
               label={t("toDate").toUpperCase()}
               placeholder="MM/DD/YYYY"
@@ -227,85 +377,190 @@ export default function NguoiLaSubPage() {
                 input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
               }}
             />
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
             <Select
               label={t("dormZone").toUpperCase()}
               value={khuKtx}
-              onChange={(val) => setKhuKtx(val || "Tất cả")}
-              data={[
-                { value: "Tất cả", label: t("all") },
-                { value: "Khu A", label: t("dormA") },
-                { value: "Khu B", label: t("dormB") }
-              ]}
+              onChange={(val) => setKhuKtx(val || "-1")}
+              data={zonesDropdownData}
+              disabled={zonesLoading}
               styles={{
                 label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
                 input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
               }}
             />
-          </SimpleGrid>
-
-          {/* Dotted divider */}
-          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
-
-          {/* Row 2: Search buttons */}
-          <Group justify="flex-end" gap="sm">
-            <Button
-              leftSection={nguoiLaLoading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              onClick={handleNguoiLaSearch}
-              loading={nguoiLaLoading}
-            >
-              {t("search")}
-            </Button>
-            <Button
-              leftSection={<IconRefresh size={16} />}
-              variant="outline"
-              color="gray"
-              onClick={handleReset}
-              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-            >
-              {t("reset")}
-            </Button>
-            <Button
-              leftSection={<IconDownload size={16} />}
-              variant="outline"
-              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-            >
-              {t("exportExcel")}
-            </Button>
-            <Button
-              leftSection={<IconDownload size={16} />}
-              variant="outline"
-              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-            >
-              {t("exportPdf")}
-            </Button>
-          </Group>
-        </Stack>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, md: 6 }}>
+            <Group justify="flex-end" gap="sm" wrap="wrap">
+              <Button
+                leftSection={nguoiLaLoading || chartLoading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                onClick={handleSearch}
+                disabled={nguoiLaLoading || chartLoading}
+              >
+                {t("search")}
+              </Button>
+              <Button
+                leftSection={<IconRefresh size={16} />}
+                variant="outline"
+                color="gray"
+                onClick={handleReset}
+                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              >
+                {t("reset")}
+              </Button>
+              <Button
+                leftSection={<IconDownload size={16} />}
+                variant="outline"
+                style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              >
+                {t("exportExcel")}
+              </Button>
+              <Button
+                leftSection={<IconDownload size={16} />}
+                variant="outline"
+                style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              >
+                {t("exportPdf")}
+              </Button>
+            </Group>
+          </Grid.Col>
+        </Grid>
       </Card>
 
+      {/* Main Grid: Chart and Daily details */}
       <Grid gutter="md">
-        <Grid.Col span={12}>
-          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+        {/* Stranger Chart Panel */}
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)", height: "100%" }}>
             <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
               {t("strangerChartTitle")}
             </Text>
-            <div style={{ height: 260 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="Khu A" name={t("dormA")} stroke="#1f5ca9" fill="#1f5ca9" fillOpacity={0.2} />
-                  <Area type="monotone" dataKey="Khu B" name={t("dormB")} stroke="#00afef" fill="#00afef" fillOpacity={0.2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            {chartLoading ? (
+              <Center style={{ height: 260 }}>
+                <Loader size="md" color="blue" />
+              </Center>
+            ) : chartError ? (
+              <Center style={{ height: 260 }}>
+                <Text size="sm" c="dimmed" style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("noStrangerData") || "Không có dữ liệu người lạ trong khoảng thời gian này"}
+                </Text>
+              </Center>
+            ) : !chartData || chartData.length === 0 ? (
+              <Center style={{ height: 260 }}>
+                <Text size="sm" c="dimmed" style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("noStrangerData") || "Không có dữ liệu người lạ trong khoảng thời gian này"}
+                </Text>
+              </Center>
+            ) : (
+              <div style={{ height: 260 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} onClick={handleChartClick} style={{ cursor: "pointer" }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="ngay" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="soLuong" name={t("strangerCount") || "Số lượng người lạ"} stroke="#1f5ca9" fill="#1f5ca9" fillOpacity={0.2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </Card>
+        </Grid.Col>
+
+        {/* Daily Stranger Details Card Panel */}
+        <Grid.Col span={{ base: 12, lg: 6 }}>
+          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)", height: "100%" }}>
+            <Group justify="space-between" align="center" mb="md">
+              <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                {t("dailyDetailsTitle") || "CHI TIẾT NGƯỜI LẠ TRONG NGÀY"}
+              </Text>
+              <DateInput
+                placeholder="Chọn ngày..."
+                value={detailDate}
+                onChange={(val) => {
+                  const d = val ? new Date(val) : null;
+                  setDetailDate(d);
+                  loadStrangerDailyDetails({ detailDate: d });
+                }}
+                valueFormat="DD/MM/YYYY"
+                clearable={false}
+                styles={{
+                  input: { borderRadius: "8px", width: "150px", height: "32px", fontSize: "12px", fontFamily: "var(--font-readex-pro), sans-serif" }
+                }}
+              />
+            </Group>
+
+            {detailLoading ? (
+              <Center style={{ height: 230 }}>
+                <Loader size="md" color="blue" />
+              </Center>
+            ) : detailError ? (
+              <Center style={{ height: 230 }}>
+                <Text size="sm" c="dimmed" style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("noStrangerData") || "Không có dữ liệu người lạ trong khoảng thời gian này"}
+                </Text>
+              </Center>
+            ) : (
+              <ScrollArea style={{ height: 230 }}>
+                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                  {detailList.map((item, idx) => (
+                    <Card key={idx} withBorder radius="md" p="xs" style={{ borderColor: "#f1f5f9", backgroundColor: "#f8fafc" }}>
+                      <Card.Section>
+                        {item.pathImage ? (
+                          <div style={{ position: "relative", width: "100%", height: 110 }}>
+                            <img
+                              src={item.pathImage}
+                              alt="Stranger Capture"
+                              style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px 8px 0 0" }}
+                              onError={(e) => {
+                                // Fallback if image fails to load
+                                e.currentTarget.src = "";
+                                e.currentTarget.style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <Center style={{ height: 110, backgroundColor: "#f1f5f9" }}>
+                            <Text size="xs" c="dimmed">{t("noImage") || "Không có ảnh"}</Text>
+                          </Center>
+                        )}
+                      </Card.Section>
+                      <Stack gap={2} mt="xs">
+                        <Group justify="space-between">
+                          <Badge size="xs" color="red" variant="filled">
+                            {t("strangerTag") || "Người lạ"}
+                          </Badge>
+                          <Text size="xs" fw={700} c="dimmed">
+                            {item.thoiGian || (item.timecheck ? item.timecheck.substring(11, 19) : "--")}
+                          </Text>
+                        </Group>
+                        <Text size="xs" fw={600} c="dark" mt={4} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          📍 {item.cameraName || `Camera ${item.cameraId}`}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          🏢 {getTranslatedKhu(item.maKhu) || item.tenKhu}
+                        </Text>
+                      </Stack>
+                    </Card>
+                  ))}
+                  {detailList.length === 0 && (
+                    <Center style={{ height: 200, gridColumn: "span 2" }}>
+                      <Text size="sm" c="dimmed" ta="center">
+                        {t("noStrangerDetailsForDay") || "Không phát hiện người lạ nào trong ngày này."}
+                      </Text>
+                    </Center>
+                  )}
+                </SimpleGrid>
+              </ScrollArea>
+            )}
           </Card>
         </Grid.Col>
       </Grid>
 
+      {/* History table list */}
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
         <Group justify="space-between" mb="md">
           <div>
@@ -350,7 +605,7 @@ export default function NguoiLaSubPage() {
                   {nguoiLaList.map((row, index) => {
                     const stt = (nguoiLaPage - 1) * nguoiLaPageSize + index + 1;
                     const thoiGian = (row.ngay && row.thoigian) ? `${row.ngay} ${row.thoigian}` : (row.timecheck ?? "--");
-                    const khu = row.tenKhu ?? row.maKhu ?? "--";
+                    const khu = row.maKhu ?? row.tenKhu ?? "--";
                     const viTri = row.cameraName ?? "--";
                     const imgSrc = row.pathImage ?? "";
                     const tt = row.trangThai ?? "Nghi vấn";
