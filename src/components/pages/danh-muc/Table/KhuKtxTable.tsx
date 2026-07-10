@@ -25,8 +25,8 @@ export default function KhuKtxTable({ items }: KhuKtxTableProps) {
             items.map((item, index) => (
               <Table.Tr key={item.guid || item.khuId || index}>
                 <Table.Td style={{ textAlign: "center" }}>{index + 1}</Table.Td>
-                <Table.Td>{item.maKhu ?? "-"}</Table.Td>
-                <Table.Td>{item.tenKhu ?? "-"}</Table.Td>
+                <Table.Td>{item.khuMa || item.maKhu || "-"}</Table.Td>
+                <Table.Td>{item.khuTen || item.tenKhu || "-"}</Table.Td>
                 <Table.Td>{item.soLuongPhong ?? "-"}</Table.Td>
                 <Table.Td>{item.moTa ?? "-"}</Table.Td>
               </Table.Tr>

@@ -2,7 +2,11 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/dates/styles.css";
 import "@/styles/mantine-overrides.css";
-import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
+} from "@mantine/core";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
@@ -27,11 +31,11 @@ export default async function RootLayout({ children, params }: Props) {
   const messages = await getMessages({ locale });
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <head suppressHydrationWarning>
+    <html lang={locale} {...mantineHtmlProps}>
+      <head>
         <ColorSchemeScript defaultColorScheme="light" />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <div id="app-portal" />
         <MantineProvider
           defaultColorScheme="light"

@@ -20,6 +20,7 @@ import {
   Table,
 } from "@mantine/core";
 import {
+  IconId,
   IconHome2,
   IconLogout,
   IconChevronLeft,
@@ -28,6 +29,7 @@ import {
   IconUser,
   IconBooks,
   IconBook2,
+  IconCar,
   IconCategory,
   IconNote,
   IconChartBar,
@@ -37,11 +39,13 @@ import {
   IconLockFilled,
   IconHistory,
   IconAlertTriangle,
+
   IconSettings,
   IconUsersGroup,
   IconShieldLock,
   IconLayoutSidebarLeftExpand,
   IconLayoutSidebarLeftCollapse,
+
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -94,14 +98,16 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       grouped: true,
       children: [
         {
-          label: t("historyMenu"),
-          href: "/history/log",
-          icon: <IconArrowsLeftRight size={16} />,
         },
         {
           label: t("warningsMenu"),
           href: "/warnings",
           icon: <IconAlertTriangle size={16} />,
+        },
+        {
+          label: t("tollManagement"),
+          href: "/toll-management",
+          icon: <IconCar size={16} />,
         },
       ],
     },
@@ -145,6 +151,11 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           label: t("statInOut"),
           href: "/thong-ke/luot-ra-vao",
           icon: <IconArrowsLeftRight size={16} />,
+        },
+        {
+          label: t("statByCode"),
+          href: "/thong-ke/theo-ma-so",
+          icon: <IconId size={16} />,
         },
         {
           label: t("statAbsent"),

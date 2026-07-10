@@ -21,7 +21,7 @@ export const ChanTrang: React.FC = () => {
             }}
         >
             <div className="flex flex-col md:flex-row justify-between items-center w-full px-4 md:px-6 gap-2">
-                <div style={{ fontFamily: 'var(--font-k2d)', fontSize: '13px', fontWeight: 600, letterSpacing: '0.025em' }}>
+                <div style={{ fontFamily: 'var(--font-readex-pro)', fontSize: '13px', fontWeight: 600, letterSpacing: '0.025em' }}>
                     <span style={{ fontWeight: 800 }}>ĐẠI HỌC CẦN THƠ (CTU)</span> - HỆ THỐNG GIÁM SÁT RA VÀO KÝ TÚC XÁ
                 </div>
                 <div style={{ opacity: 0.8 }}>

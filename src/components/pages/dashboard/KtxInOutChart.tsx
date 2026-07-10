@@ -2,13 +2,13 @@ import React from 'react';
 import { Card, Text, Box, Group } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { KTX_IN_OUT_DATA, KtxInOutData } from './mockDashboardData';
+import { KtxInOutData } from './dashboardTypes';
 
 interface KtxInOutChartProps {
   data?: KtxInOutData[];
 }
 
-export default function KtxInOutChart({ data = KTX_IN_OUT_DATA }: KtxInOutChartProps) {
+export default function KtxInOutChart({ data = [] }: KtxInOutChartProps) {
   const t = useTranslations("Dashboard");
 
   return (
@@ -22,7 +22,7 @@ export default function KtxInOutChart({ data = KTX_IN_OUT_DATA }: KtxInOutChartP
       }}
     >
       <Box mb="md">
-        <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
+        <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
           {t("ktxChartTitle")}
         </Text>
         <Text size="xs" c="dimmed">

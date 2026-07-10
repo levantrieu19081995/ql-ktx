@@ -16,6 +16,7 @@ import {
   IconAdOff,
   IconDeviceFloppy,
   IconLockFilled,
+  IconRefresh,
   IconSearch,
 } from "@tabler/icons-react";
 
@@ -44,11 +45,14 @@ export default function SinhVienBiCamPage() {
 
   const [form, setForm] = useState({
     maSinhVien: "",
+    sinhVienId: "-1",
     lyDo: "",
     ngayBatDau: "",
     ngayKetThuc: "",
     loaiSuKienId: "-1",
   });
+
+  const [sinhVienList, setSinhVienList] = useState<any[]>([]);
 
   const [loaiSuKienOptions, setLoaiSuKienOptions] = useState<
     { value: string; label: string }[]
@@ -73,14 +77,24 @@ export default function SinhVienBiCamPage() {
 
   const loadSinhVienOptions = async (keyword = "") => {
     try {
-      const res = await fetchDanhSachSinhVienKtx({
+      let res = await fetchDanhSachSinhVienKtx({
         page: 1,
         pageSize: 20,
-        keyword,
+        maSinhVien: keyword.trim() || undefined,
       });
+      if (!res?.items || res.items.length === 0) {
+        res = await fetchDanhSachSinhVienKtx({
+          page: 1,
+          pageSize: 20,
+          hoTen: keyword.trim() || undefined,
+        });
+      }
+
+      const rawItems = res?.items || [];
+      setSinhVienList(rawItems);
 
       setSinhVienOptions(
-        (res?.items || []).map((item: any) => ({
+        rawItems.map((item: any) => ({
           value: item.maSinhVien,
           label: `${item.maSinhVien} - ${item.hoTen || ""}${
             item.maPhong ? ` - Phòng ${item.maPhong}` : ""
@@ -90,6 +104,7 @@ export default function SinhVienBiCamPage() {
     } catch (error) {
       console.error("Lỗi lấy danh sách sinh viên:", error);
       setSinhVienOptions([]);
+      setSinhVienList([]);
     }
   };
 
@@ -119,6 +134,7 @@ export default function SinhVienBiCamPage() {
     loadLoaiSuKienOptions();
     setForm({
       maSinhVien: "",
+      sinhVienId: "-1",
       lyDo: "",
       ngayBatDau: "",
       ngayKetThuc: "",
@@ -140,6 +156,7 @@ export default function SinhVienBiCamPage() {
 
       setForm({
         maSinhVien: detail.maSinhVien || "",
+        sinhVienId: String(detail.sinhVienId ?? "-1"),
         lyDo: detail.lyDo || "",
         ngayBatDau: formatDateTimeLocal(detail.ngayBatDau as any),
         ngayKetThuc: formatDateTimeLocal(detail.ngayKetThuc as any),
@@ -189,10 +206,32 @@ export default function SinhVienBiCamPage() {
     loadData(1, pageSize);
   };
 
+  const handleReset = async () => {
+    setMaSinhVienSearch("");
+    setPage(1);
+
+    try {
+      const res = await fetchDanhSachSinhVienBiCam({
+        page: 1,
+        pageSize: pageSize,
+        maSinhVien: "-1",
+      });
+
+      setItems(res?.items || []);
+      setTotalItems(res?.totalElements || 0);
+      setTotalPages(res?.totalPages || 0);
+    } catch (error) {
+      console.error("Lỗi làm mới danh sách sinh viên bị cấm:", error);
+      setItems([]);
+      setTotalItems(0);
+      setTotalPages(0);
+    }
+  };
+
   const handleSave = async () => {
     try {
       const payload = {
-        sinhVienId: -1,
+        sinhVienId: Number(form.sinhVienId) || -1,
         maSinhVien: form.maSinhVien,
         lyDo: form.lyDo,
         ngayBatDau: formatDateMMDDYYYY(form.ngayBatDau),
@@ -231,35 +270,46 @@ export default function SinhVienBiCamPage() {
         icon={<IconLockFilled size={20} />}
         searchControls={
           <>
-            <TextInput
-              label="Mã sinh viên"
-              placeholder="Nhập mã sinh viên..."
-              flex={1}
-              value={maSinhVienSearch}
-              onChange={(event) =>
-                setMaSinhVienSearch(event.currentTarget.value)
-              }
-            />
+            <div className="filter-inputs-custom">
+              <TextInput
+                label="Mã sinh viên"
+                placeholder="Nhập mã sinh viên..."
+                style={{ minWidth: 200 }}
+                value={maSinhVienSearch}
+                onChange={(event) =>
+                  setMaSinhVienSearch(event.currentTarget.value)
+                }
+              />
+            </div>
 
-            <Button
-              mt={25}
-              leftSection={<IconSearch size={18} />}
-              color="blue"
-              radius="md"
-              onClick={handleSearch}
-            >
-              Tìm kiếm
-            </Button>
+            <div className="filter-actions-custom">
+              <Button
+                leftSection={<IconSearch size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleSearch}
+              >
+                Tìm kiếm
+              </Button>
 
-            <Button
-              mt={25}
-              leftSection={<IconAdOff size={18} />}
-              color="blue"
-              radius="md"
-              onClick={handleAdd}
-            >
-              Thêm sinh viên
-            </Button>
+              <Button
+                leftSection={<IconRefresh size={18} />}
+                variant="default"
+                radius="md"
+                onClick={handleReset}
+              >
+                Làm mới
+              </Button>
+
+              <Button
+                leftSection={<IconAdOff size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleAdd}
+              >
+                Thêm sinh viên
+              </Button>
+            </div>
           </>
         }
         pagination={
@@ -294,12 +344,14 @@ export default function SinhVienBiCamPage() {
             clearable
             nothingFoundMessage="Không tìm thấy sinh viên"
             onSearchChange={loadSinhVienOptions}
-            onChange={(value) =>
+            onChange={(value) => {
+              const selectedSv = sinhVienList.find(sv => sv.maSinhVien === value);
               setForm((prev) => ({
                 ...prev,
                 maSinhVien: value || "",
-              }))
-            }
+                sinhVienId: selectedSv ? String(selectedSv.sinhVienId) : "-1",
+              }));
+            }}
             flex={1}
           />
 

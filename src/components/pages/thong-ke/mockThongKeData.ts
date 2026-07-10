@@ -12,10 +12,10 @@ export interface ThongKeOverview {
 export interface ThongKeDetail {
   stt: number;
   time: string;
-  type: "Vào" | "Ra";
+  type: string;
   ktx: string;
   room: string;
-  status: "Hợp lệ" | "Nghi vấn" | "Không hợp lệ";
+  status: string;
 }
 
 export const MOCK_THONG_KE_OVERVIEW: ThongKeOverview[] = [
@@ -68,6 +68,16 @@ export const MOCK_THONG_KE_OVERVIEW: ThongKeOverview[] = [
     luotRa: 45,
     tongLuot: 93,
     avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mai"
+  },
+  {
+    stt: 6,
+    studentId: "CB001",
+    hoTen: "Nguyễn Văn Hùng",
+    maNhom: "Cán bộ quản lý",
+    luotVao: 35,
+    luotRa: 33,
+    tongLuot: 68,
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hung"
   }
 ];
 
@@ -103,6 +113,12 @@ export const MOCK_THONG_KE_DETAILS: { [key: string]: Omit<ThongKeDetail, "stt">[
     { time: "25/06/2026 10:05", type: "Vào", ktx: "Khu A", room: "A408", status: "Hợp lệ" },
     { time: "25/06/2026 07:10", type: "Ra", ktx: "Khu A", room: "A408", status: "Hợp lệ" },
     { time: "24/06/2026 20:30", type: "Vào", ktx: "Khu A", room: "A408", status: "Nghi vấn" }
+  ],
+  "CB001": [
+    { time: "25/06/2026 17:45", type: "Ra", ktx: "Khu A", room: "Văn phòng KTX", status: "Hợp lệ" },
+    { time: "25/06/2026 08:00", type: "Vào", ktx: "Khu A", room: "Văn phòng KTX", status: "Hợp lệ" },
+    { time: "24/06/2026 17:30", type: "Ra", ktx: "Khu A", room: "Văn phòng KTX", status: "Hợp lệ" },
+    { time: "24/06/2026 07:55", type: "Vào", ktx: "Khu A", room: "Văn phòng KTX", status: "Hợp lệ" }
   ]
 };
 

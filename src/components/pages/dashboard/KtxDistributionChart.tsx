@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Text, Box, Group, Stack, Anchor, Flex } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { KTX_DISTRIBUTION, KtxDistribution } from './mockDashboardData';
+import { KtxDistribution } from './dashboardTypes';
 
 interface KtxDistributionChartProps {
   data?: KtxDistribution[];
@@ -10,7 +10,7 @@ interface KtxDistributionChartProps {
 }
 
 export default function KtxDistributionChart({
-  data = KTX_DISTRIBUTION,
+  data = [],
   onViewDetails,
 }: KtxDistributionChartProps) {
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
@@ -29,7 +29,7 @@ export default function KtxDistributionChart({
       }}
     >
       <Box mb="md">
-        <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
+        <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
           {t("distributionTitle")}
         </Text>
       </Box>

@@ -76,10 +76,17 @@ async function forward(req: NextRequest, { path }: { path: string[] }) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   const url = new URL(req.url);
-  const target = `${BASE}/${path.join('/')}${url.search}`;
+  const cleanBase = BASE.replace(/\/+$/, "");
+  const cleanPath = path.join('/').replace(/^\/+/, "");
+  const target = `${cleanBase}/${cleanPath}${url.search}`;
 
   const headers = new Headers(req.headers);
+  console.log("--- PROXY FORWARDING ---");
+  console.log("Target:", target);
+  console.log("Client Headers Authorization:", req.headers.get("Authorization"));
+  console.log("Client Headers Host:", req.headers.get("host"));
   headers.set('host', new URL(BASE).host);
+  headers.delete('accept-encoding'); // Prevent double compression/decoding issues
 
   if ((token as any)?.accessToken) {
     headers.set('Authorization', `Bearer ${(token as any).accessToken}`);
@@ -93,9 +100,14 @@ async function forward(req: NextRequest, { path }: { path: string[] }) {
   };
 
   const res = await fetch(target, init);
+  const resHeaders = new Headers(res.headers);
+  resHeaders.delete('content-encoding');
+  resHeaders.delete('content-length');
+  resHeaders.delete('transfer-encoding');
+
   return new NextResponse(await res.arrayBuffer(), {
     status: res.status,
     statusText: res.statusText,
-    headers: new Headers(res.headers),
+    headers: resHeaders,
   });
 }

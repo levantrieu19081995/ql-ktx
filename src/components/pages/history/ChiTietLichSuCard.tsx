@@ -52,17 +52,18 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
 
   // Định dạng mốc thời gian hiển thị
   const thoiGianDinhDang = dayjs(lichSuDuocChon.thoiGian).format(
-    "DD/MM/YYYY HH:mm:ss",
+    "DD/MM/YYYY HH:mm:ss"
   );
 
   // Lấy nhãn và màu sắc trạng thái theo tab
   const { nhan: nhanTrangThai, mauSac } = layNhanTrangThai(
     lichSuDuocChon,
     loaiTab,
-    t,
+    t
   );
 
   const laCanBo =
+    loaiTab === "CAN_BO" ||
     lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
     lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("can bo");
 

@@ -37,28 +37,47 @@ const taoThamSoPhanTrang = ({
 export const fetchDanhSachSinhVienKtx = async (
   params?: DanhSachSinhVienKtxRequest
 ): Promise<DanhMucKtxPaginatePayload<SinhVienKtx>> => {
-  const res = await get<ApiResponse<DanhMucKtxPaginatePayload<SinhVienKtx>>>(
+  const res = await post<ApiResponse<DanhMucKtxPaginatePayload<SinhVienKtx>>>(
     API_URLS.danhMucKtx.sinhVien.paginate,
     {
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 20,
-      keyword: params?.keyword || undefined,
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
+      maKhu: params?.maKhu ?? "-1",
+      maPhong: params?.maPhong ?? "-1",
+      maSinhVien: params?.maSinhVien || undefined,
+      hoTen: params?.hoTen || undefined,
     }
   );
 
   return res.payload;
 };
 
-// export const fetchDanhSachPhongKtx = async (
-//   params?: DanhMucKtxPaginateRequest,
-// ): Promise<DanhMucKtxPaginateResponse<PhongKtx>> => {
-//   try {
-//     return await get(API_URLS.danhMucKtx.phong.paginate, taoThamSoPhanTrang(params));
-//   } catch (error) {
-//     console.error("Error fetching dormitory room list:", error);
-//     throw error;
-//   }
-// };
+export interface DanhSachPhongKtxRequest {
+  page?: number;
+  pageSize?: number;
+  maKhu?: string;
+  maPhong?: string;
+}
+
+export const fetchDanhSachPhongKtx = async (
+  params?: DanhSachPhongKtxRequest
+): Promise<DanhMucKtxPaginatePayload<PhongKtx>> => {
+  try {
+    const res = await post<
+      ApiResponse<DanhMucKtxPaginatePayload<PhongKtx>>
+    >(API_URLS.danhMucKtx.phong.paginate, {
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
+      maKhu: params?.maKhu || "-1",
+      maPhong: params?.maPhong || "-1",
+    });
+
+    return res.payload;
+  } catch (error) {
+    console.error("Error fetching dormitory room list:", error);
+    throw error;
+  }
+};
 
 export const fetchDanhSachKhuKtx = async (
   params?: DanhMucKhuKtxPaginateRequest
@@ -67,9 +86,9 @@ export const fetchDanhSachKhuKtx = async (
     const res = await post<
       ApiResponse<DanhMucKtxPaginatePayload<KhuKtx>>
     >(API_URLS.danhMucKtx.khu.paginate, {
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 20,
-      maKhu: params?.maKhu || undefined,
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
+      maKhu: params?.maKhu ?? "-1",
     });
 
     return res.payload;
@@ -101,8 +120,8 @@ export const fetchDanhSachSinhVienBiCam = async (
     const res = await post<
       ApiResponse<DanhMucKtxPaginatePayload<SinhVienBiCam>>
     >(API_URLS.danhMucKtx.sinhVienBiCam.paginate, {
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 20,
+      page: String(params?.page ?? 1),
+      pageSize: String(params?.pageSize ?? 20),
       maSinhVien: params?.maSinhVien || "-1",
     });
 

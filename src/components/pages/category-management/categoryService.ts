@@ -29,6 +29,7 @@ export interface KhuItem {
   khuMa: string;
   soLuongPhong: string;
   guid: string;
+  moTa?: string;
 }
 
 export interface SinhVienCamItem {

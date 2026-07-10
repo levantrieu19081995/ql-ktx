@@ -40,7 +40,7 @@ export const DauTrang: React.FC = () => {
                     <div className="flex flex-col justify-center min-w-0">
                         <span
                             className="text-white font-extrabold text-base md:text-lg leading-none tracking-wider"
-                            style={{ fontFamily: 'var(--font-k2d)' }}
+                            style={{ fontFamily: 'var(--font-readex-pro)' }}
                         >
                             ĐẠI HỌC CẦN THƠ
                         </span>
@@ -57,7 +57,7 @@ export const DauTrang: React.FC = () => {
 
                 <span
                     className="hidden lg:inline text-white/90 text-xs md:text-sm font-bold uppercase tracking-wider truncate"
-                    style={{ fontFamily: 'var(--font-k2d)' }}
+                    style={{ fontFamily: 'var(--font-readex-pro)' }}
                 >
                     Hệ thống Quản lý Ra/Vào Ký túc xá
                 </span>
@@ -83,7 +83,7 @@ export const DauTrang: React.FC = () => {
                             <div className="py-1 max-w-xs text-wrap whitespace-normal">
                                 <div
                                     className="font-bold text-rose-500 text-sm"
-                                    style={{ fontFamily: 'var(--font-k2d)' }}
+                                    style={{ fontFamily: 'var(--font-readex-pro)' }}
                                 >
                                     Cảnh báo nghiêm trọng
                                 </div>
@@ -95,7 +95,7 @@ export const DauTrang: React.FC = () => {
                             <div className="py-1 max-w-xs text-wrap whitespace-normal">
                                 <div
                                     className="font-bold text-amber-500 text-sm"
-                                    style={{ fontFamily: 'var(--font-k2d)' }}
+                                    style={{ fontFamily: 'var(--font-readex-pro)' }}
                                 >
                                     Phát hiện đối tượng lạ
                                 </div>

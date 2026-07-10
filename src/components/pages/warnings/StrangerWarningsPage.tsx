@@ -18,11 +18,6 @@ import {
 import { useTranslations } from "next-intl";
 import {
   IconAlertTriangle,
-  IconLayoutGrid,
-  IconList,
-  IconCamera,
-  IconMapPin,
-  IconClock,
   IconCheck,
   IconX,
 } from "@tabler/icons-react";
@@ -37,7 +32,6 @@ export default function StrangerWarningsPage() {
   const t = useTranslations("History");
   const [dangTai, setDangTai] = useState(false);
   const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
-  const [dangLieu, datDangLieu] = useState<"GRID" | "TABLE">("GRID");
 
   // Trạng thái phân trang
   const [trangHienTai, setTrangHienTai] = useState(1);
@@ -140,38 +134,17 @@ export default function StrangerWarningsPage() {
     setTrangHienTai(1);
   };
 
-  // Auto load when filters or page changes
+  // Tự động tải lại dữ liệu khi bộ lọc hoặc số trang thay đổi
   useEffect(() => {
     taiDuLieu();
   }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx, trangHienTai]);
 
   return (
     <Box className="stranger-page-container">
-      {/* TIÊU ĐỀ TRANG */}
       <div className="stranger-header-row">
         <h2 className="stranger-page-title">CẢNH BÁO NGƯỜI LẠ</h2>
-        {/* Chế độ xem */}
-        <Group gap="xs">
-          <Button
-            variant={dangLieu === "GRID" ? "filled" : "outline"}
-            color="#1f5ca9"
-            onClick={() => datDangLieu("GRID")}
-            className="view-toggle-btn"
-          >
-            <IconLayoutGrid size={16} style={{ marginRight: 6 }} /> Grid Feed
-          </Button>
-          <Button
-            variant={dangLieu === "TABLE" ? "filled" : "outline"}
-            color="#1f5ca9"
-            onClick={() => datDangLieu("TABLE")}
-            className="view-toggle-btn"
-          >
-            <IconList size={16} style={{ marginRight: 6 }} /> Table List
-          </Button>
-        </Group>
       </div>
 
-      {/* BỘ LỌC CẢNH BÁO NGƯỜI LẠ CHUYÊN BIỆT */}
       <BoLocNguoiLa
         boLoc={boLoc}
         datBoLoc={datBoLocVaResetPage}
@@ -199,88 +172,7 @@ export default function StrangerWarningsPage() {
             {t("warnings.noStrangerDesc")}
           </Text>
         </Card>
-      ) : dangLieu === "GRID" ? (
-        /* HIỂN THỊ DẠNG LƯỚI CARD FEED */
-        <div className="stranger-grid">
-          {danhSachCanhBao.map((banGhi) => (
-            <Card
-              key={banGhi.id}
-              className="stranger-card"
-              radius="lg"
-              withBorder
-              onClick={() => setStrangerDuocChon(banGhi)}
-              style={{ cursor: "pointer" }}
-            >
-              {/* Hình chụp */}
-              <div className="image-wrapper">
-                <img
-                  src={
-                    banGhi.duongDanAnhChup ||
-                    banGhi.duongDanAnhDaiDien ||
-                    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400"
-                  }
-                  alt="Stranger Intrusion"
-                  className="stranger-img"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400";
-                  }}
-                />
-                <Badge
-                  color="#1f5ca9"
-                  variant="filled"
-                  className="warning-badge"
-                >
-                  CẢNH BÁO XÂM NHẬP
-                </Badge>
-              </div>
-
-              {/* Thông tin chi tiết */}
-              <div className="card-details">
-                {/* Giờ phát hiện */}
-                <div className="detail-item">
-                  <IconClock size={13} className="detail-icon icon-red" />
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600}>
-                      {t("warnings.timeDetect")}
-                    </Text>
-                    <Text size="sm" fw={700}>
-                      {dayjs(banGhi.thoiGian).format("DD/MM/YYYY HH:mm:ss")}
-                    </Text>
-                  </div>
-                </div>
-
-                {/* Camera phát hiện */}
-                <div className="detail-item">
-                  <IconCamera size={13} className="detail-icon icon-blue" />
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600}>
-                      {t("warnings.cameraDetect")}
-                    </Text>
-                    <Text size="sm" fw={700} className="text-truncate">
-                      {banGhi.thietBi || "N/A"}
-                    </Text>
-                  </div>
-                </div>
-
-                {/* Khu KTX phát hiện */}
-                <div className="detail-item">
-                  <IconMapPin size={13} className="detail-icon icon-emerald" />
-                  <div>
-                    <Text size="xs" c="dimmed" fw={600}>
-                      {t("warnings.dormDetect")}
-                    </Text>
-                    <Text size="sm" fw={700}>
-                      {banGhi.tenKtx || "N/A"}
-                    </Text>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
       ) : (
-        /* HIỂN THỊ DẠNG BẢNG LOG TABLE */
         <div className="table-wrapper">
           <Table
             highlightOnHover
@@ -321,8 +213,9 @@ export default function StrangerWarningsPage() {
                           banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien
                         }
                         radius="md"
-                        size={56}
+                        size={60}
                         className="avatar-warning"
+                        styles={{ image: { objectFit: 'cover' } }}
                       />
                     </Box>
                   </Table.Td>
@@ -367,7 +260,6 @@ export default function StrangerWarningsPage() {
         isStranger={true}
       />
 
-      {/* THÔNG BÁO DẠNG TOAST */}
       {thongBao && (
         <Portal>
           <div className="fixed top-5 right-5 z-[9999] w-80 animate-fade-in shadow-lg">

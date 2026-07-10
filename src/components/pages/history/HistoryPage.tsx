@@ -3,16 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import {
-  Portal,
-  Notification,
-  Modal,
-  Stack,
-  Text,
-  Group,
-  Button,
-  Box,
-} from "@mantine/core";
+import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
 import { useTranslations } from "next-intl";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import {
@@ -27,7 +18,7 @@ import {
 } from "recharts";
 
 import BoLocLichSu from "./BoLocLichSu";
-import BangLichSu from "./BangLichSu";
+import BangLichSu, { LoaiTabHienThi } from "./BangLichSu";
 import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
 import { dichVuLichSuRaVao } from "./historyService";
@@ -57,25 +48,16 @@ const duLieuTopSinhVien = [
   { mssv: "TM565488", hoVaTen: "Trịnh Thị Mỹ Ái", luotRaVao: 33 },
 ];
 
-interface HistoryPageProps {
-  activeTab?: LoaiTabChinh;
-}
+type HistoryPageProps = {
+  tab?: LoaiTabChinh;
+};
 
-export default function HistoryPage({
-  activeTab = "LICH_SU",
-}: HistoryPageProps) {
+export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const t = useTranslations("History");
-  const [tabActive, datTabActive] = useState<LoaiTabChinh>(activeTab);
-  const [thongBao, setThongBao] = useState<{
-    kieu: "success" | "error";
-    tinNhan: string;
-  } | null>(null);
-  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
-    null,
-  );
-  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">(
-    "NGAY",
-  );
+  const [tabActive, datTabActive] = useState<LoaiTabChinh>(tab);
+  const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
+  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
+  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
   const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
 
   const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
@@ -101,15 +83,14 @@ export default function HistoryPage({
   const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
 
   useEffect(() => {
-    datTabActive(activeTab);
+    datTabActive(tab);
     datLichSuDuocChon(null);
-    const targetMaNhom =
-      activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1";
+    const targetMaNhom = tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1";
     setBoLoc((prev) => {
       if (prev.maNhom === targetMaNhom) return prev;
       return { ...prev, maNhom: targetMaNhom };
     });
-  }, [activeTab]);
+  }, [tab]);
 
   const hienThongBao = (
     tinNhan: string,
@@ -141,7 +122,7 @@ export default function HistoryPage({
       trangThai: "ALL",
       loaiDoiTuong: "ALL",
       maNhom:
-        activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1",
+        tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1",
     });
   };
 
@@ -180,7 +161,7 @@ export default function HistoryPage({
     return danhSachLichSu;
   }, [danhSachLichSu, tabActive]);
 
-  const loaiTabHienThi = useMemo(() => {
+  const loaiTabHienThi = useMemo<LoaiTabHienThi>(() => {
     return "LICH_SU";
   }, []);
 
@@ -253,7 +234,6 @@ export default function HistoryPage({
           khiTimKiem={xuLyTimKiem}
           khiXuatExcel={xuLyXuatExcel}
           khiXuatPdf={xuLyXuatPdf}
-          khiThemDuLieu={xuLyThemDuLieu}
         />
       )}
 
@@ -548,7 +528,42 @@ const pageStyles = `
     letter-spacing: -0.025em;
     margin-top: 0;
     margin-bottom: 1rem;
-    font-family: var(--font-k2d), sans-serif;
+    font-family: var(--font-readex-pro);
+}
+
+.tabs-bar {
+    background-color: #f0f4fa;
+    padding: 0.25rem;
+    border-radius: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    width: max-content;
+    margin-bottom: 1.25rem;
+    border: 1px solid #d0e1f4;
+}
+
+.tab-btn {
+    padding: 0.375rem 1.25rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: none;
+    background-color: transparent;
+    color: #4b5563;
+    transition: all 0.2s;
+    cursor: pointer;
+    font-family: var(--font-readex-pro);
+}
+
+.tab-btn:hover {
+    color: #1f5ca9;
+    background-color: rgba(31, 92, 169, 0.08);
+}
+
+.tab-btn-active {
+    background-color: #1f5ca9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(31, 92, 169, 0.25) !important;
 }
 
 .page-layout {
@@ -600,7 +615,7 @@ const pageStyles = `
     background-color: #ffffff;
     color: #4b5563;
     border: 1px solid #e4e4e7;
-    font-family: var(--font-k2d);
+    font-family: var(--font-readex-pro);
 }
 
 .chart-tab-btn:hover {
@@ -631,7 +646,7 @@ const pageStyles = `
     border: none;
     background-color: #f4f4f5;
     color: #4b5563;
-    font-family: var(--font-k2d);
+    font-family: var(--font-readex-pro);
 }
 
 .chart-filter-btn:hover {

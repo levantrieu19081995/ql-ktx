@@ -5,6 +5,8 @@ import { IconCategory } from "@tabler/icons-react";
 import { ReactNode } from "react";
 import KhuKtxTable from "./Table/KhuKtxTable";
 import SinhVienBiCamTable from "./Table/SinhVienBiCamTable";
+import SinhVienKtxTable from "./Table/SinhVienKtxTable";
+import PhongKtxTable from "./Table/PhongKtxTable";
 
 type DanhMucType =
   | "khu"
@@ -40,6 +42,10 @@ export default function DanhMucFeaturePage({
         return <KhuKtxTable items={items} />;
       case "sinhVienBiCam":
         return <SinhVienBiCamTable items={items} onEdit={onEdit} />;
+      case "sinhVienKtx":
+        return <SinhVienKtxTable items={items} />;
+      case "phongKtx":
+        return <PhongKtxTable items={items} />;
       default:
         return null;
     }
@@ -62,7 +68,7 @@ export default function DanhMucFeaturePage({
 
       {searchControls && (
         <Card withBorder radius="md" p="md">
-          <Group align="end">{searchControls}</Group>
+          <div className="filter-row-custom">{searchControls}</div>
         </Card>
       )}
 
@@ -80,6 +86,41 @@ export default function DanhMucFeaturePage({
   justify-content: center;
   color: #1f5ca9;
   background: #eff6ff;
+}
+
+.filter-row-custom {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 20px;
+  width: 100%;
+}
+
+.filter-inputs-custom {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1;
+  min-width: 250px;
+  max-width: 800px;
+}
+
+.filter-inputs-custom > * {
+  flex: 1;
+  min-width: 200px;
+  max-width: 450px;
+}
+
+.filter-actions-custom {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 16px;
 }
 `,
         }}

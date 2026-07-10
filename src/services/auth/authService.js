@@ -27,7 +27,9 @@ function getAuthErrorMessage(error) {
 
 export async function refreshTokenAPI(refreshToken) {
   try {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const API_BASE_URL = typeof window === "undefined"
+      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const response = await axios.post(
@@ -90,7 +92,9 @@ export async function verifyCredentialsAPI({ username, password }) {
 // Lấy thông tin user từ API /me
 export async function fetchUserAPI(accessToken) {
   try {
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const API_BASE_URL = typeof window === "undefined"
+      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const response = await axios.get(
@@ -121,7 +125,9 @@ export async function fetchUserPermissionsAPI(
     if (!acocuntId || !organizationId)
       throw new Error("Thiếu accountId hoặc organizationId");
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const API_BASE_URL = typeof window === "undefined"
+      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
     const url = `${buildApiUrl(API_BASE_URL, API_URLS.permission.permissionsByAccountLimit)}?acocuntId=${acocuntId}&organizationId=${organizationId}`;
