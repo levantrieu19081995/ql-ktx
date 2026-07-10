@@ -91,9 +91,9 @@ export default function DanhMucFeaturePage({
 .filter-row-custom {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   align-items: flex-end;
-  justify-content: flex-start;
+  justify-content: space-between !important;
   gap: 20px;
   width: 100%;
 }
@@ -101,26 +101,54 @@ export default function DanhMucFeaturePage({
 .filter-inputs-custom {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   align-items: flex-end;
   gap: 16px;
   flex: 1;
-  min-width: 250px;
-  max-width: 800px;
+  min-width: 150px;
 }
 
 .filter-inputs-custom > * {
   flex: 1;
-  min-width: 200px;
-  max-width: 450px;
+  min-width: 150px;
 }
 
 .filter-actions-custom {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap !important;
   align-items: flex-end;
   gap: 16px;
+}
+
+/* Mobile size limits to fit everything on one row */
+@media (max-width: 767px) {
+  .filter-inputs-custom {
+    max-width: 45% !important;
+  }
+  .filter-inputs-custom > * {
+    max-width: 100% !important;
+  }
+}
+
+/* Tablets and medium screens */
+@media (min-width: 768px) {
+  .filter-inputs-custom {
+    max-width: 600px !important;
+  }
+  .filter-inputs-custom > * {
+    max-width: 500px !important;
+  }
+}
+
+/* Large screens (>= 1200px) */
+@media (min-width: 1200px) {
+  .filter-inputs-custom {
+    max-width: 800px !important;
+  }
+  .filter-inputs-custom > * {
+    max-width: 550px !important;
+  }
 }
 `,
         }}

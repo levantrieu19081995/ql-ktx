@@ -198,7 +198,7 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
                             )}
 
                             {/* Group button hành động luôn hiển thị ở hàng 2 */}
-                            <div className="filter-actions-group-custom" style={!moRong ? { marginLeft: 'auto' } : undefined}>
+                            <div className="filter-actions-group-custom">
                                 <Button
                                     onClick={khiTimKiem}
                                     leftSection={<IconSearch size={15} />}
@@ -385,6 +385,8 @@ const filterStyles = `
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
 .filter-inputs-group-row-1 {
@@ -562,6 +564,8 @@ const filterStyles = `
     align-items: center;
     gap: 0.5rem;
     margin-top: 0.25rem;
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
 @media (max-width: 768px) {

@@ -192,6 +192,8 @@ const filterStyles = `
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
 .filter-inputs-group-row-1.stranger-fields {
