@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { DateInput } from "@mantine/dates";
 import {
   Card,
@@ -52,6 +53,7 @@ import {
   Legend,
 } from "recharts";
 import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
+import { fetchSinhVienCamPaginate, fetchThongKeSvBiCamNoPhi } from "@/services/dashboard/dashboardService";
 
 export interface ThongKeOverview {
   stt: number;
@@ -111,10 +113,38 @@ const resolveKhu = (item: any): string => {
 };
 
 export default function LuotRaVaoSubPage() {
+  const t = useTranslations("Statistics");
+
+  const getTranslatedStatus = (statusName: string) => {
+    if (statusName === "Hợp lệ") return t("statusValid");
+    if (statusName === "Nghi vấn") return t("statusSuspicious");
+    if (statusName === "Không hợp lệ") return t("statusInvalid");
+    if (statusName === "Không có dữ liệu") return t("noData");
+    return statusName;
+  };
+
+  const getTranslatedActionOrStatus = (val: string) => {
+    if (val === "Vào") return t("in");
+    if (val === "Ra") return t("out");
+    if (val === "Hợp lệ") return t("statusValid");
+    if (val === "Nghi vấn") return t("statusSuspicious");
+    if (val === "Không hợp lệ") return t("statusInvalid");
+    if (val === "Ghi nhận thủ công") return t("manualRecord");
+    if (val === "Camera vào") return `Camera ${t("in").toLowerCase()}`;
+    if (val === "Camera ra") return `Camera ${t("out").toLowerCase()}`;
+    return val;
+  };
+
+  const getTranslatedKhu = (khu: string) => {
+    if (khu === "Khu A") return t("dormA");
+    if (khu === "Khu B") return t("dormB");
+    return khu;
+  };
+
   const [hoTen, setHoTen] = useState("");
   const [mssv, setMssv] = useState("");
-  const [tuNgay, setTuNgay] = useState<Date | null>(null);
-  const [denNgay, setDenNgay] = useState<Date | null>(null);
+  const [tuNgay, setTuNgay] = useState<Date | null>(new Date("2026-06-01"));
+  const [denNgay, setDenNgay] = useState<Date | null>(new Date("2026-06-06"));
   const [khuKtx, setKhuKtx] = useState("Tất cả");
   const [trangThai, setTrangThai] = useState("Tất cả");
   const [loaiDoiTuong, setLoaiDoiTuong] = useState("Tất cả");
@@ -161,12 +191,8 @@ export default function LuotRaVaoSubPage() {
           const yyyy = dateVal.getFullYear();
           return `${mm}/${dd}/${yyyy}`;
         }
-        // Default: today's date for both start and end
-        const now = new Date();
-        const mm = String(now.getMonth() + 1).padStart(2, "0");
-        const dd = String(now.getDate()).padStart(2, "0");
-        const yyyy = now.getFullYear();
-        return `${mm}/${dd}/${yyyy}`;
+        // Default to mock data range 06/01/2026 - 06/06/2026 when not filtered
+        return isStart ? "06/01/2026" : "06/06/2026";
       };
 
       const tuNgayFormatted = formatDate(activeTu, true);
@@ -179,6 +205,46 @@ export default function LuotRaVaoSubPage() {
 
       const list = res?.payload || [];
       console.log("[LuotRaVao] fetchThongKeRaVao payload sample:", list[0]);
+
+      // Fetch banned students lookup map
+      const bannedMap = new Set<string>();
+      const bannedReasons: { [key: string]: string } = {};
+      try {
+        const bannedRes = await fetchSinhVienCamPaginate({
+          page: 1,
+          pageSize: 1000,
+          maSinhVien: "-1",
+        });
+        const items = bannedRes?.payload?.items || [];
+        items.forEach((item: any) => {
+          if (item.maSinhVien) {
+            bannedMap.add(item.maSinhVien);
+            bannedReasons[item.maSinhVien] = item.lyDo || "Bị cấm ra vào";
+          }
+        });
+      } catch (err) {
+        console.error("Failed to load banned students for lookup:", err);
+      }
+
+      // Fetch debt students lookup map
+      const debtMap = new Set<string>();
+      const debtReasons: { [key: string]: string } = {};
+      try {
+        const statsRes = await fetchThongKeSvBiCamNoPhi({
+          tuNgay: tuNgayFormatted,
+          denNgay: denNgayFormatted,
+        });
+        const items = statsRes?.payload || [];
+        items.forEach((item: any) => {
+          const code = item.maSinhVien || item.maSo || item.maso;
+          if (code && (item.tongSoLanNoPhi > 0 || (item.danhSachNoPhi && item.danhSachNoPhi.length > 0))) {
+            debtMap.add(code);
+            debtReasons[code] = item.danhSachNoPhi?.[0]?.tenLoaiSuKien || "Nợ học phí";
+          }
+        });
+      } catch (err) {
+        console.error("Failed to load debt students for lookup:", err);
+      }
 
       const resolveImageUrl = (url: string): string => {
         return url || "";
@@ -200,7 +266,11 @@ export default function LuotRaVaoSubPage() {
 
         const khu = resolveKhu(item);
         const phong = item.maPhong || item.tenPhong || item.danhSachVao?.[0]?.maPhong || item.danhSachRa?.[0]?.maPhong || "--";
-        const trangThai = item.trangThai || item.status || "Hợp lệ";
+
+        // Resolve status based on lookup map
+        const isBanned = bannedMap.has(studentId);
+        const isDebt = debtMap.has(studentId);
+        const trangThai = isBanned ? "Không hợp lệ" : (isDebt ? "Nghi vấn" : "Hợp lệ");
 
         return {
           stt: index + 1,
@@ -268,6 +338,15 @@ export default function LuotRaVaoSubPage() {
         // Map Vào list
         (studentItem.danhSachVao || []).forEach((scan: any) => {
           const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(studentId)}`;
+          const isBanned = bannedMap.has(studentId);
+          const isDebt = debtMap.has(studentId);
+          let resolvedStatus = scan.cameraName || "Camera vào";
+          if (isBanned) {
+            resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
+          } else if (isDebt) {
+            resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
+          }
+
           allScans.push({
             timecheck: scan.timecheck || 0,
             time: formatDisplayTime(scan),
@@ -277,13 +356,22 @@ export default function LuotRaVaoSubPage() {
             type: "Vào",
             ktx: resolveKhu(studentItem),
             room: scan.maPhong || studentItem.maPhong || "--",
-            status: scan.cameraName || "Camera vào",
+            status: resolvedStatus,
           });
         });
 
         // Map Ra list
         (studentItem.danhSachRa || []).forEach((scan: any) => {
           const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(studentId)}`;
+          const isBanned = bannedMap.has(studentId);
+          const isDebt = debtMap.has(studentId);
+          let resolvedStatus = scan.cameraName || "Camera ra";
+          if (isBanned) {
+            resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
+          } else if (isDebt) {
+            resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
+          }
+
           allScans.push({
             timecheck: scan.timecheck || 0,
             time: formatDisplayTime(scan),
@@ -293,7 +381,7 @@ export default function LuotRaVaoSubPage() {
             type: "Ra",
             ktx: resolveKhu(studentItem),
             room: scan.maPhong || studentItem.maPhong || "--",
-            status: scan.cameraName || "Camera ra",
+            status: resolvedStatus,
           });
         });
 
@@ -302,6 +390,15 @@ export default function LuotRaVaoSubPage() {
           studentItem.danhSachTatCa.forEach((scan: any) => {
             const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(studentId)}`;
             const isVao = String(scan.cameraName || scan.checkType || scan.type || "").toLowerCase().includes("vào") || scan.cameraIdId === 1;
+            const isBanned = bannedMap.has(studentId);
+            const isDebt = debtMap.has(studentId);
+            let resolvedStatus = scan.cameraName || scan.tenLoaiSuKien || (isVao ? "Camera vào" : "Camera ra");
+            if (isBanned) {
+              resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
+            } else if (isDebt) {
+              resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
+            }
+
             allScans.push({
               timecheck: scan.timecheck || 0,
               time: formatDisplayTime(scan),
@@ -311,7 +408,7 @@ export default function LuotRaVaoSubPage() {
               type: isVao ? "Vào" : "Ra",
               ktx: resolveKhu(studentItem),
               room: scan.maPhong || studentItem.maPhong || "--",
-              status: scan.cameraName || scan.tenLoaiSuKien || (isVao ? "Camera vào" : "Camera ra"),
+              status: resolvedStatus,
             });
           });
         }
@@ -351,7 +448,7 @@ export default function LuotRaVaoSubPage() {
 
   const handleFormSubmit = () => {
     if (!formMssv || !formKhuKtx || !formPhong || !formLoai || !formThoiGian) {
-      alert("Vui lòng nhập đầy đủ các trường bắt buộc (*)");
+      alert(t("requiredFieldsWarning"));
       return;
     }
 
@@ -367,12 +464,12 @@ export default function LuotRaVaoSubPage() {
       timecheck: Math.floor(parsedDate.getTime() / 1000),
       time: formattedTime,
       studentId: formMssv,
-      hoTen: formHoTen || "Học viên mới",
+      hoTen: formHoTen || t("newStudent"),
       avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formMssv)}`,
       type: formLoai,
       ktx: formKhuKtx,
       room: formPhong,
-      status: formGhiChu || "Ghi nhận thủ công",
+      status: formGhiChu || t("manualRecord"),
     };
 
     setGlobalHistoryList([newScan, ...globalHistoryList]);
@@ -398,15 +495,15 @@ export default function LuotRaVaoSubPage() {
       const newStudent: ThongKeOverview = {
         stt: overviewList.length + 1,
         studentId: formMssv,
-        hoTen: formHoTen || "Học viên mới",
-        maNhom: "Sinh viên",
+        hoTen: formHoTen || t("newStudent"),
+        maNhom: t("roleStudent"),
         avatarUrl: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formMssv)}`,
         luotVao: formLoai === "Vào" ? 1 : 0,
         luotRa: formLoai === "Ra" ? 1 : 0,
         tongLuot: 1,
         khu: formKhuKtx || "Khu A",
         phong: formPhong || "--",
-        trangThai: formGhiChu || "Hợp lệ",
+        trangThai: formGhiChu || t("statusValid"),
       };
       setOverviewList([...overviewList, newStudent]);
     }
@@ -423,14 +520,16 @@ export default function LuotRaVaoSubPage() {
   const handleReset = () => {
     setHoTen("");
     setMssv("");
-    setTuNgay(null);
-    setDenNgay(null);
+    const defaultTu = new Date("2026-06-01");
+    const defaultDen = new Date("2026-06-06");
+    setTuNgay(defaultTu);
+    setDenNgay(defaultDen);
     setKhuKtx("Tất cả");
     setTrangThai("Tất cả");
     setLoaiDoiTuong("Tất cả");
     setSelectedStudent(null);
     setDetailType(null);
-    loadThongKeData({ tuNgay: null, denNgay: null });
+    loadThongKeData({ tuNgay: defaultTu, denNgay: defaultDen });
   };
 
   // Normalize khu value để so sánh (xử lý mọi format: "A", "Khu A", "KHU_A", "khu a"...)
@@ -456,7 +555,10 @@ export default function LuotRaVaoSubPage() {
     const matchKhu =
       khuKtx === "Tất cả" ||
       normalizeKhu(item.khu) === khuKtx;
-    return matchName && matchMssv && matchGroup && matchKhu;
+    const matchTrangThai =
+      trangThai === "Tất cả" ||
+      item.trangThai === trangThai;
+    return matchName && matchMssv && matchGroup && matchKhu && matchTrangThai;
   });
 
   // Calculate chart data based on dynamic list (Top 10 most active in/outs)
@@ -471,7 +573,7 @@ export default function LuotRaVaoSubPage() {
           "Lượt vào": student.luotVao,
           "Lượt ra": student.luotRa,
         }))
-    : [{ name: "Không có dữ liệu", "Lượt vào": 0, "Lượt ra": 0 }];
+    : [{ name: t("noData"), "Lượt vào": 0, "Lượt ra": 0 }];
 
   // Calculate Pie chart metrics based on student statuses
   const statusCounts = filteredOverview.reduce((acc: { [key: string]: number }, curr) => {
@@ -484,7 +586,7 @@ export default function LuotRaVaoSubPage() {
 
   const pieData = totalStatusCount > 0
     ? Object.entries(statusCounts).map(([name, value]) => ({ name, value }))
-    : [{ name: "Không có dữ liệu", value: 1 }];
+    : [{ name: t("noData"), value: 1 }];
 
   // Filter history events
   const filteredHistoryList = globalHistoryList.filter((item) => {
@@ -501,7 +603,12 @@ export default function LuotRaVaoSubPage() {
     if (khuKtx !== "Tất cả" && normalizeKhu(item.ktx) !== khuKtx) return false;
 
     // Filter by status
-    if (trangThai !== "Tất cả" && item.status !== trangThai) return false;
+    if (trangThai !== "Tất cả") {
+      const lowerStatus = String(item.status || "").toLowerCase();
+      if (trangThai === "Không hợp lệ" && !lowerStatus.includes("không hợp lệ")) return false;
+      if (trangThai === "Nghi vấn" && !lowerStatus.includes("nghi vấn")) return false;
+      if (trangThai === "Hợp lệ" && (lowerStatus.includes("không hợp lệ") || lowerStatus.includes("nghi vấn"))) return false;
+    }
 
     return true;
   });
@@ -526,8 +633,8 @@ export default function LuotRaVaoSubPage() {
           <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
             <IconReportAnalytics size={20} color="#1f5ca9" />
           </ThemeIcon>
-          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-            THỐNG KÊ LƯỢT RA VÀO
+          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
+            {t("inOutTitle")}
           </Title>
         </Group>
         <Button
@@ -535,149 +642,86 @@ export default function LuotRaVaoSubPage() {
           style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
           onClick={() => setModalOpened(true)}
         >
-          Thêm dữ liệu
+          {t("addData")}
         </Button>
       </Group>
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">
-          {/* Row 1: 5 filter fields */}
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing="md">
-            <DateInput
-              label="TỪ NGÀY"
-              placeholder="MM/DD/YYYY"
-              value={tuNgay}
-              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <DateInput
-              label="ĐẾN NGÀY"
-              placeholder="MM/DD/YYYY"
-              value={denNgay}
-              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <Select
-              label="KHU KTX"
-              value={khuKtx}
-              onChange={(val) => setKhuKtx(val || "Tất cả")}
-              data={["Tất cả", "Khu A", "Khu B"]}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <Select
-              label="TRẠNG THÁI"
-              value={trangThai}
-              onChange={(val) => setTrangThai(val || "Tất cả")}
-              data={["Tất cả", "Hợp lệ", "Nghi vấn", "Không hợp lệ"]}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <Select
-              label="LOẠI ĐỐI TƯỢNG"
-              value={loaiDoiTuong}
-              onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
-              data={["Tất cả", "Sinh viên", "Cán bộ"]}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-          </SimpleGrid>
-
-          {/* Dotted divider */}
-          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
-
-          {/* Row 2: Search buttons (collapsed) or advanced inputs + buttons (expanded) */}
+          {/* Filter fields and actions (collapsed/expanded depending on showAdvancedFilter) */}
           {!showAdvancedFilter ? (
-            <Group justify="flex-end" gap="sm">
-              <Button
-                leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                onClick={() => loadThongKeData()}
-                disabled={loading}
-              >
-                Tìm kiếm
-              </Button>
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                variant="outline"
-                color="gray"
-                onClick={handleReset}
-                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                Làm mới
-              </Button>
-              <ActionIcon
-                variant="outline"
-                color="gray"
-                size="lg"
-                onClick={() => setShowAdvancedFilter(true)}
-                style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
-              >
-                <IconChevronDown size={18} color="#64748b" />
-              </ActionIcon>
-            </Group>
-          ) : (
+            /* Collapsed State: All 4 inputs + action buttons on 1 unified Grid row */
             <Grid align="flex-end" gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <TextInput
-                  label="HỌ TÊN"
-                  placeholder="Nhập họ tên..."
-                  value={hoTen}
-                  onChange={(e) => setHoTen(e.currentTarget.value)}
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <DateInput
+                  label={t("fromDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={tuNgay}
+                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
                   styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
                     input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
                 />
               </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <TextInput
-                  label="MÃ SỐ"
-                  placeholder="Nhập mã số..."
-                  value={mssv}
-                  onChange={(e) => setMssv(e.currentTarget.value)}
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <DateInput
+                  label={t("toDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={denNgay}
+                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
                   styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
                     input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
                 />
               </Grid.Col>
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Group
-                  gap="sm"
-                  style={{
-                    width: "100%",
-                    flexWrap: "wrap",
-                    justifyContent: "flex-start",
-                    "@media (min-width: 48em)": {
-                      flexWrap: "nowrap",
-                      justifyContent: "flex-end",
-                    }
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <Select
+                  label={t("dormZone")}
+                  value={khuKtx}
+                  onChange={(val) => setKhuKtx(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Khu A", label: t("dormA") },
+                    { value: "Khu B", label: t("dormB") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
-                >
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <Select
+                  label={t("status")}
+                  value={trangThai}
+                  onChange={(val) => setTrangThai(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Hợp lệ", label: t("statusValid") },
+                    { value: "Nghi vấn", label: t("statusSuspicious") },
+                    { value: "Không hợp lệ", label: t("statusInvalid") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
+                <Group gap="xs" justify="flex-start" wrap="nowrap" style={{ height: "40px" }}>
                   <Button
                     leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                     style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
                     onClick={() => loadThongKeData()}
                     disabled={loading}
                   >
-                    Tìm kiếm
+                    {t("search")}
                   </Button>
                   <Button
                     leftSection={<IconRefresh size={16} />}
@@ -686,34 +730,166 @@ export default function LuotRaVaoSubPage() {
                     onClick={handleReset}
                     style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
                   >
-                    Làm mới
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    variant="outline"
-                    style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    Xuất Excel
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    variant="outline"
-                    style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    Xuất PDF
+                    {t("reset")}
                   </Button>
                   <ActionIcon
                     variant="outline"
                     color="gray"
                     size="lg"
-                    onClick={() => setShowAdvancedFilter(false)}
+                    onClick={() => setShowAdvancedFilter(true)}
                     style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
                   >
-                    <IconChevronUp size={18} color="#64748b" />
+                    <IconChevronDown size={18} color="#64748b" />
                   </ActionIcon>
                 </Group>
               </Grid.Col>
             </Grid>
+          ) : (
+            /* Expanded State: 2 rows of filters */
+            <>
+              {/* Row 1: The 5 inputs */}
+              <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing="md">
+                <DateInput
+                  label={t("fromDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={tuNgay}
+                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <DateInput
+                  label={t("toDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={denNgay}
+                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <Select
+                  label={t("dormZone")}
+                  value={khuKtx}
+                  onChange={(val) => setKhuKtx(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Khu A", label: t("dormA") },
+                    { value: "Khu B", label: t("dormB") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <Select
+                  label={t("status")}
+                  value={trangThai}
+                  onChange={(val) => setTrangThai(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Hợp lệ", label: t("statusValid") },
+                    { value: "Nghi vấn", label: t("statusSuspicious") },
+                    { value: "Không hợp lệ", label: t("statusInvalid") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <Select
+                  label={t("objectType")}
+                  value={loaiDoiTuong}
+                  onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Sinh viên", label: t("roleStudent") },
+                    { value: "Cán bộ", label: t("roleStaff") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+              </SimpleGrid>
+
+              {/* Row 2: Advanced inputs + buttons (No divider) */}
+              <Grid align="flex-end" gutter="md" mt="md">
+                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
+                  <TextInput
+                    label={t("fullName").toUpperCase()}
+                    placeholder="Họ tên..."
+                    value={hoTen}
+                    onChange={(e) => setHoTen(e.currentTarget.value)}
+                    styles={{
+                      label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
+                  <TextInput
+                    label="MSSV / MÃ SỐ"
+                    placeholder="MSSV..."
+                    value={mssv}
+                    onChange={(e) => setMssv(e.currentTarget.value)}
+                    styles={{
+                      label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, md: 7 }}>
+                  <Group gap="sm" wrap="wrap" style={{ height: "40px" }}>
+                    <Button
+                      leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                      style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                      onClick={() => loadThongKeData()}
+                      disabled={loading}
+                    >
+                      {t("search")}
+                    </Button>
+                    <Button
+                      leftSection={<IconRefresh size={16} />}
+                      variant="outline"
+                      color="gray"
+                      onClick={handleReset}
+                      style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    >
+                      {t("reset")}
+                    </Button>
+                    <Button
+                      leftSection={<IconDownload size={16} />}
+                      variant="outline"
+                      style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    >
+                      {t("exportExcel")}
+                    </Button>
+                    <Button
+                      leftSection={<IconDownload size={16} />}
+                      variant="outline"
+                      style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    >
+                      {t("exportPdf")}
+                    </Button>
+                    <ActionIcon
+                      variant="outline"
+                      color="gray"
+                      size="lg"
+                      onClick={() => setShowAdvancedFilter(false)}
+                      style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+                    >
+                      <IconChevronUp size={18} color="#64748b" />
+                    </ActionIcon>
+                  </Group>
+                </Grid.Col>
+              </Grid>
+            </>
           )}
         </Stack>
       </Card>
@@ -728,7 +904,7 @@ export default function LuotRaVaoSubPage() {
         <Center py="xl">
           <Stack align="center" gap="sm">
             <Loader size="md" color="blue" />
-            <Text size="sm" c="dimmed">Đang tải dữ liệu từ hệ thống...</Text>
+            <Text size="sm" c="dimmed">{t("loading")}</Text>
           </Stack>
         </Center>
       ) : (
@@ -736,8 +912,8 @@ export default function LuotRaVaoSubPage() {
           <Grid gutter="md">
             <Grid.Col span={{ base: 12, md: 8 }}>
               <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-                <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
-                  TOP 10 RA VÀO NHIỀU NHẤT
+                <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("top10InOut")}
                 </Text>
                 <div style={{ height: 300 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -747,8 +923,8 @@ export default function LuotRaVaoSubPage() {
                       <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
-                      <Bar dataKey="Lượt vào" fill="#1f5ca9" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Lượt ra" fill="#00afef" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Lượt vào" name={t("inbound")} fill="#1f5ca9" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Lượt ra" name={t("outbound")} fill="#00afef" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -757,8 +933,8 @@ export default function LuotRaVaoSubPage() {
 
             <Grid.Col span={{ base: 12, md: 4 }}>
               <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-                <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
-                  PHÂN BỔ LƯỢT RA VÀO THEO TRẠNG THÁI
+                <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("distByStatus")}
                 </Text>
                 <div style={{ height: 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                   <ResponsiveContainer width="100%" height="70%">
@@ -788,7 +964,7 @@ export default function LuotRaVaoSubPage() {
                       return (
                         <Group gap="xs" key={entry.name}>
                           <Box style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: color }} />
-                          <Text size="xs" fw={500}>{entry.name} ({pct}%)</Text>
+                          <Text size="xs" fw={500}>{getTranslatedStatus(entry.name)} ({pct}%)</Text>
                         </Group>
                       );
                     })}
@@ -800,8 +976,8 @@ export default function LuotRaVaoSubPage() {
 
           <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
             <Group justify="space-between" mb="md">
-              <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
-                BẢNG THỐNG KÊ SINH VIÊN RA VÀO
+              <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                {t("studentTableTitle")}
               </Text>
             </Group>
 
@@ -809,21 +985,22 @@ export default function LuotRaVaoSubPage() {
               <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>MSSV / Mã số</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Họ tên</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Mã nhóm / Vai trò</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Ảnh đại diện</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Lượt vào</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Lượt ra</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Tổng lượt</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("studentId")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("fullName")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("role")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("avatar")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("dormZone")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("inbound")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("outbound")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("totalScans")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("status")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {paginatedOverview.map((row, index) => {
                     const isSelected = selectedStudent?.studentId === row.studentId;
+                    const roleTxt = row.maNhom === "Sinh viên" ? t("roleStudent") : row.maNhom === "Cán bộ" ? t("roleStaff") : row.maNhom;
                     return (
                       <Table.Tr key={row.studentId || index} style={{ borderBottom: "1px solid #f1f5f9", backgroundColor: isSelected ? "#f0f7ff" : "transparent" }}>
                         <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
@@ -831,7 +1008,7 @@ export default function LuotRaVaoSubPage() {
                         </Table.Td>
                         <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>{row.studentId}</Table.Td>
                         <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>{row.hoTen}</Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.maNhom}</Table.Td>
+                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{roleTxt}</Table.Td>
                         <Table.Td>
                           <SafeAvatar
                             src={row.avatarUrl}
@@ -841,7 +1018,7 @@ export default function LuotRaVaoSubPage() {
                             alt={row.hoTen}
                           />
                         </Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.khu}</Table.Td>
+                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{getTranslatedKhu(row.khu)}</Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
                           <Anchor component="button" fw={700} c="#0369A1" onClick={() => handleStatClick(row, "Vào")} style={{ fontSize: "13px", textDecoration: isSelected && detailType === "Vào" ? "underline" : "none" }}>
                             {row.luotVao}
@@ -858,8 +1035,8 @@ export default function LuotRaVaoSubPage() {
                           </Anchor>
                         </Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
-                          <Badge color="blue" variant="light" size="xs">
-                            {row.trangThai}
+                          <Badge color={row.trangThai === "Hợp lệ" ? "blue" : "red"} variant="light" size="xs">
+                            {getTranslatedStatus(row.trangThai)}
                           </Badge>
                         </Table.Td>
                       </Table.Tr>
@@ -868,7 +1045,7 @@ export default function LuotRaVaoSubPage() {
                   {filteredOverview.length === 0 && (
                     <Table.Tr>
                       <Table.Td colSpan={10}>
-                        <Text ta="center" c="dimmed" py="xl">Không tìm thấy kết quả phù hợp</Text>
+                        <Text ta="center" c="dimmed" py="xl">{t("noData")}</Text>
                       </Table.Td>
                     </Table.Tr>
                   )}
@@ -893,12 +1070,12 @@ export default function LuotRaVaoSubPage() {
           {selectedStudent && (
             <Card withBorder radius="lg" p="lg" mt="md" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
               <Group justify="space-between" mb="md">
-                <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-                  CHI TIẾT LỊCH SỬ RA VÀO - {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
-                  {detailType && ` - LỌC THEO: ${detailType.toUpperCase()}`}
+                <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("detailTitle")} - {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
+                  {detailType && ` - ${t("detailTypeFilter").toUpperCase()}: ${detailType === "Vào" ? t("in").toUpperCase() : detailType === "Ra" ? t("out").toUpperCase() : t("all").toUpperCase()}`}
                 </Text>
                 <Button variant="subtle" color="red" size="xs" onClick={() => { setSelectedStudent(null); setDetailType(null); }} style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}>
-                  Đóng chi tiết
+                  {t("closeDetail")}
                 </Button>
               </Group>
 
@@ -906,12 +1083,12 @@ export default function LuotRaVaoSubPage() {
                 <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
                   <Table.Thead>
                     <Table.Tr>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Thời gian</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Loại</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Phòng / Vị trí</Table.Th>
-                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái / Camera</Table.Th>
+                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
+                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("time")}</Table.Th>
+                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("type")}</Table.Th>
+                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("dormZone")}</Table.Th>
+                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("room")} / {t("detectPosition")}</Table.Th>
+                      <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("status")} / Camera</Table.Th>
                     </Table.Tr>
                   </Table.Thead>
                   <Table.Tbody>
@@ -923,10 +1100,10 @@ export default function LuotRaVaoSubPage() {
                         <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 500 }}>{detail.time}</Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
                           <Badge color={detail.type === "Vào" ? "blue" : "orange"} size="sm" radius="md">
-                            {detail.type}
+                            {getTranslatedActionOrStatus(detail.type)}
                           </Badge>
                         </Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{detail.ktx}</Table.Td>
+                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{getTranslatedKhu(detail.ktx)}</Table.Td>
                         <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{detail.room}</Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
                           <Badge
@@ -936,7 +1113,7 @@ export default function LuotRaVaoSubPage() {
                             variant="light"
                             size="sm"
                           >
-                            {detail.status}
+                            {getTranslatedActionOrStatus(detail.status)}
                           </Badge>
                         </Table.Td>
                       </Table.Tr>
@@ -945,7 +1122,7 @@ export default function LuotRaVaoSubPage() {
                       <Table.Tr>
                         <Table.Td colSpan={6}>
                           <Text ta="center" c="dimmed" py="xl">
-                            Không có dữ liệu lịch sử ra vào chi tiết cho bộ lọc này
+                            {t("detailTableNoData")}
                           </Text>
                         </Table.Td>
                       </Table.Tr>
@@ -974,31 +1151,135 @@ export default function LuotRaVaoSubPage() {
       <Modal
         opened={modalOpened}
         onClose={() => setModalOpened(false)}
-        title={<Text fw={800} size="lg" c="#1A52C5" style={{ textTransform: "uppercase", letterSpacing: "0.5px" }}>Thêm dữ liệu vào/ra</Text>}
+        title={<Text fw={800} size="lg" c="#1f5ca9" style={{ textTransform: "uppercase", letterSpacing: "0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>{t("addModalTitle")}</Text>}
         centered
         radius="lg"
-        size="md"
+        size="lg"
         padding="xl"
         styles={{ header: { borderBottom: "1px solid #e2e8f0", paddingBottom: "12px" } }}
       >
-        <Stack gap="md" mt="sm">
-          <TextInput label="MSSV" placeholder="Nhập MSSV" required value={formMssv} onChange={(e) => handleMssvChange(e.currentTarget.value)} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" }, input: { borderRadius: "8px" } }} />
-          <TextInput label="Họ tên" placeholder="Nhập họ tên" value={formHoTen} onChange={(e) => setFormHoTen(e.currentTarget.value)} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" }, input: { borderRadius: "8px" } }} />
-          <Select label="Khu KTX" placeholder="--Chọn khu KTX--" required value={formKhuKtx} onChange={(val) => setFormKhuKtx(val || "")} data={["Khu A", "Khu B"]} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" }, input: { borderRadius: "8px" } }} />
-          <Select label="Phòng" placeholder="--Chọn khu KTX--" required value={formPhong} onChange={(val) => setFormPhong(val || "")} data={formKhuKtx === "Khu A" ? ["A101", "A302", "A408"] : formKhuKtx === "Khu B" ? ["B104", "B205"] : ["A101", "A302", "A408", "B104", "B205"]} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" }, input: { borderRadius: "8px" } }} />
-          <Radio.Group label="Loại" required value={formLoai} onChange={setFormLoai} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "8px" } }}>
-            <Group gap="xl">
-              <Radio value="Vào" label="Vào" color="green" styles={{ label: { fontWeight: 500 } }} />
-              <Radio value="Ra" label="Ra" color="green" styles={{ label: { fontWeight: 500 } }} />
-            </Group>
-          </Radio.Group>
-          <TextInput label="Thời gian" type="datetime-local" required value={formThoiGian} onChange={(e) => setFormThoiGian(e.currentTarget.value)} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" }, input: { borderRadius: "8px" } }} />
-          <Textarea label="Ghi chú" placeholder="Nhập ghi chú (nếu có)" value={formGhiChu} onChange={(e) => setFormGhiChu(e.currentTarget.value)} rows={3} styles={{ label: { fontWeight: 700, fontSize: "14px", color: "#1e293b", marginBottom: "4px" }, input: { borderRadius: "8px" } }} />
-          <Group justify="center" mt="xl" gap="md">
-            <Button variant="outline" color="gray" onClick={() => setModalOpened(false)} style={{ width: 140, borderRadius: "8px", fontWeight: 600 }}>Hủy</Button>
-            <Button onClick={handleFormSubmit} style={{ width: 140, borderRadius: "8px", backgroundColor: "#007fff", fontWeight: 600 }}>Ghi nhận</Button>
+        <form onSubmit={(e) => { e.preventDefault(); handleFormSubmit(); }}>
+          <Grid gutter="md" mt="sm">
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label={t("studentId")}
+                placeholder={t("enterMssv")}
+                required
+                value={formMssv}
+                onChange={(e) => handleMssvChange(e.currentTarget.value)}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "4px" },
+                  input: { borderRadius: "8px", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label={t("fullName")}
+                placeholder={t("enterFullName")}
+                value={formHoTen}
+                onChange={(e) => setFormHoTen(e.currentTarget.value)}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "4px" },
+                  input: { borderRadius: "8px", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+            
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label={t("dormZone")}
+                placeholder={t("selectDormZone")}
+                required
+                value={formKhuKtx}
+                onChange={(val) => setFormKhuKtx(val || "")}
+                data={[
+                  { value: "Khu A", label: t("dormA") },
+                  { value: "Khu B", label: t("dormB") }
+                ]}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "4px" },
+                  input: { borderRadius: "8px", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Select
+                label={t("room")}
+                placeholder={t("selectRoom")}
+                required
+                value={formPhong}
+                onChange={(val) => setFormPhong(val || "")}
+                data={formKhuKtx === "Khu A" ? ["A101", "A302", "A408"] : formKhuKtx === "Khu B" ? ["B104", "B205"] : ["A101", "A302", "A408", "B104", "B205"]}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "4px" },
+                  input: { borderRadius: "8px", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <Radio.Group
+                label={t("type")}
+                required
+                value={formLoai}
+                onChange={setFormLoai}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "8px" }
+                }}
+              >
+                <Group gap="xl" style={{ height: "40px" }}>
+                  <Radio value="Vào" label={t("in")} color="blue" styles={{ label: { fontWeight: 500 } }} />
+                  <Radio value="Ra" label={t("out")} color="blue" styles={{ label: { fontWeight: 500 } }} />
+                </Group>
+              </Radio.Group>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6 }}>
+              <TextInput
+                label={t("time")}
+                type="datetime-local"
+                required
+                value={formThoiGian}
+                onChange={(e) => setFormThoiGian(e.currentTarget.value)}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "4px" },
+                  input: { borderRadius: "8px", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+
+            <Grid.Col span={12}>
+              <Textarea
+                label={t("note")}
+                placeholder={t("enterNote")}
+                value={formGhiChu}
+                onChange={(e) => setFormGhiChu(e.currentTarget.value)}
+                rows={2}
+                styles={{
+                  label: { fontWeight: 700, fontSize: "13px", color: "#1e293b", marginBottom: "4px" },
+                  input: { borderRadius: "8px" }
+                }}
+              />
+            </Grid.Col>
+          </Grid>
+          
+          <Group justify="flex-end" mt="xl" gap="md">
+            <Button
+              variant="outline"
+              color="gray"
+              onClick={() => setModalOpened(false)}
+              style={{ width: 120, borderRadius: "8px", fontWeight: 600, height: "40px" }}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              type="submit"
+              style={{ width: 120, borderRadius: "8px", backgroundColor: "#1f5ca9", fontWeight: 600, height: "40px" }}
+            >
+              {t("submit")}
+            </Button>
           </Group>
-        </Stack>
+        </form>
       </Modal>
     </Stack>
   );

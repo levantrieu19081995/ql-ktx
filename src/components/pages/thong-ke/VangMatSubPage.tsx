@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { DateInput } from "@mantine/dates";
 import {
   Card,
@@ -64,11 +65,28 @@ const resolveKhu = (item: any): string => {
 const getDefaultDates = () => {
   const den = new Date();
   const tu = new Date();
-  tu.setDate(tu.getDate() - 30); // 30 ngày trước
+  tu.setDate(tu.getDate() - 60); // 60 ngày trước (tầm 2 tháng)
   return { tu, den };
 };
 
 export default function VangMatSubPage() {
+  const t = useTranslations("Statistics");
+
+  const getTranslatedStatus = (statusName: string) => {
+    if (statusName === "Vắng mặt") return t("statusAbsent");
+    if (statusName === "Đang có mặt") return t("statusPresent");
+    if (statusName === "Cảnh báo") return t("statusWarning") || "Cảnh báo";
+    if (statusName === "Nghi vấn") return t("statusSuspicious") || "Nghi vấn";
+    if (statusName === "Hợp lệ") return t("statusValid") || "Hợp lệ";
+    return statusName;
+  };
+
+  const getTranslatedKhu = (khu: string) => {
+    if (khu === "Khu A") return t("dormA");
+    if (khu === "Khu B") return t("dormB");
+    return khu;
+  };
+
   const [hoTen, setHoTen] = useState("");
   const [mssv, setMssv] = useState("");
   
@@ -203,15 +221,19 @@ export default function VangMatSubPage() {
     return val;
   };
 
+  // Chỉ hiển thị sinh viên vắng mặt lâu ngày (>= 5 ngày)
   const filteredAbsent = absentList.filter((item) => {
     if (!item) return false;
+    // Lọc sinh viên vắng mặt lâu ngày (tối thiểu 5 ngày)
+    if ((item.absentDays || 0) < 5) return false;
+
     const name = item.hoTen || "";
     const id = item.studentId || "";
     const ktxStr = item.ktx || "";
     const statusStr = item.status || "";
 
-    const matchName = name.toLowerCase().includes(hoTen.toLowerCase());
-    const matchMssv = id.toLowerCase().includes(mssv.toLowerCase());
+    const matchName = hoTen.trim() === "" || name.toLowerCase().includes(hoTen.toLowerCase());
+    const matchMssv = mssv.trim() === "" || id.toLowerCase().includes(mssv.toLowerCase());
     const matchKhu = khuKtx === "Tất cả" || normalizeKhu(ktxStr) === khuKtx;
     const matchTrangThai = trangThai === "Tất cả" || statusStr === trangThai;
     return matchName && matchMssv && matchKhu && matchTrangThai;
@@ -220,18 +242,21 @@ export default function VangMatSubPage() {
   const totalPages = Math.ceil(filteredAbsent.length / pageSize);
   const paginatedAbsent = filteredAbsent.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-  // Calculate dynamic bar chart from data
-  const chartData = filteredAbsent.length > 0
-    ? [
-        { name: "5-10 ngày", value: filteredAbsent.filter(s => s.absentDays <= 10).length },
-        { name: "11-15 ngày", value: filteredAbsent.filter(s => s.absentDays > 10 && s.absentDays <= 15).length },
-        { name: "Trên 15 ngày", value: filteredAbsent.filter(s => s.absentDays > 15).length }
-      ]
-    : [
-        { name: "5-10 ngày", value: 0 },
-        { name: "11-15 ngày", value: 0 },
-        { name: "Trên 15 ngày", value: 0 }
-      ];
+  // Calculate dynamic bar chart from data — phân nhóm vắng mặt
+  const chartData = [
+    {
+      name: t("range5to10") || "5–10 ngày",
+      value: filteredAbsent.filter(s => s.absentDays >= 5 && s.absentDays <= 10).length
+    },
+    {
+      name: t("range11to15") || "11–15 ngày",
+      value: filteredAbsent.filter(s => s.absentDays > 10 && s.absentDays <= 15).length
+    },
+    {
+      name: t("rangeOver15") || "Trên 15 ngày",
+      value: filteredAbsent.filter(s => s.absentDays > 15).length
+    }
+  ];
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
@@ -239,140 +264,86 @@ export default function VangMatSubPage() {
         <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
           <IconReportAnalytics size={20} color="#1f5ca9" />
         </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-          THỐNG KÊ SINH VIÊN VẮNG MẶT LÂU NGÀY
+        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
+          {t("absentTitle")}
         </Title>
       </Group>
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">
-          {/* Row 1: 4 filter fields */}
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-            <DateInput
-              label="TỪ NGÀY"
-              placeholder="MM/DD/YYYY"
-              value={tuNgay}
-              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <DateInput
-              label="ĐẾN NGÀY"
-              placeholder="MM/DD/YYYY"
-              value={denNgay}
-              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <Select
-              label="KHU KTX"
-              value={khuKtx}
-              onChange={(val) => setKhuKtx(val || "Tất cả")}
-              data={["Tất cả", "Khu A", "Khu B"]}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <Select
-              label="TRẠNG THÁI"
-              value={trangThai}
-              onChange={(val) => setTrangThai(val || "Tất cả")}
-              data={["Tất cả", "Cảnh báo", "Nghi vấn"]}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-          </SimpleGrid>
-
-          {/* Dotted divider */}
-          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
-
-          {/* Row 2: Search buttons (collapsed) or advanced inputs + buttons (expanded) */}
           {!showAdvancedFilter ? (
-            <Group justify="flex-end" gap="sm">
-              <Button
-                leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                onClick={() => loadAbsentData()}
-                disabled={loading}
-              >
-                Tìm kiếm
-              </Button>
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                variant="outline"
-                color="gray"
-                onClick={handleReset}
-                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                Làm mới
-              </Button>
-              <ActionIcon
-                variant="outline"
-                color="gray"
-                size="lg"
-                onClick={() => setShowAdvancedFilter(true)}
-                style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
-              >
-                <IconChevronDown size={18} color="#64748b" />
-              </ActionIcon>
-            </Group>
-          ) : (
+            /* Collapsed State: All 4 inputs + action buttons on 1 unified Grid row */
             <Grid align="flex-end" gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <TextInput
-                  label="HỌ TÊN"
-                  placeholder="Nhập họ tên..."
-                  value={hoTen}
-                  onChange={(e) => setHoTen(e.currentTarget.value)}
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <DateInput
+                  label={t("fromDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={tuNgay}
+                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
                   styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
                     input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
                 />
               </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-                <TextInput
-                  label="MÃ SỐ"
-                  placeholder="Nhập mã số..."
-                  value={mssv}
-                  onChange={(e) => setMssv(e.currentTarget.value)}
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <DateInput
+                  label={t("toDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={denNgay}
+                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
                   styles={{
-                    label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
                     input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
                 />
               </Grid.Col>
-              <Grid.Col span={{ base: 12, md: 6 }}>
-                <Group
-                  gap="sm"
-                  style={{
-                    width: "100%",
-                    flexWrap: "wrap",
-                    justifyContent: "flex-start",
-                    "@media (min-width: 48em)": {
-                      flexWrap: "nowrap",
-                      justifyContent: "flex-end",
-                    }
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <Select
+                  label={t("dormZone")}
+                  value={khuKtx}
+                  onChange={(val) => setKhuKtx(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Khu A", label: t("dormA") },
+                    { value: "Khu B", label: t("dormB") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
-                >
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+                <Select
+                  label={t("status")}
+                  value={trangThai}
+                  onChange={(val) => setTrangThai(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
+                    { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
+                    { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+              </Grid.Col>
+              <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
+                <Group gap="xs" justify="flex-start" wrap="nowrap" style={{ height: "40px" }}>
                   <Button
                     leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                     style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
                     onClick={() => loadAbsentData()}
                     disabled={loading}
                   >
-                    Tìm kiếm
+                    {t("search")}
                   </Button>
                   <Button
                     leftSection={<IconRefresh size={16} />}
@@ -381,34 +352,152 @@ export default function VangMatSubPage() {
                     onClick={handleReset}
                     style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
                   >
-                    Làm mới
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    variant="outline"
-                    style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    Xuất Excel
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    variant="outline"
-                    style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    Xuất PDF
+                    {t("reset")}
                   </Button>
                   <ActionIcon
                     variant="outline"
                     color="gray"
                     size="lg"
-                    onClick={() => setShowAdvancedFilter(false)}
+                    onClick={() => setShowAdvancedFilter(true)}
                     style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
                   >
-                    <IconChevronUp size={18} color="#64748b" />
+                    <IconChevronDown size={18} color="#64748b" />
                   </ActionIcon>
                 </Group>
               </Grid.Col>
             </Grid>
+          ) : (
+            /* Expanded State: 2 rows of filters */
+            <>
+              {/* Row 1: The 4 inputs */}
+              <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
+                <DateInput
+                  label={t("fromDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={tuNgay}
+                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <DateInput
+                  label={t("toDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={denNgay}
+                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <Select
+                  label={t("dormZone")}
+                  value={khuKtx}
+                  onChange={(val) => setKhuKtx(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Khu A", label: t("dormA") },
+                    { value: "Khu B", label: t("dormB") }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+                <Select
+                  label={t("status")}
+                  value={trangThai}
+                  onChange={(val) => setTrangThai(val || "Tất cả")}
+                  data={[
+                    { value: "Tất cả", label: t("all") },
+                    { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
+                    { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
+                    { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
+                  ]}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                  }}
+                />
+              </SimpleGrid>
+
+              {/* Row 2: Advanced inputs + buttons (No divider) */}
+              <Grid align="flex-end" gutter="md" mt="md">
+                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
+                  <TextInput
+                    label={t("fullName")}
+                    placeholder={t("enterFullName") + "..."}
+                    value={hoTen}
+                    onChange={(e) => setHoTen(e.currentTarget.value)}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
+                  <TextInput
+                    label={t("studentId")}
+                    placeholder={t("enterMssv") + "..."}
+                    value={mssv}
+                    onChange={(e) => setMssv(e.currentTarget.value)}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </Grid.Col>
+                <Grid.Col span={{ base: 12, md: 7 }}>
+                  <Group gap="sm" wrap="wrap" style={{ height: "40px" }}>
+                    <Button
+                      leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                      style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                      onClick={() => loadAbsentData()}
+                      disabled={loading}
+                    >
+                      {t("search")}
+                    </Button>
+                    <Button
+                      leftSection={<IconRefresh size={16} />}
+                      variant="outline"
+                      color="gray"
+                      onClick={handleReset}
+                      style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    >
+                      {t("reset")}
+                    </Button>
+                    <Button
+                      leftSection={<IconDownload size={16} />}
+                      variant="outline"
+                      style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    >
+                      {t("exportExcel")}
+                    </Button>
+                    <Button
+                      leftSection={<IconDownload size={16} />}
+                      variant="outline"
+                      style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                    >
+                      {t("exportPdf")}
+                    </Button>
+                    <ActionIcon
+                      variant="outline"
+                      color="gray"
+                      size="lg"
+                      onClick={() => setShowAdvancedFilter(false)}
+                      style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+                    >
+                      <IconChevronUp size={18} color="#64748b" />
+                    </ActionIcon>
+                  </Group>
+                </Grid.Col>
+              </Grid>
+            </>
           )}
         </Stack>
       </Card>
@@ -423,7 +512,7 @@ export default function VangMatSubPage() {
         <Center py="xl">
           <Stack align="center" gap="sm">
             <Loader size="md" color="blue" />
-            <Text size="sm" c="dimmed">Đang tải báo cáo vắng mặt...</Text>
+            <Text size="sm" c="dimmed">{t("loading")}</Text>
           </Stack>
         </Center>
       ) : (
@@ -431,8 +520,8 @@ export default function VangMatSubPage() {
           <Grid gutter="md">
             <Grid.Col span={12}>
               <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-                <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
-                  THỐNG KÊ SINH VIÊN VẮNG MẶT THEO SỐ NGÀY
+                <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("absentChartTitle")}
                 </Text>
                 <div style={{ height: 260 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -441,7 +530,7 @@ export default function VangMatSubPage() {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Bar dataKey="value" fill="#fa5252" radius={[4, 4, 0, 0]} label={{ position: "top" }} />
+                      <Bar dataKey="value" fill="#1f5ca9" radius={[4, 4, 0, 0]} label={{ position: "top" }} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -451,8 +540,8 @@ export default function VangMatSubPage() {
 
           <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
             <Group justify="space-between" mb="md">
-              <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
-                BẢNG THỐNG KÊ SINH VIÊN VẮNG MẶT LÂU NGÀY
+              <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                {t("absentTableTitle")}
               </Text>
             </Group>
 
@@ -460,14 +549,14 @@ export default function VangMatSubPage() {
               <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>MSSV</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Họ tên</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Phòng</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Số ngày vắng</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Lần quét cuối cùng</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("studentId")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("fullName")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("dormZone")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("room")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("daysAbsent")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("lastActive")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("status")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -478,13 +567,23 @@ export default function VangMatSubPage() {
                       </Table.Td>
                       <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>{row.studentId}</Table.Td>
                       <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>{row.hoTen}</Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.ktx}</Table.Td>
+                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{getTranslatedKhu(row.ktx)}</Table.Td>
                       <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.room}</Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#e03131", fontWeight: 700, textAlign: "center" }}>{row.absentDays} ngày</Table.Td>
+                      <Table.Td style={{ fontSize: "13px", color: "#e03131", fontWeight: 700, textAlign: "center" }}>
+                        {t("daysCount", { days: row.absentDays })}
+                      </Table.Td>
                       <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.lastScan}</Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
-                        <Badge color={row.status === "Cảnh báo" ? "red" : "yellow"} variant="light" size="sm">
-                          {row.status}
+                        <Badge
+                          color={
+                            row.status === "Cảnh báo" ? "red"
+                            : row.status === "Nghi vấn" ? "orange"
+                            : "green"
+                          }
+                          variant="light"
+                          size="sm"
+                        >
+                          {getTranslatedStatus(row.status)}
                         </Badge>
                       </Table.Td>
                     </Table.Tr>
@@ -492,7 +591,7 @@ export default function VangMatSubPage() {
                   {paginatedAbsent.length === 0 && (
                     <Table.Tr>
                       <Table.Td colSpan={8}>
-                        <Text ta="center" c="dimmed" py="xl">Không tìm thấy sinh viên vắng mặt lâu ngày phù hợp</Text>
+                        <Text ta="center" c="dimmed" py="xl">{t("noData")}</Text>
                       </Table.Td>
                     </Table.Tr>
                   )}

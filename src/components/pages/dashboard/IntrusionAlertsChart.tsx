@@ -24,7 +24,7 @@ export default function IntrusionAlertsChart({ data = [] }: IntrusionAlertsChart
     >
       <Group justify="space-between" mb="xl" wrap="wrap" gap="md">
         <Box>
-          <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
+          <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
             {t("intrusionTitle")}
           </Text>
           <Text size="xs" c="dimmed">

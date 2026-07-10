@@ -21,15 +21,15 @@ export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
       }}
     >
       <Stack gap={4} mb="xl">
-        <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
-          {t("top5Title")}
+        <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
+          {t("top10Title")}
         </Text>
         <Text size="xs" c="dimmed">
-          {t("top5Subtitle")}
+          {t("top10Subtitle")}
         </Text>
       </Stack>
 
-      <Box h={260}>
+      <Box h={350}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"
@@ -49,7 +49,7 @@ export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
               axisLine={false}
               tickLine={false}
               tick={{ fill: '#334155', fontSize: 12, fontWeight: 600 }}
-              width={100}
+              width={130}
             />
             <Tooltip
               cursor={{ fill: '#f8fafc' }}

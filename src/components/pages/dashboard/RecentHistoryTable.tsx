@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, Group, Text, Table, Badge, Avatar, Anchor, ScrollArea } from '@mantine/core';
+import React, { useState } from 'react';
+import { Card, Group, Text, Table, Badge, Avatar, Anchor, ScrollArea, Pagination, Stack } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { InOutHistory } from './dashboardTypes';
 
@@ -13,6 +13,14 @@ export default function RecentHistoryTable({
   onViewAll,
 }: RecentHistoryTableProps) {
   const t = useTranslations("Dashboard");
+  const [activePage, setActivePage] = useState(1);
+  const itemsPerPage = 10;
+  
+  const totalPages = Math.ceil(history.length / itemsPerPage);
+  const paginatedHistory = history.slice(
+    (activePage - 1) * itemsPerPage,
+    activePage * itemsPerPage
+  );
 
   return (
     <Card
@@ -24,7 +32,7 @@ export default function RecentHistoryTable({
       }}
     >
       <Group justify="space-between" mb="md">
-        <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
+        <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
           {t("historyTitle")}
         </Text>
         <Anchor
@@ -54,15 +62,15 @@ export default function RecentHistoryTable({
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
-            {history.map((row) => (
+            {paginatedHistory.map((row) => (
               <Table.Tr key={row.stt} style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <Table.Td style={{ fontSize: '13px', color: '#64748b' }}>{row.stt}</Table.Td>
                 <Table.Td style={{ fontSize: '13px', color: '#1e293b', fontWeight: 500 }}>{row.time}</Table.Td>
                 <Table.Td style={{ fontSize: '13px', color: '#64748b', fontFamily: 'monospace' }}>{row.studentId}</Table.Td>
                 <Table.Td>
-                  <Avatar src={row.avatarUrl} radius="xl" size="sm" alt={row.fullName} />
+                  <Avatar src={row.avatarUrl} radius="sm" size="md" alt={row.fullName} style={{ width: 40, height: 40, objectFit: 'cover' }} />
                 </Table.Td>
-                <Table.Td style={{ fontSize: '13px', color: '#1e293b', fw: 600 }}>{row.fullName}</Table.Td>
+                <Table.Td style={{ fontSize: '13px', color: '#1e293b', fontWeight: 600 }}>{row.fullName}</Table.Td>
                 <Table.Td style={{ textAlign: 'center' }}>
                   {row.type === 'Vào' ? (
                     <Badge
@@ -109,6 +117,19 @@ export default function RecentHistoryTable({
           </Table.Tbody>
         </Table>
       </ScrollArea>
+
+      {totalPages > 1 && (
+        <Group justify="center" mt="md">
+          <Pagination
+            total={totalPages}
+            value={activePage}
+            onChange={setActivePage}
+            size="sm"
+            color="blue"
+            radius="md"
+          />
+        </Group>
+      )}
     </Card>
   );
 }

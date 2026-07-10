@@ -3,20 +3,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-<<<<<<< HEAD
 import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
-=======
-import {
-  Portal,
-  Notification,
-  Modal,
-  Stack,
-  Text,
-  Group,
-  Button,
-  Box,
-} from "@mantine/core";
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
 import { useTranslations } from "next-intl";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import {
@@ -31,7 +18,7 @@ import {
 } from "recharts";
 
 import BoLocLichSu from "./BoLocLichSu";
-import BangLichSu from "./BangLichSu";
+import BangLichSu, { LoaiTabHienThi } from "./BangLichSu";
 import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
 import { dichVuLichSuRaVao } from "./historyService";
@@ -61,7 +48,6 @@ const duLieuTopSinhVien = [
   { mssv: "TM565488", hoVaTen: "Trịnh Thị Mỹ Ái", luotRaVao: 33 },
 ];
 
-<<<<<<< HEAD
 type HistoryPageProps = {
   tab?: LoaiTabChinh;
 };
@@ -72,27 +58,6 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
   const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
   const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
-=======
-interface HistoryPageProps {
-  activeTab?: LoaiTabChinh;
-}
-
-export default function HistoryPage({
-  activeTab = "LICH_SU",
-}: HistoryPageProps) {
-  const t = useTranslations("History");
-  const [tabActive, datTabActive] = useState<LoaiTabChinh>(activeTab);
-  const [thongBao, setThongBao] = useState<{
-    kieu: "success" | "error";
-    tinNhan: string;
-  } | null>(null);
-  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
-    null,
-  );
-  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">(
-    "NGAY",
-  );
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
   const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
 
   const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
@@ -120,12 +85,7 @@ export default function HistoryPage({
   useEffect(() => {
     datTabActive(tab);
     datLichSuDuocChon(null);
-<<<<<<< HEAD
     const targetMaNhom = tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1";
-=======
-    const targetMaNhom =
-      activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1";
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
     setBoLoc((prev) => {
       if (prev.maNhom === targetMaNhom) return prev;
       return { ...prev, maNhom: targetMaNhom };
@@ -162,7 +122,7 @@ export default function HistoryPage({
       trangThai: "ALL",
       loaiDoiTuong: "ALL",
       maNhom:
-        activeTab === "CAN_BO" ? "0" : activeTab === "SINH_VIEN" ? "1" : "-1",
+        tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1",
     });
   };
 
@@ -201,7 +161,7 @@ export default function HistoryPage({
     return danhSachLichSu;
   }, [danhSachLichSu, tabActive]);
 
-  const loaiTabHienThi = useMemo(() => {
+  const loaiTabHienThi = useMemo<LoaiTabHienThi>(() => {
     return "LICH_SU";
   }, []);
 
@@ -260,10 +220,6 @@ export default function HistoryPage({
     datMoDrawerBieuMau(true);
   };
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
@@ -278,7 +234,6 @@ export default function HistoryPage({
           khiTimKiem={xuLyTimKiem}
           khiXuatExcel={xuLyXuatExcel}
           khiXuatPdf={xuLyXuatPdf}
-          khiThemDuLieu={xuLyThemDuLieu}
         />
       )}
 
@@ -573,7 +528,6 @@ const pageStyles = `
     letter-spacing: -0.025em;
     margin-top: 0;
     margin-bottom: 1rem;
-<<<<<<< HEAD
     font-family: var(--font-readex-pro);
 }
 
@@ -610,9 +564,6 @@ const pageStyles = `
     background-color: #1f5ca9 !important;
     color: #ffffff !important;
     box-shadow: 0 4px 10px rgba(31, 92, 169, 0.25) !important;
-=======
-    font-family: var(--font-k2d), sans-serif;
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
 }
 
 .page-layout {

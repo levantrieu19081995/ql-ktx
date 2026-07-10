@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { DateInput } from "@mantine/dates";
 import {
   Card,
@@ -55,6 +56,21 @@ const getDefaultDates = () => {
 };
 
 export default function NguoiLaSubPage() {
+  const t = useTranslations("Statistics");
+
+  const getTranslatedStatus = (statusName: string) => {
+    if (statusName === "Nghi vấn") return t("statusSuspicious");
+    if (statusName === "Cảnh báo") return t("statusSuspicious");
+    if (statusName === "Hợp lệ") return t("statusValid");
+    return statusName;
+  };
+
+  const getTranslatedKhu = (khu: string) => {
+    if (khu === "Khu A" || khu === "A") return t("dormA");
+    if (khu === "Khu B" || khu === "B") return t("dormB");
+    return khu;
+  };
+
   const [tuNgay, setTuNgay] = useState<Date | null>(() => getDefaultDates().tu);
   const [denNgay, setDenNgay] = useState<Date | null>(() => getDefaultDates().den);
   const [khuKtx, setKhuKtx] = useState("Tất cả");
@@ -165,12 +181,12 @@ export default function NguoiLaSubPage() {
 
     const list = Object.values(dateGroups);
     if (list.length === 0) {
-      return [{ date: "Không có dữ liệu", "Khu A": 0, "Khu B": 0, "Tổng": 0 }];
+      return [{ date: t("noData"), "Khu A": 0, "Khu B": 0, "Tổng": 0 }];
     }
     return list.slice(0, 10);
   };
   
-  const chartData = nguoiLaList.length > 0 ? computeChartData() : [{ date: "Không có dữ liệu", "Khu A": 0, "Khu B": 0, "Tổng": 0 }];
+  const chartData = nguoiLaList.length > 0 ? computeChartData() : [{ date: t("noData"), "Khu A": 0, "Khu B": 0, "Tổng": 0 }];
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
@@ -178,8 +194,8 @@ export default function NguoiLaSubPage() {
         <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
           <IconReportAnalytics size={20} color="#1f5ca9" />
         </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-          THỐNG KÊ NGƯỜI LẠ XUẤT HIỆN
+        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
+          {t("strangerTitle")}
         </Title>
       </Group>
 
@@ -188,7 +204,7 @@ export default function NguoiLaSubPage() {
           {/* Row 1: 3 filter fields */}
           <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
             <DateInput
-              label="TỪ NGÀY"
+              label={t("fromDate").toUpperCase()}
               placeholder="MM/DD/YYYY"
               value={tuNgay}
               onChange={(val) => setTuNgay(val ? new Date(val) : null)}
@@ -200,7 +216,7 @@ export default function NguoiLaSubPage() {
               }}
             />
             <DateInput
-              label="ĐẾN NGÀY"
+              label={t("toDate").toUpperCase()}
               placeholder="MM/DD/YYYY"
               value={denNgay}
               onChange={(val) => setDenNgay(val ? new Date(val) : null)}
@@ -212,10 +228,14 @@ export default function NguoiLaSubPage() {
               }}
             />
             <Select
-              label="KHU KTX"
+              label={t("dormZone").toUpperCase()}
               value={khuKtx}
               onChange={(val) => setKhuKtx(val || "Tất cả")}
-              data={["Tất cả", "Khu A", "Khu B"]}
+              data={[
+                { value: "Tất cả", label: t("all") },
+                { value: "Khu A", label: t("dormA") },
+                { value: "Khu B", label: t("dormB") }
+              ]}
               styles={{
                 label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
                 input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
@@ -234,7 +254,7 @@ export default function NguoiLaSubPage() {
               onClick={handleNguoiLaSearch}
               loading={nguoiLaLoading}
             >
-              Tìm kiếm
+              {t("search")}
             </Button>
             <Button
               leftSection={<IconRefresh size={16} />}
@@ -243,21 +263,21 @@ export default function NguoiLaSubPage() {
               onClick={handleReset}
               style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
-              Làm mới
+              {t("reset")}
             </Button>
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
               style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
-              Xuất Excel
+              {t("exportExcel")}
             </Button>
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
               style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
-              Xuất PDF
+              {t("exportPdf")}
             </Button>
           </Group>
         </Stack>
@@ -266,8 +286,8 @@ export default function NguoiLaSubPage() {
       <Grid gutter="md">
         <Grid.Col span={12}>
           <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-            <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
-              TẦN SUẤT PHÁT HIỆN NGƯỜI LẠ (7 NGÀY QUA)
+            <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+              {t("strangerChartTitle")}
             </Text>
             <div style={{ height: 260 }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -277,8 +297,8 @@ export default function NguoiLaSubPage() {
                   <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
-                  <Area type="monotone" dataKey="Khu A" stroke="#228be6" fill="#228be6" fillOpacity={0.2} />
-                  <Area type="monotone" dataKey="Khu B" stroke="#40c057" fill="#40c057" fillOpacity={0.2} />
+                  <Area type="monotone" dataKey="Khu A" name={t("dormA")} stroke="#1f5ca9" fill="#1f5ca9" fillOpacity={0.2} />
+                  <Area type="monotone" dataKey="Khu B" name={t("dormB")} stroke="#00afef" fill="#00afef" fillOpacity={0.2} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -289,12 +309,12 @@ export default function NguoiLaSubPage() {
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
         <Group justify="space-between" mb="md">
           <div>
-            <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
-              BẢNG PHÁT HIỆN NGƯỜI LẠ XUẤT HIỆN
+            <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+              {t("strangerTableTitle")}
             </Text>
             {!nguoiLaLoading && (
               <Text size="xs" c="dimmed" mt={2}>
-                Tổng cộng: <b>{nguoiLaTotalElements}</b> bản ghi
+                {t("totalLabel")} <b>{nguoiLaTotalElements}</b>
               </Text>
             )}
           </div>
@@ -309,7 +329,7 @@ export default function NguoiLaSubPage() {
           <Center py="xl">
             <Stack align="center" gap="sm">
               <Loader size="md" color="blue" />
-              <Text size="sm" c="dimmed">Đang tải dữ liệu người lạ...</Text>
+              <Text size="sm" c="dimmed">{t("loadingStranger")}</Text>
             </Stack>
           </Center>
         ) : (
@@ -318,12 +338,12 @@ export default function NguoiLaSubPage() {
               <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Thời gian phát hiện</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Vị trí / Cổng</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Ảnh camera</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("detectTime")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("dormZone")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("detectPosition")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("cameraImg")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("status")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -338,18 +358,18 @@ export default function NguoiLaSubPage() {
                       <Table.Tr key={row.id ?? index} style={{ borderBottom: "1px solid #f1f5f9" }}>
                         <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>{stt}</Table.Td>
                         <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 500 }}>{thoiGian}</Table.Td>
-                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{khu}</Table.Td>
+                        <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{getTranslatedKhu(khu)}</Table.Td>
                         <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{viTri}</Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
                           {imgSrc ? (
                             <Avatar src={imgSrc} radius="sm" size="md" alt="Stranger" style={{ margin: "auto" }} />
                           ) : (
-                            <Text size="xs" c="dimmed">Không có ảnh</Text>
+                            <Text size="xs" c="dimmed">{t("noData")}</Text>
                           )}
                         </Table.Td>
                         <Table.Td style={{ textAlign: "center" }}>
                           <Badge color={tt === "Cảnh báo" || tt === "WARNING" || tt === "Nghi vấn" ? "red" : tt === "Hợp lệ" || tt === "OK" ? "green" : "blue"} variant="light" size="sm">
-                            {tt || "Phát hiện"}
+                            {getTranslatedStatus(tt)}
                           </Badge>
                         </Table.Td>
                       </Table.Tr>
@@ -359,7 +379,7 @@ export default function NguoiLaSubPage() {
                     <Table.Tr>
                       <Table.Td colSpan={6}>
                         <Text ta="center" c="dimmed" py="xl">
-                          {nguoiLaError ? nguoiLaError : "Không có dữ liệu người lạ trong khoảng thời gian này"}
+                          {t("noStrangerData")}
                         </Text>
                       </Table.Td>
                     </Table.Tr>

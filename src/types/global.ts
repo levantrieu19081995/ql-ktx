@@ -210,10 +210,6 @@ export interface DanhMucPhuongTienPut {
   dmPtGhiChu?: string;    // Ghi chú (có thể null hoặc optional)
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08
 
 export interface DanhMucPhuongTien {
   used: any;
@@ -1028,9 +1024,4 @@ export interface HoaDonPaginateResponse {
   message: string;
   status: string;
   payload: PaginateResponse<HoaDonItem>;
-<<<<<<< HEAD
 }
-
-=======
-}
->>>>>>> 15db144f5a0b64a9ab43f45e3084df6cc936fe08

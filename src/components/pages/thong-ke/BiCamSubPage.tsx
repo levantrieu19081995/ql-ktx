@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   Group,
@@ -155,6 +156,14 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export default function BiCamSubPage() {
+  const t = useTranslations("Statistics");
+
+  const getTranslatedStatus = (statusName: string) => {
+    if (statusName === "Đang cấm") return t("banning");
+    if (statusName === "Hết hạn") return t("expired");
+    return statusName;
+  };
+
   const [hoTenFilter, setHoTenFilter] = useState("");
   const [mssvFilter, setMssvFilter] = useState("");
 
@@ -343,9 +352,9 @@ export default function BiCamSubPage() {
 
   const validateForm = (): boolean => {
     const errs: FormErrors = {};
-    if (!form.maSinhVien.trim()) errs.maSinhVien = "Vui lòng nhập mã sinh viên";
-    if (!form.lyDo.trim()) errs.lyDo = "Vui lòng nhập lý do cấm";
-    if (!form.ngayBatDau) errs.ngayBatDau = "Vui lòng chọn ngày bắt đầu cấm";
+    if (!form.maSinhVien.trim()) errs.maSinhVien = t("validateBannedMssv");
+    if (!form.lyDo.trim()) errs.lyDo = t("validateBannedReason");
+    if (!form.ngayBatDau) errs.ngayBatDau = t("validateBannedStartDate");
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -394,11 +403,11 @@ export default function BiCamSubPage() {
       }
 
       setModalOpen(false);
-      showToast("success", isEditing ? "Cập nhật lệnh cấm thành công!" : "Thêm lệnh cấm thành công!");
+      showToast("success", isEditing ? t("toastUpdateSuccess") : t("toastAddSuccess"));
       loadBannedData(currentPage);
     } catch (err: any) {
       console.error("[BiCam] Save error:", err);
-      showToast("error", err?.message || "Lỗi khi lưu dữ liệu. Vui lòng thử lại.");
+      showToast("error", err?.message || t("toastSaveError"));
     } finally {
       setSaving(false);
     }
@@ -415,7 +424,7 @@ export default function BiCamSubPage() {
         value: 1,
         lyDo: item.lyDo,
       }))
-      : [{ name: "Không có dữ liệu", fullName: "", value: 0, lyDo: "" }];
+      : [{ name: t("noData"), fullName: "", value: 0, lyDo: "" }];
 
   const filteredBanned = bannedList.filter((item) => {
     const mssvMatch = !mssvFilter || (item.maSinhVien || "").toLowerCase().includes(mssvFilter.toLowerCase());
@@ -452,8 +461,8 @@ export default function BiCamSubPage() {
           <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
             <IconReportAnalytics size={20} color="#1f5ca9" />
           </ThemeIcon>
-          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-            THỐNG KÊ SINH VIÊN BỊ CẤM / CẢNH BÁO XÂM NHẬP
+          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
+            {t("bannedTitle")}
           </Title>
         </Group>
         <Button
@@ -461,7 +470,7 @@ export default function BiCamSubPage() {
           style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
           onClick={openAddModal}
         >
-          Thêm lệnh cấm
+          {t("addBannedBtn")}
         </Button>
       </Group>
 
@@ -471,8 +480,8 @@ export default function BiCamSubPage() {
           {/* Row 1: 2 filter fields */}
           <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             <TextInput
-              label="HỌ TÊN"
-              placeholder="Nhập họ tên..."
+              label={t("fullName").toUpperCase()}
+              placeholder={t("enterFullName") + "..."}
               value={hoTenFilter}
               onChange={(e) => setHoTenFilter(e.currentTarget.value)}
               styles={{
@@ -481,8 +490,8 @@ export default function BiCamSubPage() {
               }}
             />
             <TextInput
-              label="MSSV / MÃ SỐ"
-              placeholder="Nhập MSSV để tìm kiếm..."
+              label={t("studentId").toUpperCase()}
+              placeholder={t("enterMssv") + "..."}
               value={mssvFilter}
               onChange={(e) => setMssvFilter(e.currentTarget.value)}
               styles={{
@@ -503,7 +512,7 @@ export default function BiCamSubPage() {
               onClick={handleSearch}
               disabled={loading}
             >
-              Tìm kiếm
+              {t("search")}
             </Button>
             <Button
               leftSection={<IconRefresh size={16} />}
@@ -512,21 +521,21 @@ export default function BiCamSubPage() {
               onClick={handleReset}
               style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
-              Làm mới
+              {t("reset")}
             </Button>
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
               style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
-              Xuất Excel
+              {t("exportExcel")}
             </Button>
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
               style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
             >
-              Xuất PDF
+              {t("exportPdf")}
             </Button>
           </Group>
         </Stack>
@@ -542,7 +551,7 @@ export default function BiCamSubPage() {
         <Center py="xl">
           <Stack align="center" gap="sm">
             <Loader size="md" color="blue" />
-            <Text size="sm" c="dimmed">Đang tải danh sách sinh viên bị cấm...</Text>
+            <Text size="sm" c="dimmed">{t("loading")}</Text>
           </Stack>
         </Center>
       ) : (
@@ -551,8 +560,8 @@ export default function BiCamSubPage() {
           <Grid gutter="md">
             <Grid.Col span={12}>
               <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <Text fw={700} size="sm" c="dimmed" mb="md" style={{ letterSpacing: "0.5px" }}>
-                  TOP 10 SINH VIÊN BỊ CẤM (Trang hiện tại)
+                <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                  {t("bannedChartTitle")}
                 </Text>
                 <div style={{ height: 220 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -561,7 +570,7 @@ export default function BiCamSubPage() {
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                       <YAxis allowDecimals={false} />
                       <RechartsTooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill="#e03131" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" fill="#1f5ca9" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -572,8 +581,8 @@ export default function BiCamSubPage() {
           {/* Table */}
           <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
             <Group justify="space-between" mb="md">
-              <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
-                BẢNG THỐNG KÊ SINH VIÊN BỊ CẤM ({totalElements} bản ghi)
+              <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                {t("bannedTableTitle")} ({totalElements})
               </Text>
             </Group>
 
@@ -581,14 +590,14 @@ export default function BiCamSubPage() {
               <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 860 }}>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Mã SV</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Tên sinh viên</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Lý do cấm</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Ngày bắt đầu</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Ngày kết thúc</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Loại sự kiện</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Thao tác</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("studentId")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("fullName")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("bannedReason")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("startDate")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("endDate")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("banEventType")}</Table.Th>
+                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("actions")}</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -611,7 +620,7 @@ export default function BiCamSubPage() {
                       </Table.Td>
                       <Table.Td style={{ fontSize: "13px", color: "#475569", textAlign: "center" }}>
                         {row.ngayKetThuc ? formatTimestamp(row.ngayKetThuc) : (
-                          <Badge color="red" variant="light" size="xs">Chưa có</Badge>
+                          <Badge color="red" variant="light" size="xs">{t("noData")}</Badge>
                         )}
                       </Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
@@ -620,7 +629,7 @@ export default function BiCamSubPage() {
                         </Badge>
                       </Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
-                        <Tooltip label="Sửa lệnh cấm" withArrow>
+                        <Tooltip label={t("save")} withArrow>
                           <ActionIcon
                             variant="light"
                             color="blue"
@@ -637,7 +646,7 @@ export default function BiCamSubPage() {
                     <Table.Tr>
                       <Table.Td colSpan={8}>
                         <Text ta="center" c="dimmed" py="xl">
-                          Không tìm thấy sinh viên bị cấm phù hợp
+                          {t("noData")}
                         </Text>
                       </Table.Td>
                     </Table.Tr>
@@ -672,7 +681,7 @@ export default function BiCamSubPage() {
               {isEditing ? <IconEdit size={16} /> : <IconPlus size={16} />}
             </ThemeIcon>
             <Text fw={700} c={isEditing ? "#1f5ca9" : "#16a34a"} size="md">
-              {isEditing ? "Chỉnh sửa lệnh cấm sinh viên" : "Thêm mới lệnh cấm sinh viên"}
+              {t("addBannedModalTitle")}
             </Text>
           </Group>
         }
@@ -691,7 +700,7 @@ export default function BiCamSubPage() {
               label={
                 <Group gap={6}>
                   <IconUserSearch size={13} color="#1f5ca9" />
-                  <Text size="11px" fw={700} c="#1f5ca9" style={{ letterSpacing: "0.5px" }}>THÔNG TIN SINH VIÊN</Text>
+                  <Text size="11px" fw={700} c="#1f5ca9" style={{ letterSpacing: "0.5px" }}>{t("studentInfoCardTitle")}</Text>
                 </Group>
               }
               mb="sm"
@@ -700,8 +709,8 @@ export default function BiCamSubPage() {
             {/* Autocomplete search */}
             <div ref={svSearchRef} style={{ position: "relative" }}>
               <TextInput
-                label="TÌM KIẾM SINH VIÊN (theo mã số)"
-                placeholder="Nhập mã sinh viên để tìm kiếm..."
+                label={t("searchByCodeTitle")}
+                placeholder={t("searchMssvPlaceholder")}
                 value={svSearch}
                 onChange={(e) => handleSvSearchChange(e.currentTarget.value)}
                 leftSection={svLoading ? <Loader size={14} /> : <IconUserSearch size={14} color="#94a3b8" />}
@@ -759,7 +768,7 @@ export default function BiCamSubPage() {
                 <Group gap="xs">
                   <IconCheck size={16} color="#16a34a" />
                   <Text size="sm" fw={600} c="#15803d">
-                    Đã chọn: <span style={{ color: "#1f5ca9" }}>{form.maSinhVien}</span> — {form.hoTen}
+                    {t("selected")}: <span style={{ color: "#1f5ca9" }}>{form.maSinhVien}</span> — {form.hoTen}
                   </Text>
                 </Group>
               </Paper>
@@ -770,7 +779,7 @@ export default function BiCamSubPage() {
               <Grid gutter="sm" mt="xs">
                 <Grid.Col span={6}>
                   <TextInput
-                    label="MÃ SINH VIÊN (nhập thủ công)"
+                    label={`${t("studentId")} (${t("manualRecord").toLowerCase()})`}
                     placeholder="VD: 805"
                     value={form.maSinhVien}
                     onChange={(e) => {
@@ -788,7 +797,7 @@ export default function BiCamSubPage() {
                 </Grid.Col>
                 <Grid.Col span={6}>
                   <TextInput
-                    label="ID SINH VIÊN (sinhVienId)"
+                    label={`ID ${t("studentId")}`}
                     placeholder="VD: 16"
                     value={form.sinhVienId}
                     onChange={(e) => { const val = e.currentTarget.value; setForm((f) => ({ ...f, sinhVienId: val })); }}
@@ -808,15 +817,15 @@ export default function BiCamSubPage() {
               label={
                 <Group gap={6}>
                   <IconFileText size={13} color="#1f5ca9" />
-                  <Text size="11px" fw={700} c="#1f5ca9" style={{ letterSpacing: "0.5px" }}>CHI TIẾT LỆNH CẤM</Text>
+                  <Text size="11px" fw={700} c="#1f5ca9" style={{ letterSpacing: "0.5px" }}>{t("detailTitle")}</Text>
                 </Group>
               }
               mb="sm"
             />
             <Stack gap="sm">
               <Textarea
-                label="LÝ DO CẤM *"
-                placeholder="Nhập lý do cấm sinh viên..."
+                label={`${t("bannedReason").toUpperCase()} *`}
+                placeholder={t("enterReasonPlaceholder")}
                 value={form.lyDo}
                 onChange={(e) => {
                   const val = e.currentTarget.value;
@@ -834,7 +843,7 @@ export default function BiCamSubPage() {
               <Grid gutter="sm">
                 <Grid.Col span={6}>
                   <DateInput
-                    label="NGÀY BẮT ĐẦU CẤM *"
+                    label={`${t("startDate").toUpperCase()} *`}
                     placeholder="Chọn ngày..."
                     value={form.ngayBatDau}
                     onChange={(val) => {
@@ -853,8 +862,8 @@ export default function BiCamSubPage() {
                 </Grid.Col>
                 <Grid.Col span={6}>
                   <DateInput
-                    label="NGÀY KẾT THÚC CẤM"
-                    placeholder="Để trống nếu chưa xác định"
+                    label={t("endDate").toUpperCase()}
+                    placeholder={t("selectEndDate")}
                     value={form.ngayKetThuc}
                     onChange={(val) => setForm((f) => ({ ...f, ngayKetThuc: val ? new Date(val) : null }))}
                     valueFormat="DD/MM/YYYY"
@@ -869,7 +878,7 @@ export default function BiCamSubPage() {
               </Grid>
 
               <TextInput
-                label="LOẠI SỰ KIỆN ID"
+                label={t("banEventType").toUpperCase()}
                 placeholder="VD: 2"
                 value={form.loaiSuKienId}
                 onChange={(e) => { const val = e.currentTarget.value; setForm((f) => ({ ...f, loaiSuKienId: val })); }}
@@ -897,7 +906,7 @@ export default function BiCamSubPage() {
           {/* Buttons */}
           <Group justify="flex-end" mt="xs" gap="sm">
             <Button variant="outline" color="gray" onClick={() => setModalOpen(false)} style={{ borderRadius: "8px" }}>
-              Hủy bỏ
+              {t("cancel")}
             </Button>
             <Button
               loading={saving}
@@ -909,7 +918,7 @@ export default function BiCamSubPage() {
               }}
               onClick={handleSave}
             >
-              {saving ? "Đang lưu..." : isEditing ? "Cập nhật" : "Lưu lệnh cấm"}
+              {saving ? t("loading") : isEditing ? t("submit") : t("submit")}
             </Button>
           </Group>
         </Stack>

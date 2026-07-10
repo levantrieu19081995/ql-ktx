@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { DateInput } from "@mantine/dates";
 import {
   Card,
@@ -14,6 +15,7 @@ import {
   Grid,
   TextInput,
   Button,
+  ActionIcon,
   ThemeIcon,
   SimpleGrid,
   Loader,
@@ -22,6 +24,8 @@ import {
   Paper,
   Box,
   Divider,
+  Tooltip,
+  Portal,
 } from "@mantine/core";
 import {
   IconSearch,
@@ -38,17 +42,36 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
+  Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Legend,
 } from "recharts";
 import { fetchThongKeTheoMaSo, fetchSinhVienPaginate } from "@/services/dashboard/dashboardService";
 
 export default function TheoMaSoSubPage() {
+  const t = useTranslations("Statistics");
+
+  const getTranslatedActionOrStatus = (val: string) => {
+    if (!val) return "";
+    const lower = val.toLowerCase();
+    if (lower === "vào" || lower.includes("camera vào") || lower === "in") return t("actionIn");
+    if (lower === "ra" || lower.includes("camera ra") || lower === "out") return t("actionOut");
+    if (lower === "hợp lệ" || lower === "valid") return t("statusValid");
+    if (lower === "nghi vấn" || lower === "suspicious") return t("statusSuspicious");
+    if (lower === "không hợp lệ" || lower === "invalid") return t("statusInvalid");
+    return val;
+  };
+
+  const getTranslatedKhu = (khu: string) => {
+    if (khu === "Khu A") return t("dormA");
+    if (khu === "Khu B") return t("dormB");
+    return khu;
+  };
+
   const [hoTen, setHoTen] = useState("");
   const [mssv, setMssv] = useState("");
-  const [tuNgay, setTuNgay] = useState<Date | null>(null);
-  const [denNgay, setDenNgay] = useState<Date | null>(null);
+  const [tuNgay, setTuNgay] = useState<Date | null>(new Date("2026-06-01"));
+  const [denNgay, setDenNgay] = useState<Date | null>(new Date("2026-06-06"));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +88,9 @@ export default function TheoMaSoSubPage() {
   const [svLoading, setSvLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mssvInputRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -93,6 +118,17 @@ export default function TheoMaSoSubPage() {
 
     debounceRef.current = setTimeout(async () => {
       setSvLoading(true);
+
+      // Compute dropdown position from the MSSV input wrapper
+      if (mssvInputRef.current) {
+        const rect = mssvInputRef.current.getBoundingClientRect();
+        setDropdownRect({
+          top: rect.bottom + window.scrollY + 4,
+          left: rect.left + window.scrollX,
+          width: rect.width,
+        });
+      }
+
       try {
         const params: any = {
           page: 1,
@@ -172,14 +208,7 @@ export default function TheoMaSoSubPage() {
           const yyyy = dateVal.getFullYear();
           return `${mm}/${dd}/${yyyy}`;
         }
-        const now = new Date();
-        if (isStart) {
-          return `01/01/${now.getFullYear() - 1}`;
-        } else {
-          const mm = String(now.getMonth() + 1).padStart(2, "0");
-          const dd = String(now.getDate()).padStart(2, "0");
-          return `${mm}/${dd}/${now.getFullYear()}`;
-        }
+        return isStart ? "06/01/2026" : "06/06/2026";
       };
 
       const res = await fetchThongKeTheoMaSo({
@@ -286,8 +315,8 @@ export default function TheoMaSoSubPage() {
   const handleReset = () => {
     setHoTen("");
     setMssv("");
-    setTuNgay(null);
-    setDenNgay(null);
+    setTuNgay(new Date("2026-06-01"));
+    setDenNgay(new Date("2026-06-06"));
     setSelectedStudent(null);
     setStudentSummary(null);
     setWeeklyChartData([]);
@@ -305,141 +334,145 @@ export default function TheoMaSoSubPage() {
         <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
           <IconReportAnalytics size={20} color="#1f5ca9" />
         </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-          THỐNG KÊ THEO MÃ SỐ (SINH VIÊN / CÁN BỘ)
+        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
+          {t("searchByCodeTitle")}
         </Title>
       </Group>
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-        <Stack gap="md" ref={searchRef} style={{ position: "relative" }}>
-          {/* Row 1: 4 filter fields */}
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-            <TextInput
-              label="HỌ TÊN"
-              placeholder="Nhập họ tên để lọc..."
-              value={hoTen}
-              onChange={(e) => handleInputChange(e.currentTarget.value, "hoTen")}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <TextInput
-              label="MSSV / MÃ SỐ *"
-              placeholder="Nhập MSSV hoặc mã số..."
-              value={mssv}
-              onChange={(e) => handleInputChange(e.currentTarget.value, "mssv")}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <DateInput
-              label="TỪ NGÀY"
-              placeholder="MM/DD/YYYY"
-              value={tuNgay}
-              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-            <DateInput
-              label="ĐẾN NGÀY"
-              placeholder="MM/DD/YYYY"
-              value={denNgay}
-              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-          </SimpleGrid>
-
-          {/* Autocomplete Suggestions Dropdown */}
-          {showSuggestions && svSuggestions.length > 0 && (
-            <Paper
-              shadow="md"
-              radius="md"
-              style={{
-                position: "absolute",
-                top: "70px",
-                left: 0,
-                right: 0,
-                zIndex: 1000,
-                maxHeight: 220,
-                overflowY: "auto",
-                border: "1px solid #e2e8f0",
-                marginTop: 4,
-              }}
-            >
-              {svSuggestions.map((sv, i) => (
-                <Box
-                  key={i}
-                  onClick={() => handleSelectSv(sv)}
-                  style={{
-                    padding: "10px 14px",
-                    cursor: "pointer",
-                    borderBottom: i < svSuggestions.length - 1 ? "1px solid #f1f5f9" : "none",
-                    transition: "background 0.15s",
+        <div ref={searchRef} style={{ position: "relative" }}>
+          {/* Single unified row: 4 inputs + action buttons */}
+          <Grid align="flex-end" gutter="md">
+            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+              <TextInput
+                label={t("fullName")}
+                placeholder={t("enterFullName") + "..."}
+                value={hoTen}
+                onChange={(e) => handleInputChange(e.currentTarget.value, "hoTen")}
+                styles={{
+                  label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+              <div ref={mssvInputRef}>
+                <TextInput
+                  label={t("studentId") + " *"}
+                  placeholder={t("enterMssv") + "..."}
+                  value={mssv}
+                  onChange={(e) => handleInputChange(e.currentTarget.value, "mssv")}
+                  styles={{
+                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f7ff")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                />
+              </div>
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+              <DateInput
+                label={t("fromDate")}
+                placeholder="MM/DD/YYYY"
+                value={tuNgay}
+                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                valueFormat="DD/MM/YYYY"
+                clearable
+                styles={{
+                  label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
+              <DateInput
+                label={t("toDate")}
+                placeholder="MM/DD/YYYY"
+                value={denNgay}
+                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                valueFormat="DD/MM/YYYY"
+                clearable
+                styles={{
+                  label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                }}
+              />
+            </Grid.Col>
+            <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
+              <Group gap="xs" wrap="nowrap" align="center" style={{ height: "40px" }}>
+                {svLoading && <Loader size="xs" color="blue" />}
+                <Button
+                  leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                  style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  onClick={handleSearch}
+                  disabled={loading}
                 >
-                  <Group gap="xs">
-                    <Text size="xs" fw={700} c="#1f5ca9" style={{ fontFamily: "monospace" }}>{sv.maSinhVien}</Text>
-                    <Text size="xs" c="#475569">—</Text>
-                    <Text size="xs" fw={500} c="#1e293b">{sv.hoTen || sv.ten || sv.hoVaTen}</Text>
-                    {sv.maPhong && <Badge size="xs" variant="light" color="teal">{sv.maPhong}</Badge>}
-                  </Group>
-                </Box>
-              ))}
-            </Paper>
+                  {t("search")}
+                </Button>
+                <Tooltip label={t("reset")} withArrow position="top">
+                  <ActionIcon
+                    variant="outline"
+                    color="gray"
+                    size="lg"
+                    onClick={handleReset}
+                    style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px", flexShrink: 0 }}
+                  >
+                    <IconRefresh size={18} color="#64748b" />
+                  </ActionIcon>
+                </Tooltip>
+                <Button
+                  leftSection={<IconDownload size={16} />}
+                  variant="outline"
+                  style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px", flexShrink: 0 }}
+                >
+                  {t("exportPdf")}
+                </Button>
+              </Group>
+            </Grid.Col>
+          </Grid>
+
+          {/* Autocomplete Suggestions Dropdown — rendered via Portal to avoid Card overflow clip */}
+          {showSuggestions && svSuggestions.length > 0 && dropdownRect && (
+            <Portal>
+              <Paper
+                shadow="lg"
+                radius="md"
+                style={{
+                  position: "absolute",
+                  top: dropdownRect.top,
+                  left: dropdownRect.left,
+                  width: dropdownRect.width,
+                  zIndex: 9999,
+                  maxHeight: 220,
+                  overflowY: "auto",
+                  border: "1px solid #e2e8f0",
+                  background: "white",
+                }}
+              >
+                {svSuggestions.map((sv, i) => (
+                  <Box
+                    key={i}
+                    onClick={() => handleSelectSv(sv)}
+                    style={{
+                      padding: "10px 14px",
+                      cursor: "pointer",
+                      borderBottom: i < svSuggestions.length - 1 ? "1px solid #f1f5f9" : "none",
+                      transition: "background 0.15s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f7ff")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <Group gap="xs">
+                      <Text size="xs" fw={700} c="#1f5ca9" style={{ fontFamily: "monospace" }}>{sv.maSinhVien}</Text>
+                      <Text size="xs" c="#475569">—</Text>
+                      <Text size="xs" fw={500} c="#1e293b">{sv.hoTen || sv.ten || sv.hoVaTen}</Text>
+                      {sv.maPhong && <Badge size="xs" variant="light" color="teal">{sv.maPhong}</Badge>}
+                    </Group>
+                  </Box>
+                ))}
+              </Paper>
+            </Portal>
           )}
-
-          {/* Dotted divider */}
-          <Divider variant="dashed" style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }} my="xs" />
-
-          {/* Row 2: Search buttons */}
-          <Group justify="flex-end" gap="sm">
-            {svLoading && <Loader size="xs" color="blue" />}
-            <Button
-              leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              onClick={handleSearch}
-              disabled={loading}
-            >
-              Tìm kiếm
-            </Button>
-            <Button
-              leftSection={<IconRefresh size={16} />}
-              variant="outline"
-              color="gray"
-              onClick={handleReset}
-              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-            >
-              Làm mới
-            </Button>
-            <Button
-              leftSection={<IconDownload size={16} />}
-              variant="outline"
-              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-            >
-              Xuất Excel
-            </Button>
-            <Button
-              leftSection={<IconDownload size={16} />}
-              variant="outline"
-              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-            >
-              Xuất PDF
-            </Button>
-          </Group>
-        </Stack>
+        </div>
       </Card>
 
       {error && (
@@ -452,7 +485,7 @@ export default function TheoMaSoSubPage() {
         <Center py="xl">
           <Stack align="center" gap="sm">
             <Loader size="md" color="blue" />
-            <Text size="sm" c="dimmed">Đang tải báo cáo thống kê đối tượng...</Text>
+            <Text size="sm" c="dimmed">{t("loading")}</Text>
           </Stack>
         </Center>
       ) : (
@@ -464,7 +497,7 @@ export default function TheoMaSoSubPage() {
                 <Card withBorder radius="lg" p="md" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#1f5ca9", height: "100%" }}>
                   <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Stack gap={2}>
-                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>Thông tin đối tượng</Text>
+                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>{t("studentInfoCardTitle")}</Text>
                       <Text size="sm" fw={800} c="#1e293b" style={{ fontSize: "16px" }}>{selectedStudent.hoTen}</Text>
                       <Text size="xs" c="dimmed" fw={500}>{selectedStudent.studentId} • {selectedStudent.maNhom}</Text>
                     </Stack>
@@ -478,9 +511,9 @@ export default function TheoMaSoSubPage() {
                 <Card withBorder radius="lg" p="md" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0", height: "100%" }}>
                   <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Stack gap={2}>
-                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>Lượt vào</Text>
-                      <Text size="lg" fw={800} c="#1e293b" style={{ fontSize: "20px" }}>{studentSummary.luotVao} lượt</Text>
-                      <Text size="xs" c="dimmed" fw={500}>Vào khu ký túc xá</Text>
+                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>{t("actionIn")}</Text>
+                      <Text size="lg" fw={800} c="#1e293b" style={{ fontSize: "20px" }}>{studentSummary.luotVao} {t("countText").toLowerCase()}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>{t("actionIn")}</Text>
                     </Stack>
                     <ThemeIcon size={38} color="teal" variant="light">
                       <IconChevronDown size={18} style={{ transform: "rotate(180deg)" }} />
@@ -492,9 +525,9 @@ export default function TheoMaSoSubPage() {
                 <Card withBorder radius="lg" p="md" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0", height: "100%" }}>
                   <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Stack gap={2}>
-                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>Lượt ra</Text>
-                      <Text size="lg" fw={800} c="#1e293b" style={{ fontSize: "20px" }}>{studentSummary.luotRa} lượt</Text>
-                      <Text size="xs" c="dimmed" fw={500}>Ra khỏi ký túc xá</Text>
+                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>{t("actionOut")}</Text>
+                      <Text size="lg" fw={800} c="#1e293b" style={{ fontSize: "20px" }}>{studentSummary.luotRa} {t("countText").toLowerCase()}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>{t("actionOut")}</Text>
                     </Stack>
                     <ThemeIcon size={38} color="orange" variant="light">
                       <IconChevronDown size={18} />
@@ -506,9 +539,9 @@ export default function TheoMaSoSubPage() {
                 <Card withBorder radius="lg" p="md" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0", height: "100%" }}>
                   <Group justify="space-between" align="flex-start" wrap="nowrap">
                     <Stack gap={2}>
-                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>Tổng lượt quét</Text>
-                      <Text size="lg" fw={800} c="#1f5ca9" style={{ fontSize: "20px" }}>{studentSummary.tongLuot} lượt</Text>
-                      <Text size="xs" c="dimmed" fw={500}>Lượt ra và vào cộng dồn</Text>
+                      <Text size="xs" fw={700} c="#1f5ca9" style={{ textTransform: "uppercase" }}>{t("totalLabel")}</Text>
+                      <Text size="lg" fw={800} c="#1f5ca9" style={{ fontSize: "20px" }}>{studentSummary.tongLuot} {t("countText").toLowerCase()}</Text>
+                      <Text size="xs" c="dimmed" fw={500}>{t("totalLabel")}</Text>
                     </Stack>
                     <ThemeIcon size={38} color="blue" variant="light">
                       <IconReportAnalytics size={18} />
@@ -519,8 +552,8 @@ export default function TheoMaSoSubPage() {
 
               {weeklyChartData.length > 0 && (
                 <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-                  <Text fw={700} size="sm" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px" }}>
-                    TẦN SUẤT RA VÀO TRONG TUẦN CỦA: {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
+                  <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                    {t("searchByCodeChartTitle")}: {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
                   </Text>
                   <div style={{ height: 260 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -528,10 +561,10 @@ export default function TheoMaSoSubPage() {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
                         <XAxis dataKey="name" />
                         <YAxis />
-                        <Tooltip />
+                        <RechartsTooltip />
                         <Legend />
-                        <Bar dataKey="Lượt vào" fill="#1f5ca9" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="Lượt ra" fill="#00afef" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Lượt vào" name={t("actionIn")} fill="#1f5ca9" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="Lượt ra" name={t("actionOut")} fill="#00afef" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -540,8 +573,8 @@ export default function TheoMaSoSubPage() {
 
               <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
                 <Group justify="space-between" mb="md">
-                  <Text fw={800} size="md" c="#1e293b" style={{ letterSpacing: "0.25px" }}>
-                    CHI TIẾT LỊCH SỬ RA VÀO - {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
+                  <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+                    {t("searchByCodeTableTitle")} - {selectedStudent.hoTen.toUpperCase()} ({selectedStudent.studentId})
                   </Text>
                 </Group>
 
@@ -549,12 +582,12 @@ export default function TheoMaSoSubPage() {
                   <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>STT</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Thời gian</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Loại</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Khu KTX</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>Phòng / Vị trí</Table.Th>
-                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>Trạng thái</Table.Th>
+                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
+                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("time")}</Table.Th>
+                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("type")}</Table.Th>
+                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("dormZone")}</Table.Th>
+                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("room")}</Table.Th>
+                        <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("status")}</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -566,20 +599,26 @@ export default function TheoMaSoSubPage() {
                           <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 500 }}>{detail.time}</Table.Td>
                           <Table.Td style={{ textAlign: "center" }}>
                             <Badge color={detail.type === "Vào" ? "blue" : "orange"} size="sm" radius="md">
-                              {detail.type}
+                              {getTranslatedActionOrStatus(detail.type)}
                             </Badge>
                           </Table.Td>
-                          <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{detail.ktx}</Table.Td>
+                          <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{getTranslatedKhu(detail.ktx)}</Table.Td>
                           <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{detail.room}</Table.Td>
                           <Table.Td style={{ textAlign: "center" }}>
                             <Badge
                               color={
-                                detail.status === "Hợp lệ" ? "green" : detail.status === "Nghi vấn" ? "yellow" : "red"
+                                String(detail.status).toLowerCase().includes("vào") || detail.status === "Hợp lệ"
+                                  ? "blue"
+                                  : String(detail.status).toLowerCase().includes("ra") 
+                                  ? "orange"
+                                  : detail.status === "Nghi vấn"
+                                  ? "yellow"
+                                  : "red"
                               }
                               variant="light"
                               size="sm"
                             >
-                              {detail.status}
+                              {getTranslatedActionOrStatus(detail.status)}
                             </Badge>
                           </Table.Td>
                         </Table.Tr>
@@ -588,7 +627,7 @@ export default function TheoMaSoSubPage() {
                         <Table.Tr>
                           <Table.Td colSpan={6}>
                             <Text ta="center" c="dimmed" py="xl">
-                              Không có dữ liệu lịch sử ra vào chi tiết
+                              {t("noData")}
                             </Text>
                           </Table.Td>
                         </Table.Tr>
@@ -625,9 +664,9 @@ export default function TheoMaSoSubPage() {
                 <ThemeIcon size={48} radius="xl" variant="light" style={{ backgroundColor: "#e0f2fe" }}>
                   <IconId size={24} color="#1f5ca9" />
                 </ThemeIcon>
-                <Text fw={700} size="md" c="#1f5ca9" ta="center">Xem chi tiết theo mã số</Text>
+                <Text fw={700} size="md" c="#1f5ca9" ta="center">{t("searchByCodeTitle")}</Text>
                 <Text size="sm" c="dimmed" ta="center" style={{ maxWidth: 500 }}>
-                  Vui lòng nhập MSSV hoặc mã số để tìm kiếm thông tin và xem báo cáo tần suất ra vào ký túc xá.
+                  {t("noStudentSelected")}
                 </Text>
               </Stack>
             </Card>

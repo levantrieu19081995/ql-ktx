@@ -22,7 +22,7 @@ export default function KtxInOutChart({ data = [] }: KtxInOutChartProps) {
       }}
     >
       <Box mb="md">
-        <Text fw={700} size="sm" c="dimmed" style={{ letterSpacing: '0.5px' }}>
+        <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
           {t("ktxChartTitle")}
         </Text>
         <Text size="xs" c="dimmed">

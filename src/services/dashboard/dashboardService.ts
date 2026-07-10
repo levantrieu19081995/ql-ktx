@@ -149,6 +149,35 @@ export const fetchSuKienRaVaoPaginate = async (page: number, pageSize: number): 
   }
 };
 
+// 6b. Lấy lịch sử ra vào theo từng ngày (API đúng để hiển thị bảng lịch sử Dashboard)
+// End
+// point: POST /face-detect-service/face-web-check-time/paginate
+// Body: { page, pageSize, maNhom, maKhu, keyword, ngay }
+export const fetchLichSuRaVaoTheoNgay = async (params: {
+  page: number;
+  pageSize: number;
+  ngay: string;    // Ngày cụ thể, format: MM/DD/YYYY
+  maKhu?: string;  // -1 = tất cả
+  maNhom?: string; // -1 = tất cả
+  keyword?: string;
+}): Promise<any> => {
+  try {
+    const body = {
+      page: params.page,
+      pageSize: params.pageSize,
+      ngay: params.ngay,
+      maKhu: params.maKhu ?? "-1",
+      maNhom: params.maNhom ?? "-1",
+      keyword: params.keyword ?? "",
+    };
+    const res = await post<any>("/face-detect-service/face-web-check-time/paginate", body);
+    return res;
+  } catch (error) {
+    console.error(`Error fetching lich su ra vao for ngay=${params.ngay}:`, error);
+    return null;
+  }
+};
+
 // 7. Lấy danh sách sinh viên bị cấm
 export const fetchSinhVienCamPaginate = async (params: PaginateRequest): Promise<any> => {
   try {
@@ -230,13 +259,13 @@ export const fetchThongKeChiTietNguoiLa = async (params: { Ngay: string; maKhu: 
   }
 };
 
-// 13. Dashboard summary (POST) - sử dụng endpoint luot-ra-vao để lấy tổng quan
-export const fetchDashboardSummary = async (params?: { Ngay: string; maKhu: string; [key: string]: any }): Promise<any> => {
+// 13. Dashboard summary (POST) - sử dụng endpoint thong-ke/luot-ra-vao để lấy tổng quan
+export const fetchDashboardSummary = async (params: { tuNgay: string; denNgay: string }): Promise<any> => {
   try {
     const payload = {
-      tuNgay: params?.tuNgay ?? params?.Ngay ?? "",
-      denNgay: params?.denNgay ?? params?.Ngay ?? "",
-      groupBy: params?.groupBy ?? "DAY",
+      tuNgay: params.tuNgay,
+      denNgay: params.denNgay,
+      groupBy: "DAY",
     };
     const res = await post<any>("/ktx-service/thong-ke/luot-ra-vao", payload);
     return res;
