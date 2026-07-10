@@ -39,13 +39,11 @@ import {
   IconLockFilled,
   IconHistory,
   IconAlertTriangle,
-
   IconSettings,
   IconUsersGroup,
   IconShieldLock,
   IconLayoutSidebarLeftExpand,
   IconLayoutSidebarLeftCollapse,
-
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -98,6 +96,9 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
       grouped: true,
       children: [
         {
+          label: t("historyMenu"),
+          href: "/history",
+          icon: <IconHistory size={16} />,
         },
         {
           label: t("warningsMenu"),

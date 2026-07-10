@@ -2,13 +2,18 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/dates/styles.css";
 import "@/styles/mantine-overrides.css";
-import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from "@mantine/core";
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
+} from "@mantine/core";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { NotificationsProviderClient } from "@/providers/NotificationsProviderClient";
 import { Suspense } from "react";
+import { FONT } from "@/constants/theme";
 
 type Props = { children: React.ReactNode; params: { locale: string } };
 
@@ -35,9 +40,11 @@ export default async function RootLayout({ children, params }: Props) {
         <MantineProvider
           defaultColorScheme="light"
           theme={{
-            fontFamily: "var(--font-readex-pro), sans-serif",
+            // fontFamily: "var(--font-readex-pro), sans-serif",
+            fontFamily: FONT.family,
             headings: {
-              fontFamily: "var(--font-readex-pro), sans-serif",
+              fontFamily: FONT.family,
+              // fontFamily: "var(--font-k2d), sans-serif",
             },
             components: {
               Drawer: {
