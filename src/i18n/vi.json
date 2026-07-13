@@ -22,6 +22,7 @@
       "CredentialsSignin": "Tài khoản hoặc mật khẩu không đúng.",
       "AccessDenied": "Bạn không có quyền truy cập.",
       "generic": "Đăng nhập thất bại.",
+      "Dang nhap that bai": "Đăng nhập thất bại.",
       "requiredUsername": "Vui lòng nhập tài khoản",
       "minUsername": "Tài khoản tối thiểu {count} ký tự",
       "requiredPassword": "Vui lòng nhập mật khẩu",
@@ -126,7 +127,7 @@
   },
 
   "Dashboard": {
-    "title": "HỆ THỐNG GIÁM SÁT KÝ TÚC XÁ",
+    "title": "Hệ thống giám sát ký túc xá",
     "quickStats": "THỐNG KÊ NHANH",
     "totalTitle": "TỔNG SV KTX",
     "totalCaption": "Tổng số sinh viên",
@@ -214,7 +215,7 @@
     "title": "Chứng nhận cải tạo"
   },
   "History": {
-    "title": "LỊCH SỬ RA VÀO",
+    "title": "Lịch sử ra vào",
     "tabs": {
       "log": "Lịch sử",
       "statistics": "Thống kê",
@@ -345,7 +346,7 @@
       "viewAll": "Xem tất cả"
     },
     "warnings": {
-      "title": "CẢNH BÁO NGƯỜI LẠ",
+      "title": "Cảnh báo người lạ",
       "subtitle": "Giám sát và phát hiện xâm nhập trái phép thời gian thực",
       "gridFeed": "Grid Feed",
       "tableList": "Table List",
@@ -382,8 +383,8 @@
     "cancel": "Hủy",
     "save": "Lưu thông tin",
     "all": "Tất cả",
-    
-    "inOutTitle": "THỐNG KÊ LƯỢT RA VÀO",
+
+    "inOutTitle": "Thống kê lượt ra vào",
     "addData": "Thêm dữ liệu",
     "top10InOut": "TOP 10 RA VÀO NHIỀU NHẤT",
     "distByStatus": "PHÂN BỔ LƯỢT RA VÀO THEO TRẠNG THÁI",
@@ -393,12 +394,12 @@
     "studentTableTitle": "BẢNG THỐNG KÊ SINH VIÊN RA VÀO",
     "role": "Mã nhóm / Vai trò",
     "avatar": "Ảnh đại diện",
-    
+
     "detailTitle": "CHI TIẾT LỊCH SỬ RA VÀO",
     "detailTypeFilter": "LỌC THEO",
     "closeDetail": "Đóng chi tiết",
     "detailTableNoData": "Dữ liệu hiện tại không có",
-    
+
     "addModalTitle": "Thêm dữ liệu vào/ra",
     "enterMssv": "MSSV",
     "enterFullName": "Họ tên",
@@ -412,16 +413,16 @@
     "enterNote": "Nhập ghi chú (nếu có)",
     "submit": "Ghi nhận",
     "requiredFieldsWarning": "Vui lòng nhập đầy đủ các trường bắt buộc (*)",
-    
-    "absentTitle": "THỐNG KÊ SINH VIÊN VẮNG MẶT LÂU NGÀY",
+
+    "absentTitle": "Thống kê sinh viên vắng mặt lâu ngày",
     "absentChartTitle": "PHÂN BỔ SINH VIÊN VẮNG MẶT THEO KHU KTX",
     "absentTableTitle": "BẢNG THỐNG KÊ SINH VIÊN VẮNG MẶT LÂU NGÀY",
     "lastActive": "Lần hoạt động cuối",
     "daysAbsent": "Số ngày vắng mặt",
     "daysCount": "{days, plural, =0 {0 ngày} =1 {1 ngày} other {# ngày}}",
-    
-    "strangerTitle": "THỐNG KÊ NGƯỜI LẠ XUẤT HIỆN",
-    "strangerChartTitle": "TẦN SUẤT PHÁT HIỆN NGƯỜI LẠ",
+
+    "strangerTitle": "Thống kê người lạ xuất hiện",
+    "strangerChartTitle": "TẦN SUẤT PHÁT HIỆN NGƯỜI LẠ (7 NGÀY QUA)",
     "strangerTableTitle": "BẢNG PHÁT HIỆN NGƯỜI LẠ XUẤT HIỆN",
     "detectTime": "Thời gian phát hiện",
     "detectPosition": "Vị trí / Cổng",
@@ -433,8 +434,8 @@
     "dailyDetailsTitle": "CHI TIẾT NGƯỜI LẠ TRONG NGÀY",
     "noStrangerDetailsForDay": "Không phát hiện người lạ nào trong ngày này.",
     "strangerTag": "Người lạ",
-    
-    "bannedTitle": "THỐNG KÊ SINH VIÊN BỊ CẤM",
+
+    "bannedTitle": "Thống kê sinh viên bị cấm",
     "addBannedBtn": "Thêm SV bị cấm",
     "bannedChartTitle": "TỶ LỆ LÝ DO CẤM RA VÀO KTX",
     "bannedTableTitle": "DANH SÁCH SINH VIÊN BỊ CẤM RA VÀO",
@@ -450,8 +451,8 @@
     "selectEndDate": "Chọn ngày kết thúc",
     "banEventType": "Loại sự kiện cấm",
     "selectBanEventType": "Chọn loại sự kiện cấm",
-    
-    "searchByCodeTitle": "TÌM KIẾM THEO MÃ SỐ SINH VIÊN",
+
+    "searchByCodeTitle": "Tìm kiếm theo mã số sinh viên",
     "enterMssvPlaceholder": "Nhập mã số sinh viên...",
     "studentInfoCardTitle": "THÔNG TIN SINH VIÊN",
     "searchByCodeChartTitle": "BIỂU ĐỒ TẦN SUẤT RA VÀO THEO MÃ SỐ",
@@ -461,7 +462,7 @@
     "actionOut": "Lượt ra",
     "countText": "lượt",
     "totalLabel": "Tổng lượt",
-    
+
     "dormA": "Khu A",
     "dormB": "Khu B",
     "roleStudent": "Sinh viên",

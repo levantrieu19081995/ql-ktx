@@ -269,20 +269,17 @@ export default function SinhVienBiCamPage() {
         onEdit={handleEdit}
         icon={<IconLockFilled size={20} />}
         searchControls={
-          <>
-            <div className="filter-inputs-custom">
+          <Stack gap="md" w="100%">
+            <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
               <TextInput
                 label="Mã sinh viên"
                 placeholder="Nhập mã sinh viên..."
-                style={{ minWidth: 200 }}
+                style={{ minWidth: 200, flex: 1 }}
                 value={maSinhVienSearch}
                 onChange={(event) =>
                   setMaSinhVienSearch(event.currentTarget.value)
                 }
               />
-            </div>
-
-            <div className="filter-actions-custom">
               <Button
                 leftSection={<IconSearch size={18} />}
                 color="blue"
@@ -291,7 +288,6 @@ export default function SinhVienBiCamPage() {
               >
                 Tìm kiếm
               </Button>
-
               <Button
                 leftSection={<IconRefresh size={18} />}
                 variant="default"
@@ -300,7 +296,6 @@ export default function SinhVienBiCamPage() {
               >
                 Làm mới
               </Button>
-
               <Button
                 leftSection={<IconAdOff size={18} />}
                 color="blue"
@@ -309,8 +304,8 @@ export default function SinhVienBiCamPage() {
               >
                 Thêm sinh viên
               </Button>
-            </div>
-          </>
+            </Group>
+          </Stack>
         }
         pagination={
           <CustomPagination
@@ -345,7 +340,9 @@ export default function SinhVienBiCamPage() {
             nothingFoundMessage="Không tìm thấy sinh viên"
             onSearchChange={loadSinhVienOptions}
             onChange={(value) => {
-              const selectedSv = sinhVienList.find(sv => sv.maSinhVien === value);
+              const selectedSv = sinhVienList.find(
+                (sv) => sv.maSinhVien === value,
+              );
               setForm((prev) => ({
                 ...prev,
                 maSinhVien: value || "",

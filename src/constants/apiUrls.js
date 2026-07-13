@@ -17,6 +17,7 @@ const API_URLS = {
     token: "/auth/token",
     refreshToken: `${USER_SERVICE}/auth/refresh-token`,
     authToken: `${USER_SERVICE}/auth/token`,
+    captchaGenerate: `${USER_SERVICE}/captcha/generate`,
     // authToken: `/auth/token`,
   },
 

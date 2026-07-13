@@ -75,6 +75,7 @@ export const dichVuDanhMucNhom = {
 export const dichVuLichSuRaVao = {
 
   layDanhSachLichSu: async (boLoc?: {
+    ngay?: string;
     tuNgay?: string;
     denNgay?: string;
     mssv?: string;
@@ -86,7 +87,8 @@ export const dichVuLichSuRaVao = {
     loaiDoiTuong?: string;
     maNhom?: string;
   }): Promise<HistoryItem[]> => {
-    // 1. Determine dates to query
+    /*
+    // 1. Logic range ngĂ y cÅ© táº¡m giá»¯ láº¡i, hiá»‡n swagger chá»‰ dĂ¹ng 1 field `ngay`
     const datesToQuery: string[] = [];
     if (boLoc?.tuNgay) {
       const start = dayjs(boLoc.tuNgay);
@@ -102,11 +104,16 @@ export const dichVuLichSuRaVao = {
     } else {
       datesToQuery.push("06/01/2026");
     }
+    */
+
+    const ngayTruyVan = boLoc?.ngay
+      ? dayjs(boLoc.ngay).format('MM/DD/YYYY')
+      : dayjs().format('MM/DD/YYYY');
+    const datesToQuery = [ngayTruyVan];
 
     // 2. Map filters to API payload
     const maKhu = boLoc?.maKtx || "-1";
     const maNhom = boLoc?.maNhom || "-1";
-    const keyword = boLoc?.mssv || boLoc?.hoVaTen || "";
 
     // 3. Query the endpoint for each day in parallel
     const apiResultsPromises = datesToQuery.map(async (dateStr) => {
@@ -119,10 +126,9 @@ export const dichVuLichSuRaVao = {
           },
           body: JSON.stringify({
             page: 1,
-            pageSize: 1000,
+            pageSize: 10,
             maNhom: maNhom,
             maKhu: maKhu,
-            keyword: keyword,
             ngay: dateStr
           })
         });

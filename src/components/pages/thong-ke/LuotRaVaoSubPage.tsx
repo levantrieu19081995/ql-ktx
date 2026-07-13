@@ -54,6 +54,7 @@ import {
 } from "recharts";
 import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
 import { fetchSinhVienCamPaginate, fetchThongKeSvBiCamNoPhi } from "@/services/dashboard/dashboardService";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 export interface ThongKeOverview {
   stt: number;
@@ -628,23 +629,20 @@ export default function LuotRaVaoSubPage() {
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-      <Group justify="space-between" align="center">
-        <Group gap="md">
-          <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
-            <IconReportAnalytics size={20} color="#1f5ca9" />
-          </ThemeIcon>
-          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
-            {t("inOutTitle")}
-          </Title>
-        </Group>
-        <Button
-          leftSection={<IconPlus size={16} />}
-          style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
-          onClick={() => setModalOpened(true)}
-        >
-          {t("addData")}
-        </Button>
-      </Group>
+      <PageSectionHeader
+        title={t("inOutTitle")}
+        description="Theo dõi thống kê lượt ra vào và chi tiết phát sinh theo sinh viên, khu và trạng thái."
+        icon={<IconReportAnalytics size={20} color="#1f5ca9" />}
+        rightSection={
+          <Button
+            leftSection={<IconPlus size={16} />}
+            style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
+            onClick={() => setModalOpened(true)}
+          >
+            {t("addData")}
+          </Button>
+        }
+      />
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">

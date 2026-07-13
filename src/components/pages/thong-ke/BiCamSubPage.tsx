@@ -58,6 +58,7 @@ import {
   createOrUpdateSinhVienCam,
   fetchSinhVienPaginate,
 } from "@/services/dashboard/dashboardService";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 interface BannedItem {
   camId: number;
@@ -143,11 +144,28 @@ const CustomTooltip = ({ active, payload }: any) => {
           fontFamily: "var(--font-readex-pro), sans-serif",
         }}
       >
-        <p style={{ margin: 0, fontWeight: 700, fontSize: "13px", color: "#1e293b" }}>
+        <p
+          style={{
+            margin: 0,
+            fontWeight: 700,
+            fontSize: "13px",
+            color: "#1e293b",
+          }}
+        >
           {data.fullName}
         </p>
-        <p style={{ margin: "4px 0 0 0", fontSize: "11px", color: "#dc2626", lineHeight: "1.4", wordBreak: "break-word", whiteSpace: "normal" }}>
-          <span style={{ fontWeight: 600 }}>Lý do cấm:</span> {data.lyDo || "Không rõ lý do"}
+        <p
+          style={{
+            margin: "4px 0 0 0",
+            fontSize: "11px",
+            color: "#dc2626",
+            lineHeight: "1.4",
+            wordBreak: "break-word",
+            whiteSpace: "normal",
+          }}
+        >
+          <span style={{ fontWeight: 600 }}>Lý do cấm:</span>{" "}
+          {data.lyDo || "Không rõ lý do"}
         </p>
       </div>
     );
@@ -177,7 +195,10 @@ export default function BiCamSubPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Toast notifications
-  const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
+  const [toast, setToast] = useState<{
+    type: "success" | "error";
+    msg: string;
+  } | null>(null);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -211,12 +232,15 @@ export default function BiCamSubPage() {
         const payload = res?.payload;
         const items: BannedItem[] = payload?.items ?? [];
         setBannedList(items);
-        const calculatedPages = Math.ceil((payload?.totalElements ?? 0) / PAGE_SIZE) || 1;
+        const calculatedPages =
+          Math.ceil((payload?.totalElements ?? 0) / PAGE_SIZE) || 1;
         setTotalPages(calculatedPages);
         setTotalElements(payload?.totalElements ?? 0);
 
         // Resolve student names
-        const uniqueMaSv = [...new Set(items.map((i) => i.maSinhVien).filter(Boolean))];
+        const uniqueMaSv = [
+          ...new Set(items.map((i) => i.maSinhVien).filter(Boolean)),
+        ];
         if (uniqueMaSv.length > 0) {
           try {
             const svRes = await fetchSinhVienPaginate({
@@ -228,7 +252,9 @@ export default function BiCamSubPage() {
             const svItems: any[] = svRes?.payload?.items ?? [];
             const nameMap: Record<string, string> = {};
             svItems.forEach((sv: any) => {
-              if (sv.maSinhVien) nameMap[sv.maSinhVien] = sv.hoTen || sv.ten || sv.hoVaTen || sv.maSinhVien;
+              if (sv.maSinhVien)
+                nameMap[sv.maSinhVien] =
+                  sv.hoTen || sv.ten || sv.hoVaTen || sv.maSinhVien;
             });
             setSvNameMap(nameMap);
           } catch {
@@ -242,7 +268,7 @@ export default function BiCamSubPage() {
         setLoading(false);
       }
     },
-    [mssvFilter]
+    [mssvFilter],
   );
 
   useEffect(() => {
@@ -252,7 +278,10 @@ export default function BiCamSubPage() {
   // Close suggestions on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
-      if (svSearchRef.current && !svSearchRef.current.contains(e.target as Node)) {
+      if (
+        svSearchRef.current &&
+        !svSearchRef.current.contains(e.target as Node)
+      ) {
         setShowSuggestions(false);
       }
     };
@@ -399,11 +428,18 @@ export default function BiCamSubPage() {
         data?.code === 200;
 
       if (!isSuccess) {
-        throw new Error(data?.message || data?.error || "Thao tác thất bại (API status: " + data?.status + ")");
+        throw new Error(
+          data?.message ||
+            data?.error ||
+            "Thao tác thất bại (API status: " + data?.status + ")",
+        );
       }
 
       setModalOpen(false);
-      showToast("success", isEditing ? t("toastUpdateSuccess") : t("toastAddSuccess"));
+      showToast(
+        "success",
+        isEditing ? t("toastUpdateSuccess") : t("toastAddSuccess"),
+      );
       loadBannedData(currentPage);
     } catch (err: any) {
       console.error("[BiCam] Save error:", err);
@@ -417,130 +453,222 @@ export default function BiCamSubPage() {
   const chartData =
     bannedList.length > 0
       ? bannedList.slice(0, 10).map((item) => ({
-        name: svNameMap[item.maSinhVien]
-          ? (svNameMap[item.maSinhVien].split(" ").pop() || svNameMap[item.maSinhVien])
-          : item.maSinhVien || `SV${item.sinhVienId}`,
-        fullName: svNameMap[item.maSinhVien] || item.maSinhVien,
-        value: 1,
-        lyDo: item.lyDo,
-      }))
+          name: svNameMap[item.maSinhVien]
+            ? svNameMap[item.maSinhVien].split(" ").pop() ||
+              svNameMap[item.maSinhVien]
+            : item.maSinhVien || `SV${item.sinhVienId}`,
+          fullName: svNameMap[item.maSinhVien] || item.maSinhVien,
+          value: 1,
+          lyDo: item.lyDo,
+        }))
       : [{ name: t("noData"), fullName: "", value: 0, lyDo: "" }];
 
   const filteredBanned = bannedList.filter((item) => {
-    const mssvMatch = !mssvFilter || (item.maSinhVien || "").toLowerCase().includes(mssvFilter.toLowerCase());
+    const mssvMatch =
+      !mssvFilter ||
+      (item.maSinhVien || "").toLowerCase().includes(mssvFilter.toLowerCase());
     const nameResolved = svNameMap[item.maSinhVien] || "";
-    const nameMatch = !hoTenFilter || nameResolved.toLowerCase().includes(hoTenFilter.toLowerCase());
+    const nameMatch =
+      !hoTenFilter ||
+      nameResolved.toLowerCase().includes(hoTenFilter.toLowerCase());
     return mssvMatch && nameMatch;
   });
 
   return (
-    <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+    <Stack
+      gap="xl"
+      p="sm"
+      style={{
+        backgroundColor: "#fafbfd",
+        minHeight: "100vh",
+        fontFamily: "var(--font-readex-pro), sans-serif",
+      }}
+    >
       {/* Toast - client-only, no SSR mismatch */}
       {toast && (
-        <div style={{
-          position: "fixed",
-          top: 20,
-          right: 24,
-          zIndex: 9999,
-          minWidth: 320,
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 24,
+            zIndex: 9999,
+            minWidth: 320,
+          }}
+        >
           <Alert
             color={toast.type === "success" ? "green" : "red"}
-            icon={toast.type === "success" ? <IconCheck size={18} /> : <IconX size={18} />}
+            icon={
+              toast.type === "success" ? (
+                <IconCheck size={18} />
+              ) : (
+                <IconX size={18} />
+              )
+            }
             radius="md"
             style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}
           >
-            <Text fw={600} size="sm">{toast.msg}</Text>
+            <Text fw={600} size="sm">
+              {toast.msg}
+            </Text>
           </Alert>
         </div>
       )}
 
       {/* Header */}
-      <Group justify="space-between" align="center">
-        <Group gap="md">
-          <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
-            <IconReportAnalytics size={20} color="#1f5ca9" />
-          </ThemeIcon>
-          <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
-            {t("bannedTitle")}
-          </Title>
-        </Group>
-        <Button
-          leftSection={<IconPlus size={16} />}
-          style={{ background: "linear-gradient(135deg, #1f5ca9, #00afef)", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px" }}
-          onClick={openAddModal}
-        >
-          {t("addBannedBtn")}
-        </Button>
-      </Group>
+      <PageSectionHeader
+        title={t("bannedTitle")}
+        description="Theo dõi danh sách sinh viên bị cấm, lý do áp dụng và thời gian hiệu lực."
+        icon={<IconReportAnalytics size={20} color="#1f5ca9" />}
+        rightSection={
+          <Button
+            leftSection={<IconPlus size={16} />}
+            style={{
+              background: "linear-gradient(135deg, #1f5ca9, #00afef)",
+              fontFamily: "var(--font-readex-pro), sans-serif",
+              borderRadius: "8px",
+            }}
+            onClick={openAddModal}
+          >
+            {t("addBannedBtn")}
+          </Button>
+        }
+      />
 
       {/* Filter Card */}
-      <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-        <Grid align="flex-end" gutter="md">
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
+      <Card
+        withBorder
+        radius="lg"
+        p="lg"
+        style={{
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
+          borderColor: "#e2e8f0",
+        }}
+      >
+        <Stack gap="md">
+          {/* Row 1: 2 filter fields */}
+          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
             <TextInput
               label={t("fullName").toUpperCase()}
               placeholder={t("enterFullName") + "..."}
               value={hoTenFilter}
               onChange={(e) => setHoTenFilter(e.currentTarget.value)}
               styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
+                label: {
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#475569",
+                  marginBottom: "6px",
+                  letterSpacing: "0.5px",
+                },
+                input: {
+                  borderRadius: "8px",
+                  fontFamily: "var(--font-readex-pro), sans-serif",
+                  height: "40px",
+                },
               }}
             />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
             <TextInput
               label={t("studentId").toUpperCase()}
               placeholder={t("enterMssv") + "..."}
               value={mssvFilter}
               onChange={(e) => setMssvFilter(e.currentTarget.value)}
               styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
+                label: {
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  color: "#475569",
+                  marginBottom: "6px",
+                  letterSpacing: "0.5px",
+                },
+                input: {
+                  borderRadius: "8px",
+                  fontFamily: "var(--font-readex-pro), sans-serif",
+                  height: "40px",
+                },
               }}
             />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Group justify="flex-end" gap="sm" wrap="wrap">
-              <Button
-                leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                onClick={handleSearch}
-                disabled={loading}
-              >
-                {t("search")}
-              </Button>
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                variant="outline"
-                color="gray"
-                onClick={handleReset}
-                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("reset")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("exportExcel")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("exportPdf")}
-              </Button>
-            </Group>
-          </Grid.Col>
-        </Grid>
+          </SimpleGrid>
+
+          {/* Dotted divider */}
+          <Divider
+            variant="dashed"
+            style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }}
+            my="xs"
+          />
+
+          {/* Row 2: Search buttons */}
+          <Group justify="flex-end" gap="sm">
+            <Button
+              leftSection={
+                loading ? (
+                  <Loader size={16} color="white" />
+                ) : (
+                  <IconSearch size={16} />
+                )
+              }
+              style={{
+                backgroundColor: "#1f5ca9",
+                fontFamily: "var(--font-readex-pro), sans-serif",
+                borderRadius: "8px",
+                height: "40px",
+              }}
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {t("search")}
+            </Button>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              variant="outline"
+              color="gray"
+              onClick={handleReset}
+              style={{
+                borderColor: "#cbd5e1",
+                color: "#64748b",
+                fontFamily: "var(--font-readex-pro), sans-serif",
+                borderRadius: "8px",
+                height: "40px",
+              }}
+            >
+              {t("reset")}
+            </Button>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{
+                borderColor: "#1f5ca9",
+                color: "#1f5ca9",
+                fontFamily: "var(--font-readex-pro), sans-serif",
+                borderRadius: "8px",
+                height: "40px",
+              }}
+            >
+              {t("exportExcel")}
+            </Button>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{
+                borderColor: "#0ea5e9",
+                color: "#0ea5e9",
+                fontFamily: "var(--font-readex-pro), sans-serif",
+                borderRadius: "8px",
+                height: "40px",
+              }}
+            >
+              {t("exportPdf")}
+            </Button>
+          </Group>
+        </Stack>
       </Card>
 
       {error && (
-        <Badge color="red" variant="light" size="lg" style={{ width: "100%", padding: "12px", borderRadius: "8px" }}>
+        <Badge
+          color="red"
+          variant="light"
+          size="lg"
+          style={{ width: "100%", padding: "12px", borderRadius: "8px" }}
+        >
           {error}
         </Badge>
       )}
@@ -549,7 +677,9 @@ export default function BiCamSubPage() {
         <Center py="xl">
           <Stack align="center" gap="sm">
             <Loader size="md" color="blue" />
-            <Text size="sm" c="dimmed">{t("loading")}</Text>
+            <Text size="sm" c="dimmed">
+              {t("loading")}
+            </Text>
           </Stack>
         </Center>
       ) : (
@@ -557,8 +687,23 @@ export default function BiCamSubPage() {
           {/* Chart */}
           <Grid gutter="md">
             <Grid.Col span={12}>
-              <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+              <Card
+                withBorder
+                radius="lg"
+                p="lg"
+                style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+              >
+                <Text
+                  fw={700}
+                  size="xs"
+                  c="#1f5ca9"
+                  mb="md"
+                  style={{
+                    letterSpacing: "0.5px",
+                    textTransform: "uppercase",
+                    fontFamily: "var(--font-readex-pro), sans-serif",
+                  }}
+                >
                   {t("bannedChartTitle")}
                 </Text>
                 <div style={{ height: 220 }}>
@@ -568,7 +713,11 @@ export default function BiCamSubPage() {
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                       <YAxis allowDecimals={false} />
                       <RechartsTooltip content={<CustomTooltip />} />
-                      <Bar dataKey="value" fill="#1f5ca9" radius={[4, 4, 0, 0]} />
+                      <Bar
+                        dataKey="value"
+                        fill="#1f5ca9"
+                        radius={[4, 4, 0, 0]}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -577,48 +726,164 @@ export default function BiCamSubPage() {
           </Grid>
 
           {/* Table */}
-          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+          <Card
+            withBorder
+            radius="lg"
+            p="lg"
+            style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+          >
             <Group justify="space-between" mb="md">
-              <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+              <Text
+                fw={700}
+                size="xs"
+                c="#1f5ca9"
+                style={{
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  fontFamily: "var(--font-readex-pro), sans-serif",
+                }}
+              >
                 {t("bannedTableTitle")} ({totalElements})
               </Text>
             </Group>
 
             <ScrollArea>
-              <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 860 }}>
+              <Table
+                verticalSpacing="sm"
+                highlightOnHover
+                style={{ minWidth: 860 }}
+              >
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("studentId")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("fullName")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("bannedReason")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("startDate")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("endDate")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("banEventType")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("actions")}</Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("no")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("studentId")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("fullName")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("bannedReason")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {t("startDate")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {t("endDate")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {t("banEventType")}
+                    </Table.Th>
+                    {/* <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("actions")}</Table.Th> */}
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {filteredBanned.map((row, index) => (
-                    <Table.Tr key={row.camId || index} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <Table.Tr
+                      key={row.camId || index}
+                      style={{ borderBottom: "1px solid #f1f5f9" }}
+                    >
                       <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
                         {(currentPage - 1) * PAGE_SIZE + index + 1}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace", fontWeight: 600 }}>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#64748b",
+                          fontFamily: "monospace",
+                          fontWeight: 600,
+                        }}
+                      >
                         {row.maSinhVien}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#1e293b",
+                          fontWeight: 600,
+                        }}
+                      >
                         {svNameMap[row.maSinhVien] || "—"}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#fa5252", fontWeight: 500, maxWidth: 260 }}>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#fa5252",
+                          fontWeight: 500,
+                          maxWidth: 260,
+                        }}
+                      >
                         {row.lyDo}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#475569", textAlign: "center" }}>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#475569",
+                          textAlign: "center",
+                        }}
+                      >
                         {formatTimestamp(row.ngayBatDau)}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#475569", textAlign: "center" }}>
-                        {row.ngayKetThuc ? formatTimestamp(row.ngayKetThuc) : (
-                          <Badge color="red" variant="light" size="xs">{t("noData")}</Badge>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#475569",
+                          textAlign: "center",
+                        }}
+                      >
+                        {row.ngayKetThuc ? (
+                          formatTimestamp(row.ngayKetThuc)
+                        ) : (
+                          <Badge color="red" variant="light" size="xs">
+                            {t("noData")}
+                          </Badge>
                         )}
                       </Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
@@ -626,7 +891,7 @@ export default function BiCamSubPage() {
                           ID: {row.loaiSuKienId}
                         </Badge>
                       </Table.Td>
-                      <Table.Td style={{ textAlign: "center" }}>
+                      {/* <Table.Td style={{ textAlign: "center" }}>
                         <Tooltip label={t("save")} withArrow>
                           <ActionIcon
                             variant="light"
@@ -637,7 +902,7 @@ export default function BiCamSubPage() {
                             <IconEdit size={14} />
                           </ActionIcon>
                         </Tooltip>
-                      </Table.Td>
+                      </Table.Td> */}
                     </Table.Tr>
                   ))}
                   {filteredBanned.length === 0 && (
@@ -675,7 +940,11 @@ export default function BiCamSubPage() {
         onClose={() => setModalOpen(false)}
         title={
           <Group gap="xs">
-            <ThemeIcon size={28} variant="light" color={isEditing ? "blue" : "green"}>
+            <ThemeIcon
+              size={28}
+              variant="light"
+              color={isEditing ? "blue" : "green"}
+            >
               {isEditing ? <IconEdit size={16} /> : <IconPlus size={16} />}
             </ThemeIcon>
             <Text fw={700} c={isEditing ? "#1f5ca9" : "#16a34a"} size="md">
@@ -698,7 +967,14 @@ export default function BiCamSubPage() {
               label={
                 <Group gap={6}>
                   <IconUserSearch size={13} color="#1f5ca9" />
-                  <Text size="11px" fw={700} c="#1f5ca9" style={{ letterSpacing: "0.5px" }}>{t("studentInfoCardTitle")}</Text>
+                  <Text
+                    size="11px"
+                    fw={700}
+                    c="#1f5ca9"
+                    style={{ letterSpacing: "0.5px" }}
+                  >
+                    {t("studentInfoCardTitle")}
+                  </Text>
                 </Group>
               }
               mb="sm"
@@ -711,11 +987,26 @@ export default function BiCamSubPage() {
                 placeholder={t("searchMssvPlaceholder")}
                 value={svSearch}
                 onChange={(e) => handleSvSearchChange(e.currentTarget.value)}
-                leftSection={svLoading ? <Loader size={14} /> : <IconUserSearch size={14} color="#94a3b8" />}
+                leftSection={
+                  svLoading ? (
+                    <Loader size={14} />
+                  ) : (
+                    <IconUserSearch size={14} color="#94a3b8" />
+                  )
+                }
                 error={formErrors.maSinhVien}
                 styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" },
+                  label: {
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#1f5ca9",
+                    marginBottom: "6px",
+                    letterSpacing: "0.5px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    fontFamily: "var(--font-readex-pro), sans-serif",
+                  },
                 }}
               />
               {/* Suggestions dropdown */}
@@ -742,17 +1033,39 @@ export default function BiCamSubPage() {
                       style={{
                         padding: "10px 14px",
                         cursor: "pointer",
-                        borderBottom: i < svSuggestions.length - 1 ? "1px solid #f1f5f9" : "none",
+                        borderBottom:
+                          i < svSuggestions.length - 1
+                            ? "1px solid #f1f5f9"
+                            : "none",
                         transition: "background 0.15s",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f7ff")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#f0f7ff")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "transparent")
+                      }
                     >
                       <Group gap="xs">
-                        <Text size="xs" fw={700} c="#1f5ca9" style={{ fontFamily: "monospace" }}>{sv.maSinhVien}</Text>
-                        <Text size="xs" c="#475569">—</Text>
-                        <Text size="xs" fw={500} c="#1e293b">{sv.hoTen}</Text>
-                        {sv.maPhong && <Badge size="xs" variant="light" color="teal">{sv.maPhong}</Badge>}
+                        <Text
+                          size="xs"
+                          fw={700}
+                          c="#1f5ca9"
+                          style={{ fontFamily: "monospace" }}
+                        >
+                          {sv.maSinhVien}
+                        </Text>
+                        <Text size="xs" c="#475569">
+                          —
+                        </Text>
+                        <Text size="xs" fw={500} c="#1e293b">
+                          {sv.hoTen}
+                        </Text>
+                        {sv.maPhong && (
+                          <Badge size="xs" variant="light" color="teal">
+                            {sv.maPhong}
+                          </Badge>
+                        )}
                       </Group>
                     </Box>
                   ))}
@@ -762,11 +1075,21 @@ export default function BiCamSubPage() {
 
             {/* Display selected student info */}
             {form.hoTen && (
-              <Paper radius="md" p="sm" mt="xs" style={{ backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+              <Paper
+                radius="md"
+                p="sm"
+                mt="xs"
+                style={{
+                  backgroundColor: "#f0fdf4",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
                 <Group gap="xs">
                   <IconCheck size={16} color="#16a34a" />
                   <Text size="sm" fw={600} c="#15803d">
-                    {t("selected")}: <span style={{ color: "#1f5ca9" }}>{form.maSinhVien}</span> — {form.hoTen}
+                    {t("selected")}:{" "}
+                    <span style={{ color: "#1f5ca9" }}>{form.maSinhVien}</span>{" "}
+                    — {form.hoTen}
                   </Text>
                 </Group>
               </Paper>
@@ -784,11 +1107,20 @@ export default function BiCamSubPage() {
                       const val = e.currentTarget.value;
                       setForm((f) => ({ ...f, maSinhVien: val }));
                       setSvSearch(val);
-                      setFormErrors((err) => ({ ...err, maSinhVien: undefined }));
+                      setFormErrors((err) => ({
+                        ...err,
+                        maSinhVien: undefined,
+                      }));
                     }}
                     error={formErrors.maSinhVien}
                     styles={{
-                      label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "4px", letterSpacing: "0.5px" },
+                      label: {
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#64748b",
+                        marginBottom: "4px",
+                        letterSpacing: "0.5px",
+                      },
                       input: { borderRadius: "8px", fontSize: "13px" },
                     }}
                   />
@@ -798,9 +1130,18 @@ export default function BiCamSubPage() {
                     label={`ID ${t("studentId")}`}
                     placeholder="VD: 16"
                     value={form.sinhVienId}
-                    onChange={(e) => { const val = e.currentTarget.value; setForm((f) => ({ ...f, sinhVienId: val })); }}
+                    onChange={(e) => {
+                      const val = e.currentTarget.value;
+                      setForm((f) => ({ ...f, sinhVienId: val }));
+                    }}
                     styles={{
-                      label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "4px", letterSpacing: "0.5px" },
+                      label: {
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#64748b",
+                        marginBottom: "4px",
+                        letterSpacing: "0.5px",
+                      },
                       input: { borderRadius: "8px", fontSize: "13px" },
                     }}
                   />
@@ -815,7 +1156,14 @@ export default function BiCamSubPage() {
               label={
                 <Group gap={6}>
                   <IconFileText size={13} color="#1f5ca9" />
-                  <Text size="11px" fw={700} c="#1f5ca9" style={{ letterSpacing: "0.5px" }}>{t("detailTitle")}</Text>
+                  <Text
+                    size="11px"
+                    fw={700}
+                    c="#1f5ca9"
+                    style={{ letterSpacing: "0.5px" }}
+                  >
+                    {t("detailTitle")}
+                  </Text>
                 </Group>
               }
               mb="sm"
@@ -833,8 +1181,17 @@ export default function BiCamSubPage() {
                 minRows={3}
                 error={formErrors.lyDo}
                 styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif" },
+                  label: {
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#1f5ca9",
+                    marginBottom: "6px",
+                    letterSpacing: "0.5px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    fontFamily: "var(--font-readex-pro), sans-serif",
+                  },
                 }}
               />
 
@@ -845,15 +1202,27 @@ export default function BiCamSubPage() {
                     placeholder="Chọn ngày..."
                     value={form.ngayBatDau}
                     onChange={(val) => {
-                      setForm((f) => ({ ...f, ngayBatDau: val ? new Date(val) : null }));
-                      setFormErrors((err) => ({ ...err, ngayBatDau: undefined }));
+                      setForm((f) => ({
+                        ...f,
+                        ngayBatDau: val ? new Date(val) : null,
+                      }));
+                      setFormErrors((err) => ({
+                        ...err,
+                        ngayBatDau: undefined,
+                      }));
                     }}
                     valueFormat="DD/MM/YYYY"
                     clearable
                     leftSection={<IconCalendar size={14} color="#94a3b8" />}
                     error={formErrors.ngayBatDau}
                     styles={{
-                      label: { fontSize: "11px", fontWeight: 700, color: "#1f5ca9", marginBottom: "6px", letterSpacing: "0.5px" },
+                      label: {
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#1f5ca9",
+                        marginBottom: "6px",
+                        letterSpacing: "0.5px",
+                      },
                       input: { borderRadius: "8px" },
                     }}
                   />
@@ -863,12 +1232,23 @@ export default function BiCamSubPage() {
                     label={t("endDate").toUpperCase()}
                     placeholder={t("selectEndDate")}
                     value={form.ngayKetThuc}
-                    onChange={(val) => setForm((f) => ({ ...f, ngayKetThuc: val ? new Date(val) : null }))}
+                    onChange={(val) =>
+                      setForm((f) => ({
+                        ...f,
+                        ngayKetThuc: val ? new Date(val) : null,
+                      }))
+                    }
                     valueFormat="DD/MM/YYYY"
                     clearable
                     leftSection={<IconCalendar size={14} color="#94a3b8" />}
                     styles={{
-                      label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px", letterSpacing: "0.5px" },
+                      label: {
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#64748b",
+                        marginBottom: "6px",
+                        letterSpacing: "0.5px",
+                      },
                       input: { borderRadius: "8px" },
                     }}
                   />
@@ -879,10 +1259,23 @@ export default function BiCamSubPage() {
                 label={t("banEventType").toUpperCase()}
                 placeholder="VD: 2"
                 value={form.loaiSuKienId}
-                onChange={(e) => { const val = e.currentTarget.value; setForm((f) => ({ ...f, loaiSuKienId: val })); }}
+                onChange={(e) => {
+                  const val = e.currentTarget.value;
+                  setForm((f) => ({ ...f, loaiSuKienId: val }));
+                }}
                 styles={{
-                  label: { fontSize: "11px", fontWeight: 700, color: "#64748b", marginBottom: "6px", letterSpacing: "0.5px" },
-                  input: { borderRadius: "8px", fontSize: "13px", maxWidth: 160 },
+                  label: {
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#64748b",
+                    marginBottom: "6px",
+                    letterSpacing: "0.5px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    fontSize: "13px",
+                    maxWidth: 160,
+                  },
                 }}
               />
             </Stack>
@@ -897,13 +1290,19 @@ export default function BiCamSubPage() {
             style={{ padding: "10px 14px" }}
           >
             <Text size="xs" c="dimmed">
-              Dữ liệu sẽ được lưu trực tiếp vào cơ sở dữ liệu. Các trường có dấu <b>*</b> là bắt buộc.
+              Dữ liệu sẽ được lưu trực tiếp vào cơ sở dữ liệu. Các trường có dấu{" "}
+              <b>*</b> là bắt buộc.
             </Text>
           </Alert>
 
           {/* Buttons */}
           <Group justify="flex-end" mt="xs" gap="sm">
-            <Button variant="outline" color="gray" onClick={() => setModalOpen(false)} style={{ borderRadius: "8px" }}>
+            <Button
+              variant="outline"
+              color="gray"
+              onClick={() => setModalOpen(false)}
+              style={{ borderRadius: "8px" }}
+            >
               {t("cancel")}
             </Button>
             <Button

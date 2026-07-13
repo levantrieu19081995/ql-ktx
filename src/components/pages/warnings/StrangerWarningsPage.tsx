@@ -27,6 +27,7 @@ import { dichVuNguoiLa } from "./strangerService";
 import BoLocNguoiLa from "./BoLocNguoiLa";
 import DrawerChiTietLichSu from "../history/DrawerChiTietLichSu";
 import { xuatRaFileExcel } from "../history/excelHelper";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 export default function StrangerWarningsPage() {
   const t = useTranslations("History");
@@ -141,9 +142,11 @@ export default function StrangerWarningsPage() {
 
   return (
     <Box className="stranger-page-container">
-      <div className="stranger-header-row">
-        <h2 className="stranger-page-title">CẢNH BÁO NGƯỜI LẠ</h2>
-      </div>
+      <PageSectionHeader
+        title="Cảnh báo người lạ"
+        description="Theo dõi các lượt phát hiện người lạ ra vào ký túc xá theo thời gian và khu vực."
+        icon={<IconAlertTriangle size={20} />}
+      />
 
       <BoLocNguoiLa
         boLoc={boLoc}
@@ -296,25 +299,6 @@ const pageStyles = `
     min-height: 100vh;
     background-color: #fcfdff;
     font-family: var(--font-readex-pro), sans-serif;
-}
-
-.stranger-header-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.stranger-page-title {
-    font-size: 1.125rem;
-    font-weight: bold;
-    color: #27272a;
-    text-transform: uppercase;
-    letter-spacing: -0.025em;
-    margin: 0;
-    font-family: var(--font-k2d), sans-serif;
 }
 
 .view-toggle-btn {

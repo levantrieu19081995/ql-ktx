@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
 import { useTranslations } from "next-intl";
-import { IconCheck, IconX } from "@tabler/icons-react";
+import { IconCheck, IconHistory, IconX } from "@tabler/icons-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -24,6 +24,7 @@ import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
 import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
 
@@ -65,6 +66,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const [dangTao, setDangTao] = useState<boolean>(false);
 
   const [boLoc, setBoLoc] = useState({
+    ngay: "",
     tuNgay: "",
     denNgay: "",
     mssv: "",
@@ -112,6 +114,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
 
   const datLaiBoLoc = () => {
     setBoLoc({
+      ngay: "",
       tuNgay: "",
       denNgay: "",
       mssv: "",
@@ -223,7 +226,11 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
-      <h2 className="history-title">{t("title")}</h2>
+      <PageSectionHeader
+        title={t("title")}
+        description="Theo dõi lịch sử ra vào ký túc xá và tra cứu thống kê theo từng nhóm đối tượng."
+        icon={<IconHistory size={20} />}
+      />
 
       {/* BỘ LỌC */}
       {tabActive !== "THONG_KE" && (
@@ -518,17 +525,6 @@ const pageStyles = `
     padding: 1rem;
     min-height: 100vh;
     font-family: var(--font-k2d), sans-serif;
-}
-
-.history-title {
-    font-size: 1.125rem;
-    font-weight: bold;
-    color: #27272a;
-    text-transform: uppercase;
-    letter-spacing: -0.025em;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    font-family: var(--font-readex-pro);
 }
 
 .tabs-bar {

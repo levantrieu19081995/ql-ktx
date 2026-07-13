@@ -1,26 +1,21 @@
-// src/app/(routes)/[locale]/login/page.tsx
 "use client";
+
 export const dynamic = "force-dynamic";
 
-import { Suspense } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActionIcon,
+  Alert,
+  Button,
+  Divider,
+  Group,
   Paper,
+  PasswordInput,
   Stack,
-  Title,
   Text,
   TextInput,
-  PasswordInput,
-  Button,
-  Group,
-  Divider,
-  Alert,
-  ActionIcon,
+  Title,
 } from "@mantine/core";
-import Image from "next/image";
-import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
 import {
   IconAlertCircle,
   IconLock,
@@ -28,20 +23,63 @@ import {
   IconShieldCheck,
   IconUser,
 } from "@tabler/icons-react";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale, useTranslations } from "next-intl";
+
 import logo from "@/assets/images/CTU_logo.png";
+import { fetchCaptchaAPI } from "@/services/auth/authService";
 
 const BRAND_BLUE = "#5AA4E7";
 const BRAND_RED = "#E2433E";
 
-const taoMaCaptcha = () => {
-  if (typeof crypto !== "undefined" && "getRandomValues" in crypto) {
-    const values = new Uint32Array(1);
-    crypto.getRandomValues(values);
-    return String(values[0] % 1_000_000).padStart(6, "0");
-  }
+async function removeWhiteBackground(base64: string) {
+  return new Promise<string>((resolve) => {
+    if (!base64) {
+      resolve(base64);
+      return;
+    }
 
-  return String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0");
-};
+    const img = new window.Image();
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        if (r > 240 && g > 240 && b > 240) {
+          data[i + 3] = 0;
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL("image/png"));
+    };
+
+    img.onerror = () => {
+      resolve(base64);
+    };
+
+    img.src = base64;
+  });
+}
 
 function LoginContent() {
   const router = useRouter();
@@ -54,9 +92,11 @@ function LoginContent() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [captchaCode, setCaptchaCode] = useState(() => taoMaCaptcha());
+  const [captchaGuid, setCaptchaGuid] = useState("");
+  const [captchaUrl, setCaptchaUrl] = useState("");
   const [captchaInput, setCaptchaInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [captchaLoading, setCaptchaLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const getLoginErrorMessage = useCallback(
@@ -64,7 +104,7 @@ function LoginContent() {
       if (!code) return te("generic");
 
       try {
-        return te(code as any);
+        return te(code as never);
       } catch {
         return code;
       }
@@ -72,10 +112,33 @@ function LoginContent() {
     [te],
   );
 
+  const loadCaptcha = useCallback(async () => {
+    setCaptchaLoading(true);
+
+    try {
+      const captchaData = await fetchCaptchaAPI();
+      const processedCaptchaUrl = await removeWhiteBackground(
+        captchaData?.url || "",
+      );
+      setCaptchaGuid(captchaData?.guid || "");
+      setCaptchaUrl(processedCaptchaUrl);
+    } catch (err: any) {
+      setCaptchaGuid("");
+      setCaptchaUrl("");
+      setError(err?.message || te("generic"));
+    } finally {
+      setCaptchaLoading(false);
+    }
+  }, [te]);
+
   useEffect(() => {
     const qErr = search?.get("error");
     if (qErr) setError(getLoginErrorMessage(qErr));
   }, [getLoginErrorMessage, search]);
+
+  useEffect(() => {
+    loadCaptcha();
+  }, [loadCaptcha]);
 
   const whiteCard = useMemo(
     () => ({
@@ -97,10 +160,8 @@ function LoginContent() {
       return;
     }
 
-    if (captchaInput.trim() !== captchaCode) {
-      setError(te("captchaMismatch"));
-      setCaptchaCode(taoMaCaptcha());
-      setCaptchaInput("");
+    if (!captchaGuid) {
+      setError(te("generic"));
       return;
     }
 
@@ -112,14 +173,26 @@ function LoginContent() {
         callbackUrl: from,
         username,
         password,
-        captcha: captchaInput.trim(),
-        captchaExpected: captchaCode,
+        captchaGuid,
+        captchaCode: captchaInput.trim(),
       });
 
-      if (!res) return setError(te("generic"));
-      if (res.error) return setError(getLoginErrorMessage(res.error));
+      if (!res) {
+        setError(te("generic"));
+        return;
+      }
+
+      if (res.error) {
+        await loadCaptcha();
+        setCaptchaInput("");
+        setError(getLoginErrorMessage(res.error));
+        return;
+      }
+
       router.replace(res.url ?? from);
     } catch (err: any) {
+      await loadCaptcha();
+      setCaptchaInput("");
       setError(err?.message || te("generic"));
     } finally {
       setLoading(false);
@@ -148,10 +221,10 @@ function LoginContent() {
     );
   };
 
-  const lamMoiCaptcha = () => {
-    setCaptchaCode(taoMaCaptcha());
+  const refreshCaptcha = () => {
     setCaptchaInput("");
     setError(null);
+    loadCaptcha();
   };
 
   return (
@@ -167,7 +240,7 @@ function LoginContent() {
         <Group justify="center">
           <Image
             src={logo}
-            alt="Quản lý Ký túc xá"
+            alt="Quan ly Ky tuc xa"
             width={120}
             height={120}
             priority
@@ -236,11 +309,18 @@ function LoginContent() {
                     {t("captcha")}
                   </Text>
                   <div className="captcha-box" aria-label={t("captchaCode")}>
-                    {captchaCode.split("").map((so, index) => (
-                      <span key={`${so}-${index}`} className="captcha-digit">
-                        {so}
-                      </span>
-                    ))}
+                    {captchaUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={captchaUrl}
+                        alt={t("captchaCode")}
+                        className="captcha-image"
+                      />
+                    ) : (
+                      <Text size="sm" c="#64748b">
+                        {captchaLoading ? "Loading..." : te("generic")}
+                      </Text>
+                    )}
                   </div>
                 </div>
 
@@ -248,8 +328,9 @@ function LoginContent() {
                   variant="light"
                   size={42}
                   color="blue"
-                  onClick={lamMoiCaptcha}
+                  onClick={refreshCaptcha}
                   aria-label={t("captchaRefresh")}
+                  loading={captchaLoading}
                 >
                   <IconRefresh size={18} />
                 </ActionIcon>
@@ -260,14 +341,8 @@ function LoginContent() {
                 label={t("captchaInput")}
                 placeholder={t("captchaInputPh")}
                 value={captchaInput}
-                onChange={(e) =>
-                  setCaptchaInput(
-                    e.currentTarget.value.replace(/\D/g, "").slice(0, 6),
-                  )
-                }
+                onChange={(e) => setCaptchaInput(e.currentTarget.value)}
                 required
-                inputMode="numeric"
-                maxLength={6}
                 autoComplete="off"
                 leftSection={<IconShieldCheck size={18} />}
                 leftSectionPointerEvents="none"
@@ -279,6 +354,7 @@ function LoginContent() {
               type="submit"
               size="md"
               loading={loading}
+              disabled={captchaLoading || !captchaGuid}
               styles={{
                 root: {
                   background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_RED})`,
@@ -303,15 +379,15 @@ function LoginContent() {
           {t("forgot")}
         </Text>
       </Stack>
+
       <style
         dangerouslySetInnerHTML={{
           __html: `
 .captcha-box {
-  min-height: 46px;
+  min-height: 62px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   padding: 8px 12px;
   border: 1px solid #dbeafe;
   border-radius: 12px;
@@ -319,21 +395,13 @@ function LoginContent() {
     linear-gradient(135deg, rgba(90,164,231,.10), rgba(226,67,62,.08)),
     repeating-linear-gradient(45deg, transparent 0 10px, rgba(15,23,42,.04) 10px 12px);
   user-select: none;
+  overflow: hidden;
 }
 
-.captcha-digit {
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  background: rgba(255,255,255,.72);
-  color: #0f172a;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 1.1rem;
-  font-weight: 800;
-  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
+.captcha-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 `,
         }}
@@ -342,7 +410,6 @@ function LoginContent() {
   );
 }
 
-// Thêm Suspense wrapper để tránh lỗi build
 export default function LoginPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>

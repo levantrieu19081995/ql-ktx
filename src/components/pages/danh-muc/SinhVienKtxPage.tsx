@@ -17,7 +17,9 @@ import type { SinhVienKtx } from "@/types/type-danh-muc-ktx";
 export default function SinhVienKtxPage() {
   const [items, setItems] = useState<SinhVienKtx[]>([]);
   const [dsKhu, setDsKhu] = useState<{ value: string; label: string }[]>([]);
-  const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>([]);
+  const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>(
+    [],
+  );
 
   const [maKhu, setMaKhu] = useState<string | null>("-1");
   const [maPhong, setMaPhong] = useState<string | null>("-1");
@@ -110,7 +112,7 @@ export default function SinhVienKtxPage() {
           sent: reqParams,
           receivedCount: res?.items?.length || 0,
           totalElements: res?.totalElements || 0,
-        })
+        }),
       );
     } catch (error: any) {
       console.error("Lỗi lấy danh sách sinh viên KTX:", error);
@@ -178,7 +180,7 @@ export default function SinhVienKtxPage() {
     }
     if (sv.maPhong) {
       const room = roomsList.find(
-        (r) => r.phongMa === sv.maPhong || r.maPhong === sv.maPhong
+        (r) => r.phongMa === sv.maPhong || r.maPhong === sv.maPhong,
       );
       if (room) {
         return {
@@ -210,7 +212,6 @@ export default function SinhVienKtxPage() {
               clearable={false}
               style={{ minWidth: 150, flexGrow: 1 }}
             />
-
             <Select
               label="Phòng"
               placeholder="Chọn phòng..."
@@ -220,7 +221,6 @@ export default function SinhVienKtxPage() {
               clearable={false}
               style={{ minWidth: 150, flexGrow: 1 }}
             />
-
             <TextInput
               label="Mã sinh viên"
               placeholder="Nhập mã sinh viên..."
@@ -228,7 +228,6 @@ export default function SinhVienKtxPage() {
               onChange={(event) => setMaSinhVien(event.currentTarget.value)}
               style={{ minWidth: 180, flexGrow: 1 }}
             />
-
             <TextInput
               label="Họ tên"
               placeholder="Nhập họ tên..."
@@ -236,9 +235,7 @@ export default function SinhVienKtxPage() {
               onChange={(event) => setHoTen(event.currentTarget.value)}
               style={{ minWidth: 200, flexGrow: 1 }}
             />
-          </Group>
 
-          <Group justify="flex-end" gap="sm">
             <Button
               leftSection={<IconSearch size={18} />}
               color="blue"
@@ -247,7 +244,6 @@ export default function SinhVienKtxPage() {
             >
               Tìm kiếm
             </Button>
-
             <Button
               leftSection={<IconRefresh size={18} />}
               variant="default"

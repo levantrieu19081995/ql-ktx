@@ -42,6 +42,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 const resolveKhu = (item: any): string => {
   if (!item) return "Khu A";
@@ -260,14 +261,11 @@ export default function VangMatSubPage() {
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-      <Group gap="md">
-        <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
-          <IconReportAnalytics size={20} color="#1f5ca9" />
-        </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
-          {t("absentTitle")}
-        </Title>
-      </Group>
+      <PageSectionHeader
+        title={t("absentTitle")}
+        description="Theo dõi thống kê sinh viên vắng mặt kéo dài theo thời gian, khu vực và mức độ cảnh báo."
+        icon={<IconReportAnalytics size={20} color="#1f5ca9" />}
+      />
 
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">

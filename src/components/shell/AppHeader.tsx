@@ -305,7 +305,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                       lineHeight: 1.3,
                     }}
                   >
-                    Dang dang nhap
+                    Đang đăng nhập
                   </Text>
 
                   <Text
@@ -328,7 +328,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                       letterSpacing: "-0.15px",
                     }}
                   >
-                    Quan tri vien
+                    Quản trị viên
                   </Text>
                 </Box>
               </Group>
@@ -362,7 +362,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                   },
                 }}
               >
-                Thong tin tai khoan
+                Thông tin tài khoản
               </Menu.Item>
 
               <Menu.Item
@@ -385,7 +385,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                   },
                 }}
               >
-                Cai dat he thong
+                Cài đặt hệ thống
               </Menu.Item>
             </Box>
 
@@ -411,7 +411,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                   },
                 }}
               >
-                Dang xuat
+                Đăng xuất
               </Menu.Item>
             </Box>
           </Menu.Dropdown>

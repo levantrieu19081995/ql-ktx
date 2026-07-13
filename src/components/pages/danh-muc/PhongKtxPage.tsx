@@ -2,8 +2,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Select } from "@mantine/core";
-import { IconBuildingTunnel, IconRefresh, IconSearch } from "@tabler/icons-react";
+import { Button, Group, Select, Stack } from "@mantine/core";
+import {
+  IconBuildingTunnel,
+  IconRefresh,
+  IconSearch,
+} from "@tabler/icons-react";
 
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import CustomPagination from "@/components/common/CustomPagination";
@@ -16,7 +20,9 @@ import type { PhongKtx } from "@/types/type-danh-muc-ktx";
 export default function PhongKtxPage() {
   const [items, setItems] = useState<PhongKtx[]>([]);
   const [dsKhu, setDsKhu] = useState<{ value: string; label: string }[]>([]);
-  const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>([]);
+  const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>(
+    [],
+  );
 
   const [maKhu, setMaKhu] = useState<string | null>("-1");
   const [maPhong, setMaPhong] = useState<string | null>("-1");
@@ -133,8 +139,8 @@ export default function PhongKtxPage() {
       items={items}
       icon={<IconBuildingTunnel size={20} />}
       searchControls={
-        <>
-          <div className="filter-inputs-custom">
+        <Stack gap="md" w="100%">
+          <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
             <Select
               label="Khu ký túc xá"
               placeholder="Chọn khu..."
@@ -142,9 +148,8 @@ export default function PhongKtxPage() {
               value={maKhu}
               onChange={(value) => setMaKhu(value)}
               clearable={false}
-              style={{ minWidth: 180 }}
+              style={{ minWidth: 180, flex: 1 }}
             />
-
             <Select
               label="Phòng"
               placeholder="Chọn phòng..."
@@ -152,11 +157,8 @@ export default function PhongKtxPage() {
               value={maPhong}
               onChange={(value) => setMaPhong(value)}
               clearable={false}
-              style={{ minWidth: 180 }}
-            />
-          </div>
-
-          <div className="filter-actions-custom">
+              style={{ minWidth: 180, flex: 1 }}
+            />{" "}
             <Button
               leftSection={<IconSearch size={18} />}
               color="blue"
@@ -165,7 +167,6 @@ export default function PhongKtxPage() {
             >
               Tìm kiếm
             </Button>
-
             <Button
               leftSection={<IconRefresh size={18} />}
               variant="default"
@@ -174,8 +175,8 @@ export default function PhongKtxPage() {
             >
               Làm mới
             </Button>
-          </div>
-        </>
+          </Group>
+        </Stack>
       }
       pagination={
         <CustomPagination

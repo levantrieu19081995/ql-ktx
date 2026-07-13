@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Stack, Title, Grid, Loader, Center, Group, Select } from "@mantine/core";
+import { Stack, Title, Grid, Loader, Center, Group, Select, Text, Box } from "@mantine/core";
 import { useTranslations } from "next-intl";
+import { IconHome2 } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import QuickStatsCards from "./QuickStatsCards";
 import RecentHistoryTable from "./RecentHistoryTable";
@@ -39,6 +40,7 @@ import {
   StudentActivity,
   INITIAL_QUICK_STATS,
 } from "./dashboardTypes";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
@@ -848,23 +850,24 @@ export default function DashboardPage() {
       p="sm"
       style={{ backgroundColor: "#fafbfd", minHeight: "100vh" }}
     >
-      {/* Title with Select Filter on the right */}
-      <Group justify="space-between" align="center">
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
-          {t("title")}
-        </Title>
-        <Select
-          value={filterType}
-          onChange={(val) => setFilterType(val || "all")}
-          data={[
-            { value: "all", label: "Tất cả" },
-            { value: "week", label: "Theo tuần" },
-            { value: "month", label: "Theo tháng" }
-          ]}
-          style={{ width: 160 }}
-          radius="md"
-        />
-      </Group>
+      <PageSectionHeader
+        title={t("title")}
+        description="Theo dõi nhanh tình hình ra vào, cảnh báo và phân bố sinh viên trong ký túc xá."
+        icon={<IconHome2 size={20} />}
+        rightSection={
+          <Select
+            value={filterType}
+            onChange={(val) => setFilterType(val || "all")}
+            data={[
+              { value: "all", label: "Tất cả" },
+              { value: "week", label: "Theo tuần" },
+              { value: "month", label: "Theo tháng" }
+            ]}
+            style={{ width: 160 }}
+            radius="md"
+          />
+        }
+      />
 
       {/* Quick Stats Grid */}
       <QuickStatsCards stats={stats} />

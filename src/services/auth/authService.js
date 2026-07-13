@@ -1,4 +1,3 @@
-// src\services\auth\authService.js
 import axios from "axios";
 
 import API_URLS from "@/constants/apiUrls";
@@ -11,17 +10,17 @@ function buildApiUrl(baseUrl, path) {
 
 function getAuthErrorMessage(error) {
   if (error.code === "ECONNABORTED") {
-    return "Không kết nối được máy chủ đăng nhập. Vui lòng thử lại sau.";
+    return "Khong ket noi duoc may chu dang nhap. Vui long thu lai sau.";
   }
 
   if (!error.response) {
-    return "Không kết nối được máy chủ đăng nhập. Kiểm tra lại địa chỉ API hoặc mạng.";
+    return "Khong ket noi duoc may chu dang nhap. Kiem tra lai dia chi API hoac mang.";
   }
 
   return (
     error.response?.data?.errors?.[0]?.message ||
     error.response?.data?.message ||
-    "Đăng nhập thất bại"
+    "Dang nhap that bai"
   );
 }
 
@@ -46,16 +45,45 @@ export async function refreshTokenAPI(refreshToken) {
   }
 }
 
-// Hàm verify credentials (lấy token) Quản lý Ký túc xá
-export async function verifyCredentialsAPI({ username, password }) {
-  const params = { captchaGuid: "", captchaCode: "", deviceToken: "", type: 1 };
+export async function fetchCaptchaAPI() {
+  try {
+    const API_BASE_URL = typeof window === "undefined"
+      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      : "/api/proxy";
+    if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
+
+    const response = await axios.get(
+      buildApiUrl(API_BASE_URL, API_URLS.auth.captchaGenerate),
+      { timeout: AUTH_TIMEOUT_MS },
+    );
+
+    return response.data.payload;
+  } catch (error) {
+    console.error(
+      "Error fetching captcha:",
+      error.response?.data || error.message,
+    );
+    throw new Error(getAuthErrorMessage(error));
+  }
+}
+
+export async function verifyCredentialsAPI({
+  username,
+  password,
+  captchaGuid,
+  captchaCode,
+}) {
+  const params = {
+    captchaGuid: captchaGuid || "",
+    captchaCode: captchaCode || "",
+    deviceToken: "",
+    type: 1,
+  };
+
   try {
     const API_BASE_URL = process.env.API_BASE_URL;
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
-    console.log(
-      "verifyCredentialsAPI API_BASE_URL :>> ",
-      buildApiUrl(API_BASE_URL, API_URLS.auth.authToken),
-    );
+
     const payload = {
       captcha: {
         guid: params.captchaGuid,
@@ -89,7 +117,6 @@ export async function verifyCredentialsAPI({ username, password }) {
   }
 }
 
-// Lấy thông tin user từ API /me
 export async function fetchUserAPI(accessToken) {
   try {
     const API_BASE_URL = typeof window === "undefined"
@@ -121,9 +148,10 @@ export async function fetchUserPermissionsAPI(
   organizationId,
 ) {
   try {
-    if (!accessToken) throw new Error("Thiếu accessToken");
-    if (!acocuntId || !organizationId)
-      throw new Error("Thiếu accountId hoặc organizationId");
+    if (!accessToken) throw new Error("Thieu accessToken");
+    if (!acocuntId || !organizationId) {
+      throw new Error("Thieu accountId hoac organizationId");
+    }
 
     const API_BASE_URL = typeof window === "undefined"
       ? process.env.NEXT_PUBLIC_API_BASE_URL

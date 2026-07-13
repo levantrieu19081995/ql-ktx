@@ -13,6 +13,7 @@ import {
   ScrollArea,
   Select,
   SimpleGrid,
+  Stack,
   Table,
   Text,
   TextInput,
@@ -348,20 +349,18 @@ export default function KhuKtxPage() {
         items={items}
         icon={<IconCategory size={20} />}
         searchControls={
-          <>
-            <div className="filter-inputs-custom">
+          <Stack gap="md" w="100%">
+            <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
               <Select
                 label="Mã khu"
                 placeholder="Chọn mã khu"
                 clearable={false}
-                style={{ minWidth: 200 }}
+                style={{ minWidth: 200, flex: 1 }}
                 value={maKhu}
                 onChange={setMaKhu}
                 data={dsKhu}
               />
-            </div>
 
-            <div className="filter-actions-custom">
               <Button
                 leftSection={<IconSearch size={18} />}
                 color="blue"
@@ -388,8 +387,8 @@ export default function KhuKtxPage() {
               >
                 Đồng bộ từ UIIS
               </Button>
-            </div>
-          </>
+            </Group>
+          </Stack>
         }
         pagination={
           <CustomPagination

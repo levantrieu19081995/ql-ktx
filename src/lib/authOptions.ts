@@ -1,8 +1,6 @@
- 
-
-// src/lib/authOptions.ts
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
 import { verifyCredentials } from "@/lib/auth";
 import { fetchUserAPI } from "@/services/auth/authService";
 
@@ -12,27 +10,30 @@ export const authOptions: NextAuthOptions = {
 
   providers: [
     CredentialsProvider({
-        name: "Credentials",
-        credentials: {
-          username: {},
-          password: {},
-          accessToken: {},
-          refreshToken: {},
-          expired: {},
-          user: {},
-          captcha: {},
-          captchaExpected: {},
+      name: "Credentials",
+      credentials: {
+        username: {},
+        password: {},
+        accessToken: {},
+        refreshToken: {},
+        expired: {},
+        user: {},
+        captchaGuid: {},
+        captchaCode: {},
       },
 
-      async authorize(creds:any) {
-
+      async authorize(creds: any) {
         if (!creds?.username || !creds?.password) {
-          return null; 
+          return null;
         }
-        // TRƯỜNG HỢP LOGIN THƯỜNG
-        if (creds?.username !== "REFRESH_MODE") {
-          if (!creds?.username || !creds?.password) return null;
-          const result = await verifyCredentials(creds.username, creds.password);
+
+        if (creds.username !== "REFRESH_MODE") {
+          const result = await verifyCredentials(
+            creds.username,
+            creds.password,
+            creds.captchaGuid,
+            creds.captchaCode,
+          );
           const user = result.user;
           const org = user.organizations?.[0] || null;
 
@@ -52,7 +53,6 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        // TRƯỜNG HỢP REFRESH TOKEN
         return {
           loginType: "REFRESH",
           accessToken: creds.accessToken,
@@ -67,14 +67,12 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // REFRESH MODE chỉ sửa token
         if (user.loginType === "REFRESH") {
           token.accessToken = user.accessToken;
           token.refreshToken = user.refreshToken;
           token.expired = user.expired;
-          
-          const userInfo = await fetchUserAPI(user.accessToken);
 
+          const userInfo = await fetchUserAPI(user.accessToken);
           const org = userInfo.organizations?.[0] || null;
 
           token.user = {
@@ -88,12 +86,12 @@ export const authOptions: NextAuthOptions = {
           return token;
         }
 
-        // LOGIN MODE
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.expired = user.expired;
         token.user = user.user;
       }
+
       return token;
     },
 
@@ -106,6 +104,3 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
-
-
-
