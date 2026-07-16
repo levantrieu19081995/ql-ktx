@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -20,7 +19,6 @@ import {
   Button,
   ThemeIcon,
   Loader,
-  Pagination,
   Center,
   SimpleGrid,
   Divider,
@@ -49,10 +47,10 @@ import {
   fetchThongKeChiTietNguoiLa,
   fetchNguoiLaPaginate,
 } from "@/services/dashboard/dashboardService";
-import { post } from "@/utils/axios";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
 import { KhuKtx } from "@/types/type-danh-muc-ktx";
 import { fetchDanhSachKhuKtx } from "@/services/danh-muc/danhMucKtxService";
+import CustomPagination from "@/components/common/CustomPagination";
 
 const getDefaultDates = () => {
   const den = new Date();
@@ -290,51 +288,70 @@ export default function NguoiLaSubPage() {
         return;
       }
 
-      const formats = [
-        {
-          Ngay: formatDateToMMDDYYYY(activeDate, new Date()),
+      try {
+        const ngayChiTiet = formatDateToMMDDYYYY(activeDate, new Date());
+        const res = await fetchThongKeChiTietNguoiLa({
+          ngay: ngayChiTiet,
           maKhu: activeKhu,
-        },
-        {
-          ngay: formatDateToMMDDYYYY(activeDate, new Date()),
-          maKhu: activeKhu,
-        },
-        {
-          Ngay: formatDateToDDMMYYYY(activeDate, new Date()),
-          maKhu: activeKhu,
-        },
-        {
-          ngay: formatDateToDDMMYYYY(activeDate, new Date()),
-          maKhu: activeKhu,
-        },
-        {
-          Ngay: formatDateToYYYYMMDD(activeDate, new Date()),
-          maKhu: activeKhu,
-        },
-        {
-          ngay: formatDateToYYYYMMDD(activeDate, new Date()),
-          maKhu: activeKhu,
-        },
-      ];
-
-      let lastErr = null;
-      for (const params of formats) {
-        try {
-          const res = await fetchThongKeChiTietNguoiLa(params);
-          setDetailList(res?.payload || []);
-          setDetailLoading(false);
-          return;
-        } catch (err: any) {
-          lastErr = err;
-          // Continue loop to try other formats
-        }
+        });
+        const items = res?.payload || [];
+        setDetailList(items);
+        setDetailLoading(false);
+        return;
+      } catch (err: any) {
+        setDetailError(
+          err?.message ?? "Lá»—i khi táº£i chi tiáº¿t ngÆ°á»i láº¡ trong ngĂ y",
+        );
+        setDetailList([]);
+        setDetailLoading(false);
+        return;
       }
 
-      setDetailError(
-        lastErr?.message ?? "Lỗi khi tải chi tiết người lạ trong ngày",
-      );
-      setDetailList([]);
-      setDetailLoading(false);
+      // const formats = [
+      //   {
+      //     Ngay: formatDateToMMDDYYYY(activeDate, new Date()),
+      //     maKhu: activeKhu,
+      //   },
+      //   {
+      //     ngay: formatDateToMMDDYYYY(activeDate, new Date()),
+      //     maKhu: activeKhu,
+      //   },
+      //   {
+      //     Ngay: formatDateToDDMMYYYY(activeDate, new Date()),
+      //     maKhu: activeKhu,
+      //   },
+      //   {
+      //     ngay: formatDateToDDMMYYYY(activeDate, new Date()),
+      //     maKhu: activeKhu,
+      //   },
+      //   {
+      //     Ngay: formatDateToYYYYMMDD(activeDate, new Date()),
+      //     maKhu: activeKhu,
+      //   },
+      //   {
+      //     ngay: formatDateToYYYYMMDD(activeDate, new Date()),
+      //     maKhu: activeKhu,
+      //   },
+      // ];
+
+      // let lastErr = null;
+      // for (const params of formats) {
+      //   try {
+      //     const res = await fetchThongKeChiTietNguoiLa(params);
+      //     setDetailList(res?.payload || []);
+      //     setDetailLoading(false);
+      //     return;
+      //   } catch (err: any) {
+      //     lastErr = err;
+      //     // Continue loop to try other formats
+      //   }
+      // }
+
+      // setDetailError(
+      //   lastErr?.message ?? "Lỗi khi tải chi tiết người lạ trong ngày",
+      // );
+      // setDetailList([]);
+      // setDetailLoading(false);
     },
     [khuKtx, detailDate],
   );
@@ -422,598 +439,374 @@ export default function NguoiLaSubPage() {
       <Card
         withBorder
         radius="lg"
-        p="lg"
+        p="md"
         style={{
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           borderColor: "#e2e8f0",
         }}
       >
-        <Grid align="flex-end" gutter="md">
-          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
-            <DateInput
-              label={t("fromDate").toUpperCase()}
-              placeholder="MM/DD/YYYY"
-              value={tuNgay}
-              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: {
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.5px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  height: "40px",
-                },
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
-            <DateInput
-              label={t("toDate").toUpperCase()}
-              placeholder="MM/DD/YYYY"
-              value={denNgay}
-              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: {
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.5px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  height: "40px",
-                },
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
-            <Select
-              label={t("dormZone").toUpperCase()}
-              value={khuKtx}
-              onChange={(val) => setKhuKtx(val || "-1")}
-              data={zonesDropdownData}
-              disabled={zonesLoading}
-              styles={{
-                label: {
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.5px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  height: "40px",
-                },
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Group justify="flex-end" gap="sm" wrap="wrap">
-              <Button
-                leftSection={
-                  nguoiLaLoading || chartLoading ? (
-                    <Loader size={16} color="white" />
-                  ) : (
-                    <IconSearch size={16} />
-                  )
-                }
-                style={{
-                  backgroundColor: "#1f5ca9",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  borderRadius: "8px",
-                  height: "40px",
-                }}
-                onClick={handleSearch}
-                disabled={nguoiLaLoading || chartLoading}
-              >
-                {t("search")}
-              </Button>
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                variant="outline"
-                color="gray"
-                onClick={handleReset}
-                style={{
-                  borderColor: "#cbd5e1",
-                  color: "#64748b",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  borderRadius: "8px",
-                  height: "40px",
-                }}
-              >
-                {t("reset")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{
-                  borderColor: "#1f5ca9",
-                  color: "#1f5ca9",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  borderRadius: "8px",
-                  height: "40px",
-                }}
-              >
-                {t("exportExcel")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{
-                  borderColor: "#0ea5e9",
-                  color: "#0ea5e9",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  borderRadius: "8px",
-                  height: "40px",
-                }}
-              >
-                {t("exportPdf")}
-              </Button>
-            </Group>
-          </Grid.Col>
-        </Grid>
-      </Card>
-
-      {/* Main Grid: Chart and Daily details */}
-      <Grid gutter="md">
-        {/* Stranger Chart Panel */}
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          <Card
-            withBorder
-            radius="lg"
-            p="lg"
-            style={{
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-              height: "100%",
+        <Box
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, minmax(0, 1fr)) auto",
+            gap: "16px",
+            alignItems: "end",
+          }}
+        >
+          <DateInput
+            label={t("fromDate").toUpperCase()}
+            placeholder="MM/DD/YYYY"
+            value={tuNgay}
+            onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+            valueFormat="DD/MM/YYYY"
+            clearable
+            styles={{
+              label: {
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
             }}
-          >
-            <Text
-              fw={700}
-              size="xs"
-              c="#1f5ca9"
-              mb="md"
+          />
+
+          <DateInput
+            label={t("toDate").toUpperCase()}
+            placeholder="MM/DD/YYYY"
+            value={denNgay}
+            onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+            valueFormat="DD/MM/YYYY"
+            clearable
+            styles={{
+              label: {
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
+            }}
+          />
+
+          <Select
+            label={t("dormZone").toUpperCase()}
+            value={khuKtx}
+            onChange={(val) => setKhuKtx(val || "-1")}
+            data={zonesDropdownData}
+            disabled={zonesLoading}
+            styles={{
+              label: {
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
+            }}
+          />
+
+          <Group gap="sm" wrap="nowrap">
+            <Button
+              leftSection={
+                nguoiLaLoading || chartLoading ? (
+                  <Loader size={16} color="white" />
+                ) : (
+                  <IconSearch size={16} />
+                )
+              }
+              onClick={handleSearch}
+              disabled={nguoiLaLoading || chartLoading}
               style={{
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
-                fontFamily: "var(--font-readex-pro), sans-serif",
+                backgroundColor: "#1f5ca9",
+                borderRadius: "8px",
+                height: "40px",
+                whiteSpace: "nowrap",
               }}
             >
-              {t("strangerChartTitle")}
-            </Text>
-            {chartLoading ? (
-              <Center style={{ height: 260 }}>
-                <Loader size="md" color="blue" />
-              </Center>
-            ) : chartError ? (
-              <Center style={{ height: 260 }}>
-                <Text
-                  size="sm"
-                  c="dimmed"
-                  style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
-                >
-                  {t("noStrangerData") ||
-                    "Không có dữ liệu người lạ trong khoảng thời gian này"}
-                </Text>
-              </Center>
-            ) : !chartData || chartData.length === 0 ? (
-              <Center style={{ height: 260 }}>
-                <Text
-                  size="sm"
-                  c="dimmed"
-                  style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
-                >
-                  {t("noStrangerData") ||
-                    "Không có dữ liệu người lạ trong khoảng thời gian này"}
-                </Text>
-              </Center>
-            ) : (
-              <div style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={chartData}
-                    onClick={handleChartClick}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="ngay" />
-                    <YAxis allowDecimals={false} />
-                    <Tooltip />
-                    <Legend />
-                    <Area
-                      type="monotone"
-                      dataKey="soLuong"
-                      name={t("strangerCount") || "Số lượng người lạ"}
-                      stroke="#1f5ca9"
-                      fill="#1f5ca9"
-                      fillOpacity={0.2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </Card>
-        </Grid.Col>
+              {t("search")}
+            </Button>
 
-        {/* Daily Stranger Details Card Panel */}
-        <Grid.Col span={{ base: 12, lg: 6 }}>
-          <Card
-            withBorder
-            radius="lg"
-            p="lg"
-            style={{
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-              height: "100%",
-            }}
-          >
-            <Group justify="space-between" align="center" mb="md">
-              <Text
-                fw={700}
-                size="xs"
-                c="#1f5ca9"
-                style={{
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                }}
-              >
-                {t("dailyDetailsTitle") || "CHI TIẾT NGƯỜI LẠ TRONG NGÀY"}
-              </Text>
-              <DateInput
-                placeholder="Chọn ngày..."
-                value={detailDate}
-                onChange={(val) => {
-                  const d = val ? new Date(val) : null;
-                  setDetailDate(d);
-                  loadStrangerDailyDetails({ detailDate: d });
-                }}
-                valueFormat="DD/MM/YYYY"
-                clearable={false}
-                styles={{
-                  input: {
-                    borderRadius: "8px",
-                    width: "150px",
-                    height: "32px",
-                    fontSize: "12px",
-                    fontFamily: "var(--font-readex-pro), sans-serif",
-                  },
-                }}
-              />
-            </Group>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              variant="outline"
+              color="gray"
+              onClick={handleReset}
+              style={{
+                borderColor: "#cbd5e1",
+                color: "#64748b",
+                borderRadius: "8px",
+                height: "40px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {t("reset")}
+            </Button>
 
-            {detailLoading ? (
-              <Center style={{ height: 230 }}>
-                <Loader size="md" color="blue" />
-              </Center>
-            ) : detailError ? (
-              <Center style={{ height: 230 }}>
-                <Text
-                  size="sm"
-                  c="dimmed"
-                  style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
-                >
-                  {t("noStrangerData") ||
-                    "Không có dữ liệu người lạ trong khoảng thời gian này"}
-                </Text>
-              </Center>
-            ) : (
-              <ScrollArea style={{ height: 230 }}>
-                <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
-                  {detailList.map((item, idx) => (
-                    <Card
-                      key={idx}
-                      withBorder
-                      radius="md"
-                      p="xs"
-                      style={{
-                        borderColor: "#f1f5f9",
-                        backgroundColor: "#f8fafc",
-                      }}
-                    >
-                      <Card.Section>
-                        {item.pathImage ? (
-                          <div
-                            style={{
-                              position: "relative",
-                              width: "100%",
-                              height: 110,
-                            }}
-                          >
-                            <img
-                              src={item.pathImage}
-                              alt="Stranger Capture"
-                              style={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover",
-                                borderRadius: "8px 8px 0 0",
-                              }}
-                              onError={(e) => {
-                                // Fallback if image fails to load
-                                e.currentTarget.src = "";
-                                e.currentTarget.style.display = "none";
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <Center
-                            style={{ height: 110, backgroundColor: "#f1f5f9" }}
-                          >
-                            <Text size="xs" c="dimmed">
-                              {t("noImage") || "Không có ảnh"}
-                            </Text>
-                          </Center>
-                        )}
-                      </Card.Section>
-                      <Stack gap={2} mt="xs">
-                        <Group justify="space-between">
-                          <Badge size="xs" color="red" variant="filled">
-                            {t("strangerTag") || "Người lạ"}
-                          </Badge>
-                          <Text size="xs" fw={700} c="dimmed">
-                            {item.thoiGian ||
-                              (item.timecheck
-                                ? item.timecheck.substring(11, 19)
-                                : "--")}
-                          </Text>
-                        </Group>
-                        <Text
-                          size="xs"
-                          fw={600}
-                          c="dark"
-                          mt={4}
-                          style={{
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          📍 {item.cameraName || `Camera ${item.cameraId}`}
-                        </Text>
-                        <Text size="xs" c="dimmed">
-                          🏢 {getTranslatedKhu(item.maKhu) || item.tenKhu}
-                        </Text>
-                      </Stack>
-                    </Card>
-                  ))}
-                  {detailList.length === 0 && (
-                    <Center style={{ height: 200, gridColumn: "span 2" }}>
-                      <Text size="sm" c="dimmed" ta="center">
-                        {t("noStrangerDetailsForDay") ||
-                          "Không phát hiện người lạ nào trong ngày này."}
-                      </Text>
-                    </Center>
-                  )}
-                </SimpleGrid>
-              </ScrollArea>
-            )}
-          </Card>
-        </Grid.Col>
-      </Grid>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{
+                borderColor: "#1f5ca9",
+                color: "#1f5ca9",
+                borderRadius: "8px",
+                height: "40px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {t("exportExcel")}
+            </Button>
 
-      {/* History table list */}
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{
+                borderColor: "#0ea5e9",
+                color: "#0ea5e9",
+                borderRadius: "8px",
+                height: "40px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {t("exportPdf")}
+            </Button>
+          </Group>
+        </Box>
+      </Card>
+
       <Card
         withBorder
         radius="lg"
         p="lg"
-        style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+        style={{
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+          height: "100%",
+        }}
       >
-        <Group justify="space-between" mb="md">
-          <div>
+        <Text
+          fw={700}
+          size="xs"
+          c="#1f5ca9"
+          mb="md"
+          style={{
+            letterSpacing: "0.5px",
+            textTransform: "uppercase",
+            fontFamily: "var(--font-readex-pro), sans-serif",
+          }}
+        >
+          {t("strangerChartTitle")}
+        </Text>
+        {chartLoading ? (
+          <Center style={{ height: 260 }}>
+            <Loader size="md" color="blue" />
+          </Center>
+        ) : chartError ? (
+          <Center style={{ height: 260 }}>
             <Text
-              fw={700}
-              size="xs"
-              c="#1f5ca9"
-              style={{
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
-                fontFamily: "var(--font-readex-pro), sans-serif",
-              }}
+              size="sm"
+              c="dimmed"
+              style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
             >
-              {t("strangerTableTitle")}
+              {t("noStrangerData") ||
+                "Không có dữ liệu người lạ trong khoảng thời gian này"}
             </Text>
-            {!nguoiLaLoading && (
-              <Text size="xs" c="dimmed" mt={2}>
-                {t("totalLabel")} <b>{nguoiLaTotalElements}</b>
-              </Text>
-            )}
-          </div>
-          {nguoiLaError && (
-            <Badge color="red" variant="light" size="sm">
-              {nguoiLaError}
-            </Badge>
-          )}
-        </Group>
-
-        {nguoiLaLoading ? (
-          <Center py="xl">
-            <Stack align="center" gap="sm">
-              <Loader size="md" color="blue" />
-              <Text size="sm" c="dimmed">
-                {t("loadingStranger")}
-              </Text>
-            </Stack>
+          </Center>
+        ) : !chartData || chartData.length === 0 ? (
+          <Center style={{ height: 260 }}>
+            <Text
+              size="sm"
+              c="dimmed"
+              style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
+            >
+              {t("noStrangerData") ||
+                "Không có dữ liệu người lạ trong khoảng thời gian này"}
+            </Text>
           </Center>
         ) : (
-          <>
-            <ScrollArea>
-              <Table
-                verticalSpacing="sm"
-                highlightOnHover
-                style={{ minWidth: 800 }}
+          <div style={{ height: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={chartData}
+                onClick={handleChartClick}
+                style={{ cursor: "pointer" }}
               >
-                <Table.Thead>
-                  <Table.Tr>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                      }}
-                    >
-                      {t("no")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                      }}
-                    >
-                      {t("detectTime")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                      }}
-                    >
-                      {t("dormZone")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                      }}
-                    >
-                      {t("detectPosition")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        textAlign: "center",
-                      }}
-                    >
-                      {t("cameraImg")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        textAlign: "center",
-                      }}
-                    >
-                      {t("status")}
-                    </Table.Th>
-                  </Table.Tr>
-                </Table.Thead>
-                <Table.Tbody>
-                  {nguoiLaList.map((row, index) => {
-                    const stt = (nguoiLaPage - 1) * nguoiLaPageSize + index + 1;
-                    const thoiGian =
-                      row.ngay && row.thoigian
-                        ? `${row.ngay} ${row.thoigian}`
-                        : (row.timecheck ?? "--");
-                    const khu = row.maKhu ?? row.tenKhu ?? "--";
-                    const viTri = row.cameraName ?? "--";
-                    const imgSrc = row.pathImage ?? "";
-                    const tt = row.trangThai ?? "Nghi vấn";
-                    return (
-                      <Table.Tr
-                        key={row.id ?? index}
-                        style={{ borderBottom: "1px solid #f1f5f9" }}
-                      >
-                        <Table.Td
-                          style={{ fontSize: "13px", color: "#64748b" }}
-                        >
-                          {stt}
-                        </Table.Td>
-                        <Table.Td
-                          style={{
-                            fontSize: "13px",
-                            color: "#1e293b",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {thoiGian}
-                        </Table.Td>
-                        <Table.Td
-                          style={{ fontSize: "13px", color: "#475569" }}
-                        >
-                          {getTranslatedKhu(khu)}
-                        </Table.Td>
-                        <Table.Td
-                          style={{ fontSize: "13px", color: "#475569" }}
-                        >
-                          {viTri}
-                        </Table.Td>
-                        <Table.Td style={{ textAlign: "center" }}>
-                          {imgSrc ? (
-                            <Avatar
-                              src={imgSrc}
-                              radius="sm"
-                              size="md"
-                              alt="Stranger"
-                              style={{ margin: "auto" }}
-                            />
-                          ) : (
-                            <Text size="xs" c="dimmed">
-                              {t("noData")}
-                            </Text>
-                          )}
-                        </Table.Td>
-                        <Table.Td style={{ textAlign: "center" }}>
-                          <Badge
-                            color={
-                              tt === "Cảnh báo" ||
-                              tt === "WARNING" ||
-                              tt === "Nghi vấn"
-                                ? "red"
-                                : tt === "Hợp lệ" || tt === "OK"
-                                  ? "green"
-                                  : "blue"
-                            }
-                            variant="light"
-                            size="sm"
-                          >
-                            {getTranslatedStatus(tt)}
-                          </Badge>
-                        </Table.Td>
-                      </Table.Tr>
-                    );
-                  })}
-                  {nguoiLaList.length === 0 && !nguoiLaLoading && (
-                    <Table.Tr>
-                      <Table.Td colSpan={6}>
-                        <Text ta="center" c="dimmed" py="xl">
-                          {t("noStrangerData")}
-                        </Text>
-                      </Table.Td>
-                    </Table.Tr>
-                  )}
-                </Table.Tbody>
-              </Table>
-            </ScrollArea>
-
-            {nguoiLaTotalPages > 1 && (
-              <Center mt="md">
-                <Pagination
-                  total={nguoiLaTotalPages}
-                  value={nguoiLaPage}
-                  onChange={(p) => setNguoiLaPage(p)}
-                  size="sm"
-                  color="blue"
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="ngay" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="soLuong"
+                  name={t("strangerCount") || "Số lượng người lạ"}
+                  stroke="#1f5ca9"
+                  fill="#1f5ca9"
+                  fillOpacity={0.2}
                 />
-              </Center>
-            )}
-          </>
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Card>
+
+      <Card
+        withBorder
+        radius="lg"
+        p="lg"
+        style={{
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+          // height: "100%",
+        }}
+      >
+        <Group justify="space-between" align="center" mb="md">
+          <Text
+            fw={700}
+            size="xs"
+            c="#1f5ca9"
+            style={{
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
+              fontFamily: "var(--font-readex-pro), sans-serif",
+            }}
+          >
+            {t("dailyDetailsTitle") || "CHI TIẾT NGƯỜI LẠ TRONG NGÀY"}
+          </Text>
+          <DateInput
+            placeholder="Chọn ngày..."
+            value={detailDate}
+            onChange={(val) => {
+              const d = val ? new Date(val) : null;
+              setDetailDate(d);
+              loadStrangerDailyDetails({ detailDate: d });
+            }}
+            valueFormat="DD/MM/YYYY"
+            clearable={false}
+            styles={{
+              input: {
+                borderRadius: "8px",
+                width: "150px",
+                height: "32px",
+                fontSize: "12px",
+                fontFamily: "var(--font-readex-pro), sans-serif",
+              },
+            }}
+          />
+        </Group>
+
+        {detailLoading ? (
+          <Center style={{ height: 230 }}>
+            <Loader size="md" color="blue" />
+          </Center>
+        ) : detailError ? (
+          <Center style={{ height: 230 }}>
+            <Text
+              size="sm"
+              c="dimmed"
+              style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
+            >
+              {t("noStrangerData") ||
+                "Không có dữ liệu người lạ trong khoảng thời gian này"}
+            </Text>
+          </Center>
+        ) : (
+          <Table
+            verticalSpacing="md"
+            horizontalSpacing="md"
+            highlightOnHover
+            style={{ width: "100%", tableLayout: "fixed" }}
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th style={{ width: 60, textAlign: "center" }}>
+                  STT
+                </Table.Th>
+                <Table.Th style={{ width: 110, textAlign: "center" }}>
+                  Hinh anh
+                </Table.Th>
+                <Table.Th style={{ width: 180 }}>Camera</Table.Th>
+                <Table.Th style={{ width: 90, textAlign: "center" }}>
+                  Ma khu
+                </Table.Th>
+                <Table.Th style={{ width: 180 }}>KTX</Table.Th>
+                <Table.Th style={{ width: 120, textAlign: "center" }}>
+                  Ngay
+                </Table.Th>
+                <Table.Th style={{ width: 100, textAlign: "center" }}>
+                  Gio
+                </Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {detailList.map((item, idx) => (
+                <Table.Tr key={idx}>
+                  <Table.Td
+                    style={{
+                      textAlign: "center",
+                      fontWeight: 600,
+                      color: "#64748b",
+                    }}
+                  >
+                    {idx + 1}
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: "center" }}>
+                    {item.pathImage ? (
+                      <Avatar
+                        src={item.pathImage}
+                        radius="sm"
+                        size={56}
+                        alt="Stranger"
+                        style={{ margin: "auto" }}
+                      />
+                    ) : (
+                      <Text size="xs" c="dimmed">
+                        {t("noImage") || "Khong co anh"}
+                      </Text>
+                    )}
+                  </Table.Td>
+                  <Table.Td style={{ color: "#16a34a", fontWeight: 500 }}>
+                    {item.cameraName || `Camera ${item.cameraId || "--"}`}
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: "center", fontWeight: 500 }}>
+                    {item.maKhu || "--"}
+                  </Table.Td>
+                  <Table.Td>
+                    {item.tenKhu || getTranslatedKhu(item.maKhu) || "--"}
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: "center" }}>
+                    {item.ngay || "--"}
+                  </Table.Td>
+                  <Table.Td style={{ textAlign: "center", fontWeight: 500 }}>
+                    {item.thoiGian ||
+                      (item.timecheck
+                        ? item.timecheck.substring(11, 19)
+                        : "--")}
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+              {detailList.length === 0 && (
+                <Table.Tr>
+                  <Table.Td colSpan={7}>
+                    <Text size="sm" c="dimmed" ta="center" py="xl">
+                      {t("noStrangerDetailsForDay") ||
+                        "Khong phat hien nguoi la nao trong ngay nay."}
+                    </Text>
+                  </Table.Td>
+                </Table.Tr>
+              )}
+            </Table.Tbody>
+          </Table>
         )}
       </Card>
     </Stack>

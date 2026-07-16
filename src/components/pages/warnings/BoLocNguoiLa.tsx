@@ -15,15 +15,10 @@ import { dichVuDanhMucKhu, KhuItem } from "./strangerService";
 
 interface ThuocTinhBoLocNguoiLa {
   boLoc: {
-    tuNgay?: string;
-    denNgay?: string;
+    ngay?: string;
     maKtx?: string;
   };
-  datBoLoc: (boLocMoi: {
-    tuNgay?: string;
-    denNgay?: string;
-    maKtx?: string;
-  }) => void;
+  datBoLoc: (boLocMoi: { ngay?: string; maKtx?: string }) => void;
   datLaiBoLoc: () => void;
   khiTimKiem: () => void;
   khiXuatExcel?: () => void;
@@ -56,47 +51,25 @@ export const BoLocNguoiLa: React.FC<ThuocTinhBoLocNguoiLa> = ({
         <div className="nguoi-la-filter-wrapper">
           <div className="filter-row-1">
             <div className="filter-inputs-group-row-1 stranger-fields">
-              {/* Từ ngày */}
               <div className="filter-field">
-                <label className="filter-label">
-                  {t("filter.fromDate").toUpperCase()}
-                </label>
+                <label className="filter-label">Ngày</label>
                 <DateInput
-                  placeholder="mm/dd/yyyy"
+                  placeholder="Nhập ngày hiển thị danh sách người lạ"
                   valueFormat="DD/MM/YYYY"
-                  value={boLoc.tuNgay ? dayjs(boLoc.tuNgay).toDate() : null}
+                  value={boLoc.ngay ? dayjs(boLoc.ngay).toDate() : null}
                   onChange={(ngay) =>
                     datBoLoc({
-                      tuNgay: ngay ? dayjs(ngay).format("YYYY-MM-DD") : "",
+                      ngay: ngay ? dayjs(ngay).format("YYYY-MM-DD") : "",
                     })
                   }
                   size="sm"
                   radius="md"
-                  styles={{ input: { height: "38px", borderColor: "#e4e4e7" } }}
+                  styles={{
+                    input: { height: "38px", borderColor: "#e4e4e7", flex: 1 },
+                  }}
                 />
               </div>
 
-              {/* Đến ngày */}
-              <div className="filter-field">
-                <label className="filter-label">
-                  {t("filter.toDate").toUpperCase()}
-                </label>
-                <DateInput
-                  placeholder="mm/dd/yyyy"
-                  valueFormat="DD/MM/YYYY"
-                  value={boLoc.denNgay ? dayjs(boLoc.denNgay).toDate() : null}
-                  onChange={(ngay) =>
-                    datBoLoc({
-                      denNgay: ngay ? dayjs(ngay).format("YYYY-MM-DD") : "",
-                    })
-                  }
-                  size="sm"
-                  radius="md"
-                  styles={{ input: { height: "38px", borderColor: "#e4e4e7" } }}
-                />
-              </div>
-
-              {/* Khu KTX phát hiện */}
               <div className="filter-field">
                 <label className="filter-label">KHU KTX</label>
                 <Select
@@ -104,14 +77,15 @@ export const BoLocNguoiLa: React.FC<ThuocTinhBoLocNguoiLa> = ({
                   onChange={(giaTri) => datBoLoc({ maKtx: giaTri || "-1" })}
                   size="sm"
                   radius="md"
-                  styles={{ input: { height: "38px", borderColor: "#e4e4e7" } }}
+                  styles={{
+                    input: { height: "38px", borderColor: "#e4e4e7", flex: 1 },
+                  }}
                   data={optionsKhu}
-                  placeholder="Tất cả"
+                  placeholder="Tat ca"
                 />
               </div>
             </div>
 
-            {/* Nhóm button tìm kiếm */}
             <div className="filter-actions-group">
               <Button
                 onClick={khiTimKiem}
@@ -191,6 +165,7 @@ const filterStyles = `
     display: flex;
     flex-direction: column;
     gap: 0.375rem;
+    flex:1;
 }
 
 .filter-label {
@@ -206,7 +181,7 @@ const filterStyles = `
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
-    flex-grow: 1;
+     
     justify-content: flex-end;
 }
 
@@ -224,7 +199,7 @@ const filterStyles = `
 
 @media (min-width: 640px) {
     .filter-inputs-group-row-1.stranger-fields {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         min-width: 580px;
     }
 }

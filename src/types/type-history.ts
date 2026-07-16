@@ -40,6 +40,14 @@ export interface HistoryListResponse {
   totalRecords?: number;
 }
 
+export interface HistoryPaginatedResponse {
+  items: HistoryItem[];
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+}
+
 // Aliases for compatibility with Vietnamese nomenclature
 export type LichSuRaVaoListRequest = HistoryListRequest;
 export type LichSuRaVaoItem = HistoryItem;

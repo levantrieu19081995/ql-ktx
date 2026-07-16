@@ -236,25 +236,22 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
 
   const navLinkStyles = (active: boolean, compact = false) => ({
     root: {
-      // minHeight: compact ? 44 : 48,
-      // borderRadius: 12,
-      // padding: compact ? 0 : "0 14px 0 12px",
       minHeight: compact ? 44 : 48,
       borderRadius: 12,
       padding: compact ? 0 : "0 14px 0 12px",
-
-      //
       background: active ? "rgba(37, 99, 235, 0.08)" : "transparent",
-      // borderLeft: active ? "3px solid #2563EB" : "3px solid transparent",
-      fontWeight: active ? 800 : 650,
+      fontWeight: active ? 600 : 500,
       transition: "background-color 150ms ease, color 150ms ease",
     },
+
     label: {
       fontSize: compact ? 0 : 14,
-      lineHeight: 1.2,
+      lineHeight: 1.35,
+      letterSpacing: "-0.01em",
     },
+
     section: {
-      color: active ? "#2563EB" : "#0f172a",
+      color: active ? "#2563EB" : "#334155",
       marginRight: compact ? 0 : 12,
     },
   });
@@ -391,7 +388,10 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
                 fz={12}
                 fw={700}
                 c="#7b8798"
-                style={{ letterSpacing: 0 }}
+                // style={{ letterSpacing: 0 }}
+                style={{
+                  letterSpacing: "0.05em",
+                }}
               >
                 {item.label}
               </Text>

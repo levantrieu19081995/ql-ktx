@@ -18,6 +18,7 @@ import { useSessionStore } from "@/context/sessionStore";
 import { fetchUserAPI } from "@/services/auth/authService";
 import { fetchConfigSystem } from "@/services/setting/settingSystemInfoService";
 
+import DocumentMenu from "./DocomentMenu";
 import LocaleSwitcher from "./LocaleSwitcher";
 
 type Props = {
@@ -182,12 +183,15 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           justifyContent: "flex-end",
         }}
       >
+        <DocumentMenu />
+
         <LocaleSwitcher
           size={41}
           style={{
             flexShrink: 0,
             boxShadow:
               "0 10px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.95)",
+            marginLeft: 15,
           }}
         />
 
@@ -204,7 +208,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
 
         <Menu
           shadow="xl"
-          width={390}
+          width={312}
           radius={15}
           withArrow={false}
           position="bottom-end"
@@ -274,11 +278,11 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
           </Menu.Target>
 
           <Menu.Dropdown className="user-menu-dropdown" p={0}>
-            <Box p={24} style={{ background: "#ffffff" }}>
+            <Box p={19} style={{ background: "#ffffff" }}>
               <Group gap="md" wrap="nowrap">
                 <Avatar
                   src={(user as any)?.avatar || undefined}
-                  size={76}
+                  size={61}
                   radius="50%"
                   style={{
                     borderRadius: "50%",
@@ -297,7 +301,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
 
                 <Box style={{ flex: 1, minWidth: 0 }}>
                   <Text
-                    fz={15}
+                    fz={12}
                     fw={600}
                     c="#6B7280"
                     style={{
@@ -309,7 +313,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                   </Text>
 
                   <Text
-                    fz={28}
+                    fz={22}
                     fw={700}
                     c="#111827"
                     style={{
@@ -321,7 +325,7 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                   </Text>
 
                   <Text
-                    fz={16}
+                    fz={13}
                     fw={500}
                     c="#6B7280"
                     style={{
@@ -335,8 +339,8 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             </Box>
 
             <Box
-              px={22}
-              py={14}
+              px={18}
+              py={11}
               style={{
                 background: "#ffffff",
                 borderTop: "1px solid #eef2f7",
@@ -354,9 +358,9 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                 styles={{
                   item: {
                     borderRadius: 16,
-                    padding: "15px 16px",
+                    padding: "12px 13px",
                     fontWeight: 600,
-                    fontSize: "18px",
+                    fontSize: "14px",
                     color: "#1F2937",
                     background: "#ffffff",
                   },
@@ -377,9 +381,9 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                 styles={{
                   item: {
                     borderRadius: 16,
-                    padding: "15px 16px",
+                    padding: "12px 13px",
                     fontWeight: 600,
-                    fontSize: "18px",
+                    fontSize: "14px",
                     color: "#1F2937",
                     background: "#ffffff",
                   },
@@ -390,8 +394,8 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
             </Box>
 
             <Box
-              px={22}
-              py={16}
+              px={18}
+              py={13}
               style={{
                 background: "#ffffff",
                 borderTop: "1px solid #eef2f7",
@@ -404,9 +408,9 @@ export default function AppHeader({ opened, onBurgerClick }: Props) {
                 styles={{
                   item: {
                     borderRadius: 16,
-                    padding: "15px 16px",
+                    padding: "12px 13px",
                     fontWeight: 700,
-                    fontSize: "18px",
+                    fontSize: "14px",
                     color: "#EF4444",
                   },
                 }}

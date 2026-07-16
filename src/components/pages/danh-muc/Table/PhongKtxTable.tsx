@@ -10,14 +10,18 @@ type PhongKtxTableProps = {
 export default function PhongKtxTable({ items }: PhongKtxTableProps) {
   return (
     <Card withBorder radius="md" p={0}>
-      <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
+      <Table
+        highlightOnHover
+        verticalSpacing="sm"
+        horizontalSpacing="md"
+        style={{ tableLayout: "fixed", width: "100%" }}
+      >
         <Table.Thead>
           <Table.Tr>
             <Table.Th style={{ width: 70, textAlign: "center" }}>STT</Table.Th>
-            <Table.Th>Mã phòng</Table.Th>
-            <Table.Th>Khu</Table.Th>
-            <Table.Th>Sức chứa</Table.Th>
-            <Table.Th>Số chỗ đang có</Table.Th>
+            <Table.Th style={{ width: 180 }}>Mã phòng</Table.Th>
+            <Table.Th style={{ width: 180 }}>Khu</Table.Th>
+            <Table.Th style={{ width: 140 }}>Sức chứa</Table.Th>
           </Table.Tr>
         </Table.Thead>
 
@@ -29,13 +33,12 @@ export default function PhongKtxTable({ items }: PhongKtxTableProps) {
                 <Table.Td>{item.phongMa || item.maPhong || "-"}</Table.Td>
                 <Table.Td>{item.tenKhu || item.maKhu || "-"}</Table.Td>
                 <Table.Td>{item.sucChua ?? "-"}</Table.Td>
-                <Table.Td>{item.soChoDangCo ?? item.soNguoiHienTai ?? "-"}</Table.Td>
               </Table.Tr>
             ))
           ) : (
             <Table.Tr>
               <Table.Td
-                colSpan={5}
+                colSpan={4}
                 style={{ textAlign: "center", color: "#71717a" }}
               >
                 Chưa có dữ liệu.

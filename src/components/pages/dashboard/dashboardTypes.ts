@@ -27,6 +27,8 @@ export interface TimeChartData {
 
 export interface StudentActivity {
   name: string;
+  studentId?: string;
+  displayLabel?: string;
   count: number;
 }
 

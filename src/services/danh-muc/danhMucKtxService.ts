@@ -19,6 +19,7 @@ import type {
   SinhVienBiCamRequest, 
   SinhVienKtx,
   UiisKhuPayload,
+  UiisSinhVienPayload,
 } from "@/types/type-danh-muc-ktx";
 
 const taoThamSoPhanTrang = ({
@@ -199,4 +200,12 @@ export const fetchDanhSachKhuUiis = async (data: UiisKhuPayload) => {
 
 export const syncDanhSachKhuUiis = async (data: UiisKhuPayload) => {
   return await post(API_URLS.danhMucKtx.khu.uiisSync, data);
+};
+
+export const fetchDanhSachSinhVienUiis = async (data: UiisSinhVienPayload) => {
+  return await post(API_URLS.danhMucKtx.sinhVien.uiisDanhSach, data);
+};
+
+export const syncDanhSachSinhVienUiis = async (data: UiisSinhVienPayload) => {
+  return await post(API_URLS.danhMucKtx.sinhVien.uiisSync, data);
 };

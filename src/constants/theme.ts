@@ -24,8 +24,9 @@ export const COLORS = {
 
 export const FONT = {
   // family: "'Roboto', sans-serif",
-  family:
-    "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  // family:"Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  family:"var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+
   size: {
     xs: "12px",
     sm: "14px",
@@ -40,9 +41,11 @@ export const FONT = {
     light: 300,
     regular: 400,
     medium: 500,
+    semibold: 600,
     bold: 700,
   },
 };
+ 
  
 export const SPACING = {
   xs: "4px",

@@ -1,5 +1,5 @@
 /* eslint-disable prefer-const */
-import { HistoryItem } from '../../../types/type-history';
+import { HistoryItem, HistoryPaginatedResponse } from '../../../types/type-history';
 import dayjs from 'dayjs';
 
 
@@ -76,6 +76,9 @@ export const dichVuLichSuRaVao = {
 
   layDanhSachLichSu: async (boLoc?: {
     ngay?: string;
+    keyword?: string;
+    page?: number;
+    pageSize?: number;
     tuNgay?: string;
     denNgay?: string;
     mssv?: string;
@@ -86,7 +89,7 @@ export const dichVuLichSuRaVao = {
     trangThai?: string;
     loaiDoiTuong?: string;
     maNhom?: string;
-  }): Promise<HistoryItem[]> => {
+  }): Promise<HistoryPaginatedResponse> => {
     /*
     // 1. Logic range ngĂ y cÅ© táº¡m giá»¯ láº¡i, hiá»‡n swagger chá»‰ dĂ¹ng 1 field `ngay`
     const datesToQuery: string[] = [];
@@ -114,6 +117,13 @@ export const dichVuLichSuRaVao = {
     // 2. Map filters to API payload
     const maKhu = boLoc?.maKtx || "-1";
     const maNhom = boLoc?.maNhom || "-1";
+    const page = boLoc?.page || 1;
+    const pageSize = boLoc?.pageSize || 10;
+    const keyword =
+      boLoc?.keyword?.trim() ||
+      boLoc?.mssv?.trim() ||
+      boLoc?.hoVaTen?.trim() ||
+      "";
 
     // 3. Query the endpoint for each day in parallel
     const apiResultsPromises = datesToQuery.map(async (dateStr) => {
@@ -125,27 +135,29 @@ export const dichVuLichSuRaVao = {
             'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
           },
           body: JSON.stringify({
-            page: 1,
-            pageSize: 10,
+            page,
+            pageSize,
             maNhom: maNhom,
             maKhu: maKhu,
-            ngay: dateStr
+            ngay: dateStr,
+            keyword,
           })
         });
 
         if (!response.ok) {
           console.error(`API response error for date ${dateStr}: ${response.status}`);
-          return [];
+          return { items: [], meta: null };
         }
 
         const data = await response.json();
         if (data?.status && data.status !== 'OK') {
           console.error(`API response status not OK for date ${dateStr}:`, data);
-          return [];
+          return { items: [], meta: data?.payload || null };
         }
 
         const items = data?.payload?.items || data?.items || (Array.isArray(data) ? data : []);
-        return items.map((item: any): HistoryItem => {
+        return {
+          items: items.map((item: any): HistoryItem => {
           const isVao = item.cameraName?.toLowerCase().includes("vào") || item.cameraIdId === 1;
           const loai: 'IN' | 'OUT' = isVao ? "IN" : "OUT";
           const tennhom = item.tennhom || "Sinh viên";
@@ -163,7 +175,7 @@ export const dichVuLichSuRaVao = {
             duongDanAnh = `${BASE_URL}${cleanPath}`;
           }
 
-          return {
+            return {
             id: String(item.id),
             thoiGian: item.timecheck ? dayjs.unix(item.timecheck).format("YYYY-MM-DD HH:mm:ss") : dayjs().format("YYYY-MM-DD HH:mm:ss"),
             mssv: item.maso || "",
@@ -179,45 +191,53 @@ export const dichVuLichSuRaVao = {
             loaiDoiTuong: tennhom,
             trangThaiSinhVien,
             trangThaiHienDien: loai === "IN" ? "CO_MAT" : "VANG_MAT"
-          };
-        });
+            };
+          }),
+          meta: data?.payload || null
+        };
       } catch (err) {
         console.error(`Fetch error for date ${dateStr}:`, err);
-        return [];
+        return { items: [], meta: null };
       }
     });
 
     const results2D = await Promise.all(apiResultsPromises);
-    const allApiItems = results2D.flat();
+    const allApiItems = results2D.flatMap((result) => result.items || []);
+    const meta = results2D.find((result) => result.meta)?.meta;
 
-    // 4. Merge with local custom records (added via UI in-session)
-    let mergedItems = [...danhSachLichSuRaVaoCucBo, ...allApiItems];
+    // 4. Keep API results as the source of truth for pagination, then append
+    // locally-created records that match the same applied filters.
+    const localFilteredItems = danhSachLichSuRaVaoCucBo.filter((h) => {
+      if (keyword) {
+        const lowerKeyword = keyword.toLowerCase();
+        const trungKeyword =
+          h.mssv.toLowerCase().includes(lowerKeyword) ||
+          h.hoVaTen.toLowerCase().includes(lowerKeyword);
+        if (!trungKeyword) return false;
+      }
+      if (maKhu !== "-1" && h.maKtx !== maKhu) return false;
+      if (boLoc?.loai && boLoc.loai !== "ALL" && h.loai !== boLoc.loai) {
+        return false;
+      }
+      return true;
+    });
 
-    // 5. Apply client-side filters for exact matches / UI filter consistency
-    if (boLoc) {
-      const { mssv, hoVaTen, maKtx, loai, loaiDoiTuong } = boLoc;
-
-      if (mssv) {
-        mergedItems = mergedItems.filter((h) => h.mssv.toLowerCase().includes(mssv.toLowerCase()));
-      }
-      if (hoVaTen) {
-        mergedItems = mergedItems.filter((h) => h.hoVaTen.toLowerCase().includes(hoVaTen.toLowerCase()));
-      }
-      if (maKtx && maKtx !== '-1') {
-        mergedItems = mergedItems.filter((h) => h.maKtx === maKtx);
-      }
-      if (loai && loai !== 'ALL') {
-        mergedItems = mergedItems.filter((h) => h.loai === loai);
-      }
-      if (loaiDoiTuong && loaiDoiTuong !== 'ALL') {
-        mergedItems = mergedItems.filter((h) =>
-          h.loaiDoiTuong?.toLowerCase().includes(loaiDoiTuong.toLowerCase())
-        );
-      }
-    }
+    const mergedItems = [...localFilteredItems, ...allApiItems];
 
     // 6. Sort results descending by time check
-    return mergedItems.sort((a, b) => dayjs(b.thoiGian).unix() - dayjs(a.thoiGian).unix());
+    const sortedItems = mergedItems.sort((a, b) => dayjs(b.thoiGian).unix() - dayjs(a.thoiGian).unix());
+
+    return {
+      items: sortedItems,
+      currentPage: meta?.currentPage || page,
+      totalPages:
+        meta?.totalPages ||
+        Math.ceil((allApiItems.length + localFilteredItems.length) / pageSize) ||
+        1,
+      totalElements:
+        (meta?.totalElements || allApiItems.length) + localFilteredItems.length,
+      size: meta?.size || pageSize,
+    };
   },
 
 

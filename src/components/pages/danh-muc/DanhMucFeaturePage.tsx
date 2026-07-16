@@ -7,6 +7,7 @@ import KhuKtxTable from "./Table/KhuKtxTable";
 import SinhVienBiCamTable from "./Table/SinhVienBiCamTable";
 import SinhVienKtxTable from "./Table/SinhVienKtxTable";
 import PhongKtxTable from "./Table/PhongKtxTable";
+import type { PhongKtx } from "@/types/type-danh-muc-ktx";
 
 type DanhMucType =
   | "khu"
@@ -45,7 +46,7 @@ export default function DanhMucFeaturePage({
       case "sinhVienKtx":
         return <SinhVienKtxTable items={items} />;
       case "phongKtx":
-        return <PhongKtxTable items={items} />;
+        return <PhongKtxTable items={items as PhongKtx[]} />;
       default:
         return null;
     }

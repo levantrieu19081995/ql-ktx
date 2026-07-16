@@ -3,7 +3,21 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Portal, Notification, Modal, Drawer, Stack, Text, Group, Button, Box, Select, Table, Loader, Avatar } from "@mantine/core";
+import {
+  Portal,
+  Notification,
+  Modal,
+  Drawer,
+  Stack,
+  Text,
+  Group,
+  Button,
+  Box,
+  Select,
+  Table,
+  Loader,
+  Avatar,
+} from "@mantine/core";
 import { useTranslations } from "next-intl";
 import { IconCheck, IconHistory, IconX } from "@tabler/icons-react";
 import {
@@ -25,8 +39,24 @@ import { dichVuLichSuRaVao } from "./historyService";
 import { xuatRaFileExcel } from "./excelHelper";
 import { HistoryItem } from "../../../types/type-history";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
+import CustomPagination from "@/components/common/CustomPagination";
+import dayjs from "dayjs";
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
+type BoLocLichSuState = {
+  ngay: string;
+  keyword: string;
+  tuNgay: string;
+  denNgay: string;
+  mssv: string;
+  hoVaTen: string;
+  maKtx: string;
+  maPhong: string;
+  loai: "IN" | "OUT" | "ALL";
+  trangThai: string;
+  loaiDoiTuong: string;
+  maNhom: string;
+};
 
 const duLieuBieuDoThoiGian = [
   { ngay: "01/06", luotVao: 110, luotRa: 60 },
@@ -55,29 +85,49 @@ type HistoryPageProps = {
 
 export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   const t = useTranslations("History");
-  const [tabActive, datTabActive] = useState<LoaiTabChinh>(tab);
-  const [thongBao, setThongBao] = useState<{ kieu: "success" | "error"; tinNhan: string } | null>(null);
-  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(null);
-  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">("NGAY");
-  const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
-
-  const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
-  const [dangTai, setDangTai] = useState<boolean>(false);
-  const [dangTao, setDangTao] = useState<boolean>(false);
-
-  const [boLoc, setBoLoc] = useState({
-    ngay: "",
+  const ngayHienTai = dayjs().format("YYYY-MM-DD");
+  const taoBoLocMacDinh = (tabValue: LoaiTabChinh): BoLocLichSuState => ({
+    ngay: ngayHienTai,
+    keyword: "",
     tuNgay: "",
     denNgay: "",
     mssv: "",
     hoVaTen: "",
     maKtx: "-1",
     maPhong: "",
-    loai: "ALL" as "IN" | "OUT" | "ALL",
+    loai: "ALL",
     trangThai: "ALL",
     loaiDoiTuong: "ALL",
-    maNhom: "-1",
+    maNhom: tabValue === "CAN_BO" ? "0" : tabValue === "SINH_VIEN" ? "1" : "-1",
   });
+
+  const [tabActive, datTabActive] = useState<LoaiTabChinh>(tab);
+  const [thongBao, setThongBao] = useState<{
+    kieu: "success" | "error";
+    tinNhan: string;
+  } | null>(null);
+  const [xacNhanPhanHoi, setXacNhanPhanHoi] = useState<HistoryItem | null>(
+    null,
+  );
+  const [loaiThoiGian, datLoaiThoiGian] = useState<"NGAY" | "THANG" | "NAM">(
+    "NGAY",
+  );
+  const [loaiBieuDo, datLoaiBieuDo] = useState<"THOI_GIAN" | "KTX">("KTX");
+
+  const [danhSachLichSu, setDanhSachLichSu] = useState<HistoryItem[]>([]);
+  const [dangTai, setDangTai] = useState<boolean>(false);
+  const [dangTao, setDangTao] = useState<boolean>(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const [boLocNhap, setBoLocNhap] = useState<BoLocLichSuState>(
+    taoBoLocMacDinh(tab),
+  );
+  const [boLocDaApDung, setBoLocDaApDung] = useState<BoLocLichSuState>(
+    taoBoLocMacDinh(tab),
+  );
 
   const [lichSuDuocChon, datLichSuDuocChon] = useState<HistoryItem | null>(
     null,
@@ -87,11 +137,10 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   useEffect(() => {
     datTabActive(tab);
     datLichSuDuocChon(null);
-    const targetMaNhom = tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1";
-    setBoLoc((prev) => {
-      if (prev.maNhom === targetMaNhom) return prev;
-      return { ...prev, maNhom: targetMaNhom };
-    });
+    const boLocMacDinh = taoBoLocMacDinh(tab);
+    setBoLocNhap(boLocMacDinh);
+    setBoLocDaApDung(boLocMacDinh);
+    setPage(1);
   }, [tab]);
 
   const hienThongBao = (
@@ -108,33 +157,29 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     }
   }, [thongBao]);
 
-  const datBoLoc = (boLocMoi: Partial<typeof boLoc>) => {
-    setBoLoc((prev) => ({ ...prev, ...boLocMoi }));
+  const datBoLoc = (boLocMoi: Partial<BoLocLichSuState>) => {
+    setBoLocNhap((prev) => ({ ...prev, ...boLocMoi }));
   };
 
   const datLaiBoLoc = () => {
-    setBoLoc({
-      ngay: "",
-      tuNgay: "",
-      denNgay: "",
-      mssv: "",
-      hoVaTen: "",
-      maKtx: "-1",
-      maPhong: "",
-      loai: "ALL",
-      trangThai: "ALL",
-      loaiDoiTuong: "ALL",
-      maNhom:
-        tab === "CAN_BO" ? "0" : tab === "SINH_VIEN" ? "1" : "-1",
-    });
+    const boLocMacDinh = taoBoLocMacDinh(tabActive);
+    setPage(1);
+    setBoLocNhap(boLocMacDinh);
+    setBoLocDaApDung(boLocMacDinh);
   };
 
-  const taiDuLieu = async () => {
+  const taiDuLieu = async (pageValue = page, pageSizeValue = pageSize) => {
     setDanhSachLichSu([]);
     setDangTai(true);
     try {
-      const duLieu = await dichVuLichSuRaVao.layDanhSachLichSu(boLoc);
-      setDanhSachLichSu(duLieu);
+      const duLieu = await dichVuLichSuRaVao.layDanhSachLichSu({
+        ...boLocDaApDung,
+        page: pageValue,
+        pageSize: pageSizeValue,
+      });
+      setDanhSachLichSu(duLieu.items || []);
+      setTotalPages(duLieu.totalPages || 0);
+      setTotalItems(duLieu.totalElements || 0);
     } catch {
       hienThongBao(t("messages.loadError"), "error");
     } finally {
@@ -144,7 +189,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
 
   useEffect(() => {
     taiDuLieu();
-  }, [boLoc]);
+  }, [boLocDaApDung, page, pageSize]);
 
   const duLieuTheoTab = useMemo((): HistoryItem[] => {
     if (tabActive === "CAN_BO") {
@@ -169,7 +214,8 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   }, []);
 
   const xuLyTimKiem = () => {
-    taiDuLieu();
+    setPage(1);
+    setBoLocDaApDung({ ...boLocNhap });
     hienThongBao(t("messages.updated"), "success");
   };
 
@@ -223,6 +269,15 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     datMoDrawerBieuMau(true);
   };
 
+  // // Đoạn code test session đăng nhập
+  // const setIsExpired = useSessionStore((s) => s.setIsExpired);
+  // useEffect(() => {
+  //   // @ts-ignore
+  //   window.showSessionExpired = () => setIsExpired(true);
+  // }, [setIsExpired]);
+  // // Sau đó vào đúng trang history, mở Console và gọi:
+  // window.showSessionExpired()
+
   return (
     <Box className="history-page-container">
       {/* TIÊU ĐỀ TRANG */}
@@ -235,7 +290,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
       {/* BỘ LỌC */}
       {tabActive !== "THONG_KE" && (
         <BoLocLichSu
-          boLoc={boLoc}
+          boLoc={boLocNhap}
           datBoLoc={datBoLoc}
           datLaiBoLoc={datLaiBoLoc}
           khiTimKiem={xuLyTimKiem}
@@ -252,12 +307,20 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           {/* Bảng dữ liệu */}
           <div className="main-content-col">
             <BangLichSu
-              duLieu={duLieuTheoTab}
+              duLieu={danhSachLichSu}
               dangTai={dangTai}
               loaiTab={loaiTabHienThi}
               tabActive={tabActive}
               lichSuDuocChon={lichSuDuocChon}
               datLichSuDuocChon={datLichSuDuocChon}
+            />
+            <CustomPagination
+              totalItems={totalItems}
+              totalPages={totalPages}
+              page={page}
+              pageSize={pageSize}
+              setPage={setPage}
+              setPageSize={setPageSize}
             />
           </div>
         </div>

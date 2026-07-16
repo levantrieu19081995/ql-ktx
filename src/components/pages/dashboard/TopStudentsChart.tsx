@@ -8,6 +8,31 @@ interface TopStudentsChartProps {
   data?: StudentActivity[];
 }
 
+function StudentTick({
+  x = 0,
+  y = 0,
+  payload,
+}: {
+  x?: number;
+  y?: number;
+  payload?: { value?: string; payload?: StudentActivity };
+}) {
+  const item = payload?.payload;
+  const label = item?.displayLabel
+    ? item.displayLabel
+    : item?.studentId
+      ? `${item.name} - ${item.studentId}`
+      : item?.name || payload?.value || '';
+
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text x={-260} y={5} textAnchor="start" fill="#1f2937" fontSize={11} fontWeight={600}>
+        {label}
+      </text>
+    </g>
+  );
+}
+
 export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
   const t = useTranslations("Dashboard");
 
@@ -34,7 +59,7 @@ export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
           <BarChart
             layout="vertical"
             data={data}
-            margin={{ top: 0, right: 20, left: 30, bottom: 0 }}
+            margin={{ top: 0, right: 20, left: 24, bottom: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
             <XAxis
@@ -45,14 +70,21 @@ export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
             />
             <YAxis
               type="category"
-              dataKey="name"
+              dataKey="displayLabel"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: '#334155', fontSize: 12, fontWeight: 600 }}
-              width={130}
+              tick={<StudentTick />}
+              interval={0}
+              width={270}
             />
             <Tooltip
               cursor={{ fill: '#f8fafc' }}
+              formatter={(value: number) => [value, t("scansCount")]}
+              labelFormatter={(_, payload) => {
+                const item = payload?.[0]?.payload as StudentActivity | undefined;
+                if (!item) return '';
+                return item.studentId ? `${item.name} - ${item.studentId}` : item.name;
+              }}
               contentStyle={{
                 border: 'none',
                 borderRadius: '8px',

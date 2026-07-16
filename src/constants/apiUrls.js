@@ -150,6 +150,8 @@ const API_URLS = {
   danhMucKtx: {
     sinhVien: {
       paginate: `${KTX_SERVICE}/ktx-dm-sinh-vien/paginate`,
+      uiisDanhSach: `${KTX_SERVICE}/uiis/dm-sinh-vien/danh-sach`,
+      uiisSync: `${KTX_SERVICE}/uiis/dm-sinh-vien/sync`,
     },
     phong: {
       paginate: `${KTX_SERVICE}/ktx-dm-phong/paginate`,

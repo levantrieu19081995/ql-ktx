@@ -1,61 +1,152 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button, Group, Select, Stack, TextInput } from "@mantine/core";
-import { IconRefresh, IconSearch, IconUsers } from "@tabler/icons-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Autocomplete,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Modal,
+  Paper,
+  ScrollArea,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+} from "@mantine/core";
+import {
+  IconArrowsShuffle,
+  IconCloudDownload,
+  IconEye,
+  IconRefresh,
+  IconSearch,
+  IconUsers,
+} from "@tabler/icons-react";
 
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import CustomPagination from "@/components/common/CustomPagination";
+import { showNoti } from "@/components/common/showNoti";
 import {
+  fetchDanhSachPhongKtx,
   fetchDanhSachSinhVienKtx,
   fetchDanhMucKhuKtx,
-  fetchDanhSachPhongKtx,
+  fetchDanhSachSinhVienUiis,
+  syncDanhSachSinhVienUiis,
 } from "@/services/danh-muc/danhMucKtxService";
-import type { SinhVienKtx } from "@/types/type-danh-muc-ktx";
+import type { PhongKtx, SinhVienKtx } from "@/types/type-danh-muc-ktx";
+
+type SelectOption = {
+  value: string;
+  label: string;
+  khuId?: number;
+};
+
+type SyncStatus = "SAME" | "CHANGED" | "NEW";
+
+type SyncPreviewRow = {
+  stt: number;
+  maSinhVien: string;
+  uiis: {
+    hoTen: string;
+    lop: string;
+    maPhong: string;
+    maKhu: string;
+  };
+  current: {
+    hoTen: string;
+    lop: string;
+    maPhong: string;
+    maKhu: string;
+  } | null;
+  status: SyncStatus;
+};
+
+type UiisSinhVienItem = {
+  ma_sinh_vien?: string;
+  maSinhVien?: string;
+  ho_ten?: string;
+  hoTen?: string;
+  lop?: string;
+  ma_phong?: string;
+  maPhong?: string;
+  ma_khu?: string;
+  maKhu?: string;
+};
+
+const normalizeString = (value?: string | null) => (value ?? "").trim();
+const displayText = (value?: string | null) => normalizeString(value) || "-";
 
 export default function SinhVienKtxPage() {
   const [items, setItems] = useState<SinhVienKtx[]>([]);
-  const [dsKhu, setDsKhu] = useState<{ value: string; label: string }[]>([]);
-  const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>(
-    [],
-  );
+  const [dsKhu, setDsKhu] = useState<SelectOption[]>([]);
+  const [dsPhong, setDsPhong] = useState<SelectOption[]>([]);
 
-  const [maKhu, setMaKhu] = useState<string | null>("-1");
-  const [maPhong, setMaPhong] = useState<string | null>("-1");
+  const [maKhu, setMaKhu] = useState("");
+  const [maPhong, setMaPhong] = useState("");
   const [maSinhVien, setMaSinhVien] = useState("");
   const [hoTen, setHoTen] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState({
+    maKhu: "-1",
+    maPhong: "-1",
+  });
 
-  const [roomsList, setRoomsList] = useState<any[]>([]);
+  const [roomsList, setRoomsList] = useState<PhongKtx[]>([]);
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const [debugLog, setDebugLog] = useState("");
+  const [openedSync, setOpenedSync] = useState(false);
+  const [namHoc, setNamHoc] = useState("2026");
+  const [hocKy, setHocKy] = useState("1");
+  const [syncMaKhu, setSyncMaKhu] = useState("-1");
+  const [syncMaPhong, setSyncMaPhong] = useState("-1");
+  const [syncPhongOptions, setSyncPhongOptions] = useState<SelectOption[]>([
+    { value: "-1", label: "Tất cả" },
+  ]);
+  const [currentItems, setCurrentItems] = useState<SinhVienKtx[]>([]);
+  const [uiisItems, setUiisItems] = useState<UiisSinhVienItem[]>([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [confirmSyncLoading, setConfirmSyncLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const mapPhongOptions = (rooms: PhongKtx[]): SelectOption[] => [
+    { value: "-1", label: "Tất cả" },
+    ...rooms.map((item) => ({
+      value: item.maPhong || item.phongMa || "",
+      label: item.tenPhong || item.phongMa || item.maPhong || "",
+    })),
+  ];
 
   const loadDanhMucKhu = async () => {
     try {
       const res = await fetchDanhMucKhuKtx();
       setDsKhu([
-        { value: "-1", label: "Tất cả" },
+        { value: "-1", label: "Tất cả", khuId: 0 },
         ...res.map((item) => ({
           value: item.khuMa || item.maKhu || "",
           label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
+          khuId: Number(item.khuId ?? item.uiisKhuId ?? 0),
         })),
       ]);
     } catch (error) {
       console.error("Lỗi lấy danh mục khu KTX:", error);
-      setDsKhu([{ value: "-1", label: "Tất cả" }]);
+      setDsKhu([{ value: "-1", label: "Tất cả", khuId: 0 }]);
     }
   };
 
-  const loadDanhMucPhong = async (khuValue: string | null) => {
+  const loadDanhMucPhong = async (khuValue: string) => {
     if (!khuValue || khuValue === "-1") {
-      setDsPhong([{ value: "-1", label: "Tất cả" }]);
+      setDsPhong(mapPhongOptions(roomsList));
       return;
     }
+
     try {
       const res = await fetchDanhSachPhongKtx({
         page: 1,
@@ -63,16 +154,32 @@ export default function SinhVienKtxPage() {
         maKhu: khuValue,
         maPhong: "-1",
       });
-      setDsPhong([
-        { value: "-1", label: "Tất cả" },
-        ...(res?.items || []).map((item) => ({
-          value: item.phongMa || item.maPhong || "",
-          label: item.tenPhong || item.phongMa || item.maPhong || "",
-        })),
-      ]);
+
+      setDsPhong(mapPhongOptions(res?.items || []));
     } catch (error) {
       console.error("Lỗi lấy danh mục phòng KTX:", error);
       setDsPhong([{ value: "-1", label: "Tất cả" }]);
+    }
+  };
+
+  const loadSyncPhongOptions = async (khuValue: string) => {
+    if (!khuValue || khuValue === "-1") {
+      setSyncPhongOptions(mapPhongOptions(roomsList));
+      return;
+    }
+
+    try {
+      const res = await fetchDanhSachPhongKtx({
+        page: 1,
+        pageSize: 9999,
+        maKhu: khuValue,
+        maPhong: "-1",
+      });
+
+      setSyncPhongOptions(mapPhongOptions(res?.items || []));
+    } catch (error) {
+      console.error("Lỗi lấy phòng sync sinh viên KTX:", error);
+      setSyncPhongOptions([{ value: "-1", label: "Tất cả" }]);
     }
   };
 
@@ -84,61 +191,79 @@ export default function SinhVienKtxPage() {
         maKhu: "-1",
         maPhong: "-1",
       });
-      setRoomsList(res?.items || []);
+
+      const allRooms = res?.items || [];
+      setRoomsList(allRooms);
+
+      if (!maKhu || maKhu === "-1") {
+        setDsPhong(mapPhongOptions(allRooms));
+      }
+      setSyncPhongOptions(mapPhongOptions(allRooms));
     } catch (error) {
-      console.error("Lỗi tải toàn bộ phòng:", error);
+      console.error("Lỗi tải toàn bộ phòng KTX:", error);
+      setRoomsList([]);
+      setDsPhong([{ value: "-1", label: "Tất cả" }]);
+      setSyncPhongOptions([{ value: "-1", label: "Tất cả" }]);
     }
   };
 
-  const loadData = async (pageValue = page, pageSizeValue = pageSize) => {
+  const loadData = async (
+    pageValue = page,
+    pageSizeValue = pageSize,
+    filters?: { maKhu?: string; maPhong?: string },
+  ) => {
     try {
-      const reqParams = {
+      const res = await fetchDanhSachSinhVienKtx({
         page: pageValue,
         pageSize: pageSizeValue,
-        maKhu: maKhu || "-1",
-        maPhong: maPhong || "-1",
+        maKhu: filters?.maKhu ?? appliedFilters.maKhu,
+        maPhong: filters?.maPhong ?? appliedFilters.maPhong,
         maSinhVien: maSinhVien.trim() || undefined,
         hoTen: hoTen.trim() || undefined,
-      };
-
-      const res = await fetchDanhSachSinhVienKtx(reqParams);
+      });
 
       setItems(res?.items || []);
       setTotalItems(res?.totalElements || 0);
       setTotalPages(res?.totalPages || 0);
-
-      setDebugLog(
-        JSON.stringify({
-          sent: reqParams,
-          receivedCount: res?.items?.length || 0,
-          totalElements: res?.totalElements || 0,
-        }),
-      );
-    } catch (error: any) {
+    } catch (error) {
       console.error("Lỗi lấy danh sách sinh viên KTX:", error);
       setItems([]);
       setTotalItems(0);
       setTotalPages(0);
-      setDebugLog(JSON.stringify({ error: error?.message || String(error) }));
     }
   };
 
   const handleSearch = () => {
+    const effectiveMaKhu = maKhu.trim() || "-1";
+    const effectiveMaPhong = maPhong.trim() || "-1";
+
+    setAppliedFilters({
+      maKhu: effectiveMaKhu,
+      maPhong: effectiveMaPhong,
+    });
     setPage(1);
-    loadData(1, pageSize);
+    loadData(1, pageSize, {
+      maKhu: effectiveMaKhu,
+      maPhong: effectiveMaPhong,
+    });
   };
 
   const handleReset = async () => {
     setMaKhu("-1");
     setMaPhong("-1");
+    setAppliedFilters({
+      maKhu: "-1",
+      maPhong: "-1",
+    });
     setMaSinhVien("");
     setHoTen("");
     setPage(1);
+    setDsPhong(mapPhongOptions(roomsList));
 
     try {
       const res = await fetchDanhSachSinhVienKtx({
         page: 1,
-        pageSize: pageSize,
+        pageSize,
         maKhu: "-1",
         maPhong: "-1",
         maSinhVien: undefined,
@@ -156,32 +281,260 @@ export default function SinhVienKtxPage() {
     }
   };
 
-  // Tải danh mục khu khi component được gắn kết (mount)
+  const handleOpenSync = () => {
+    setOpenedSync(true);
+    setShowPreview(false);
+    setUiisItems([]);
+    setCurrentItems([]);
+    setSyncMaKhu(appliedFilters.maKhu || "-1");
+    setSyncMaPhong(appliedFilters.maPhong || "-1");
+  };
+
+  const handleCloseSync = () => {
+    setOpenedSync(false);
+    setShowPreview(false);
+    setUiisItems([]);
+    setCurrentItems([]);
+    setSyncMaKhu("-1");
+    setSyncMaPhong("-1");
+    setSyncPhongOptions(mapPhongOptions(roomsList));
+  };
+
+  const buildSyncPayload = () => {
+    const matchedKhu = dsKhu.find((item) => item.value === syncMaKhu);
+
+    return {
+      checksum: "",
+      nam_hoc: Number(namHoc) || 0,
+      hoc_ky: Number(hocKy) || 0,
+      ma_phong: syncMaPhong && syncMaPhong !== "-1" ? syncMaPhong : "",
+      khu_id:
+        syncMaKhu && syncMaKhu !== "-1" ? Number(matchedKhu?.khuId ?? 0) : 0,
+    };
+  };
+
+  const handlePreviewSinhVienUiis = async () => {
+    try {
+      setPreviewLoading(true);
+
+      const payload = buildSyncPayload();
+      const [uiisRes, currentRes] = await Promise.all([
+        fetchDanhSachSinhVienUiis(payload),
+        fetchDanhSachSinhVienKtx({
+          page: 1,
+          pageSize: 9999,
+          maKhu: syncMaKhu || "-1",
+          maPhong: syncMaPhong || "-1",
+          maSinhVien: undefined,
+          hoTen: undefined,
+        }),
+      ]);
+
+      const uiisData = uiisRes?.payload?.data || uiisRes?.payload || [];
+      setUiisItems(Array.isArray(uiisData) ? uiisData : []);
+      setCurrentItems(currentRes?.items || []);
+      setShowPreview(true);
+    } catch (error) {
+      console.error("Lỗi xem trước sync sinh viên UIIS:", error);
+      showNoti("error", "Không lấy được dữ liệu UIIS để đối chiếu.");
+      setShowPreview(false);
+      setUiisItems([]);
+      setCurrentItems([]);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleConfirmSyncSinhVienUiis = async () => {
+    try {
+      setConfirmSyncLoading(true);
+      await syncDanhSachSinhVienUiis(buildSyncPayload());
+
+      showNoti("success", "Đồng bộ danh sách sinh viên từ UIIS thành công.");
+      handleCloseSync();
+      await loadAllRooms();
+      await loadData(1, pageSize);
+      setPage(1);
+    } catch (error) {
+      console.error("Lỗi đồng bộ sinh viên UIIS:", error);
+      showNoti("error", "Đồng bộ danh sách sinh viên thất bại.");
+    } finally {
+      setConfirmSyncLoading(false);
+    }
+  };
+
+  const previewRows = useMemo<SyncPreviewRow[]>(() => {
+    return uiisItems.map((uiisItem, index) => {
+      const maSinhVienUiis = normalizeString(
+        uiisItem.ma_sinh_vien || uiisItem.maSinhVien,
+      );
+      const hoTenUiis = displayText(uiisItem.ho_ten || uiisItem.hoTen);
+      const lopUiis = displayText(uiisItem.lop);
+      const maPhongUiis = displayText(uiisItem.ma_phong || uiisItem.maPhong);
+      const maKhuUiis = displayText(uiisItem.ma_khu || uiisItem.maKhu);
+
+      const currentItem =
+        currentItems.find(
+          (item) =>
+            normalizeString(item.maSinhVien || item.mssv || item.maso) ===
+            maSinhVienUiis,
+        ) || null;
+
+      const isChanged =
+        !!currentItem &&
+        (normalizeString(currentItem.hoTen || currentItem.hoten) !==
+          normalizeString(uiisItem.ho_ten || uiisItem.hoTen) ||
+          normalizeString(currentItem.lop) !== normalizeString(uiisItem.lop) ||
+          normalizeString(currentItem.maPhong) !==
+            normalizeString(uiisItem.ma_phong || uiisItem.maPhong) ||
+          normalizeString(currentItem.maKhu) !==
+            normalizeString(uiisItem.ma_khu || uiisItem.maKhu));
+
+      return {
+        stt: index + 1,
+        maSinhVien: maSinhVienUiis || "-",
+        uiis: {
+          hoTen: hoTenUiis,
+          lop: lopUiis,
+          maPhong: maPhongUiis,
+          maKhu: maKhuUiis,
+        },
+        current: currentItem
+          ? {
+              hoTen: displayText(currentItem.hoTen || currentItem.hoten),
+              lop: displayText(currentItem.lop),
+              maPhong: displayText(currentItem.maPhong),
+              maKhu: displayText(currentItem.maKhu),
+            }
+          : null,
+        status: !currentItem ? "NEW" : isChanged ? "CHANGED" : "SAME",
+      };
+    });
+  }, [currentItems, uiisItems]);
+
+  const previewSummary = useMemo(() => {
+    const totalUiis = previewRows.length;
+    const totalNew = previewRows.filter((row) => row.status === "NEW").length;
+    const totalChanged = previewRows.filter(
+      (row) => row.status === "CHANGED",
+    ).length;
+    const totalSame = previewRows.filter((row) => row.status === "SAME").length;
+
+    return {
+      totalUiis,
+      totalNew,
+      totalChanged,
+      totalSame,
+    };
+  }, [previewRows]);
+
+  const previewMessage = useMemo(() => {
+    if (!showPreview) return null;
+    if (previewSummary.totalUiis === 0) {
+      return {
+        color: "#64748b",
+        text: "Không có dữ liệu sinh viên từ UIIS.",
+      };
+    }
+    if (previewSummary.totalChanged > 0) {
+      return {
+        color: "#d97706",
+        text: `Có ${previewSummary.totalChanged} sinh viên bị thay đổi so với dữ liệu hiện tại.`,
+      };
+    }
+    if (previewSummary.totalNew > 0) {
+      return {
+        color: "#16a34a",
+        text: `Có ${previewSummary.totalNew} sinh viên mới chưa có trong dữ liệu hiện tại.`,
+      };
+    }
+    return {
+      color: "#16a34a",
+      text: "UIIS và dữ liệu hiện tại giống nhau, không có thay đổi.",
+    };
+  }, [previewSummary, showPreview]);
+
+  const canConfirmSync =
+    showPreview &&
+    previewSummary.totalUiis > 0 &&
+    (previewSummary.totalNew > 0 || previewSummary.totalChanged > 0);
+
+  const renderStatusBadge = (status: SyncStatus) => {
+    if (status === "NEW") {
+      return (
+        <Badge
+          radius="xl"
+          variant="light"
+          color="green"
+          styles={{ root: { textTransform: "none", fontWeight: 700 } }}
+        >
+          Hoàn toàn mới
+        </Badge>
+      );
+    }
+
+    if (status === "CHANGED") {
+      return (
+        <Badge
+          radius="xl"
+          variant="light"
+          color="orange"
+          styles={{ root: { textTransform: "none", fontWeight: 700 } }}
+        >
+          Có thay đổi
+        </Badge>
+      );
+    }
+
+    return (
+      <Badge
+        radius="xl"
+        variant="light"
+        color="gray"
+        styles={{ root: { textTransform: "none", fontWeight: 700 } }}
+      >
+        Không đổi
+      </Badge>
+    );
+  };
+
   useEffect(() => {
     loadDanhMucKhu();
     loadAllRooms();
   }, []);
 
-  // Tải lại danh mục phòng khi maKhu thay đổi
   useEffect(() => {
-    setMaPhong("-1");
+    setMaPhong("");
     loadDanhMucPhong(maKhu);
   }, [maKhu]);
 
-  // Tải dữ liệu ban đầu
+  useEffect(() => {
+    if (!maKhu || maKhu === "-1") {
+      setDsPhong(mapPhongOptions(roomsList));
+    }
+  }, [roomsList, maKhu]);
+
+  useEffect(() => {
+    if (!openedSync) return;
+
+    setSyncMaPhong("-1");
+    loadSyncPhongOptions(syncMaKhu);
+  }, [syncMaKhu, openedSync]);
+
   useEffect(() => {
     loadData(1, pageSize);
   }, []);
 
-  // Map sinh viên với thông tin khu từ danh sách phòng nếu cần
   const mappedItems = items.map((sv) => {
     if (sv.tenKhu || sv.maKhu) {
       return sv;
     }
+
     if (sv.maPhong) {
       const room = roomsList.find(
-        (r) => r.phongMa === sv.maPhong || r.maPhong === sv.maPhong,
+        (item) => item.phongMa === sv.maPhong || item.maPhong === sv.maPhong,
       );
+
       if (room) {
         return {
           ...sv,
@@ -190,82 +543,317 @@ export default function SinhVienKtxPage() {
         };
       }
     }
+
     return sv;
   });
 
   return (
-    <DanhMucFeaturePage
-      type="sinhVienKtx"
-      title="Lấy danh sách sinh viên ký túc xá"
-      description="Quản lý và tra cứu danh sách sinh viên đang ở ký túc xá."
-      items={mappedItems}
-      icon={<IconUsers size={20} />}
-      searchControls={
-        <Stack gap="md" w="100%">
-          <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
-            <Select
-              label="Khu ký túc xá"
-              placeholder="Chọn khu..."
-              data={dsKhu}
-              value={maKhu}
-              onChange={(value) => setMaKhu(value)}
-              clearable={false}
-              style={{ minWidth: 150, flexGrow: 1 }}
+    <>
+      <DanhMucFeaturePage
+        type="sinhVienKtx"
+        title="Lấy danh sách sinh viên ký túc xá"
+        description="Quản lý và tra cứu danh sách sinh viên đang ở ký túc xá."
+        items={mappedItems}
+        icon={<IconUsers size={20} />}
+        searchControls={
+          <Stack gap="md" w="100%">
+            <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
+              <Autocomplete
+                label="Khu ký túc xá"
+                placeholder="Chọn khu..."
+                data={dsKhu
+                  .map((item) => item.value)
+                  .filter((value) => value && value !== "-1")}
+                value={maKhu}
+                onChange={setMaKhu}
+                style={{ minWidth: 150, flexGrow: 1 }}
+              />
+
+              <Autocomplete
+                label="Phòng"
+                placeholder="Chọn phòng..."
+                data={dsPhong
+                  .map((item) => item.value)
+                  .filter((value) => value && value !== "-1")}
+                value={maPhong}
+                onChange={setMaPhong}
+                style={{ minWidth: 150, flexGrow: 1 }}
+              />
+
+              <TextInput
+                label="Mã sinh viên"
+                placeholder="Nhập mã sinh viên..."
+                value={maSinhVien}
+                onChange={(event) => setMaSinhVien(event.currentTarget.value)}
+                style={{ minWidth: 180, flexGrow: 1 }}
+              />
+
+              <TextInput
+                label="Họ tên"
+                placeholder="Nhập họ tên..."
+                value={hoTen}
+                onChange={(event) => setHoTen(event.currentTarget.value)}
+                style={{ minWidth: 200, flexGrow: 1 }}
+              />
+
+              <Button
+                leftSection={<IconSearch size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleSearch}
+              >
+                Tìm kiếm
+              </Button>
+
+              <Button
+                leftSection={<IconRefresh size={18} />}
+                variant="default"
+                radius="md"
+                onClick={handleReset}
+              >
+                Làm mới
+              </Button>
+
+              <Button
+                leftSection={<IconCloudDownload size={18} />}
+                color="green"
+                radius="md"
+                onClick={handleOpenSync}
+              >
+                Đồng bộ từ UIIS
+              </Button>
+            </Group>
+          </Stack>
+        }
+        pagination={
+          <CustomPagination
+            totalItems={totalItems}
+            totalPages={totalPages}
+            page={page}
+            pageSize={pageSize}
+            setPage={setPage}
+            setPageSize={setPageSize}
+            fetchData={loadData}
+          />
+        }
+      />
+
+      <Modal
+        opened={openedSync}
+        onClose={handleCloseSync}
+        title="Đồng bộ danh sách sinh viên từ UIIS"
+        centered
+        size="80%"
+        radius="lg"
+      >
+        <Stack gap="md">
+          <Group align="end" grow>
+            <TextInput
+              label="Năm học"
+              placeholder="Nhập năm học"
+              value={namHoc}
+              onChange={(e) => setNamHoc(e.currentTarget.value)}
             />
+
+            <TextInput
+              label="Học kỳ"
+              placeholder="Nhập học kỳ"
+              value={hocKy}
+              onChange={(e) => setHocKy(e.currentTarget.value)}
+            />
+
+            <Select
+              label="Khu"
+              placeholder="Chọn khu"
+              value={syncMaKhu}
+              onChange={(value) => setSyncMaKhu(value || "-1")}
+              data={dsKhu.map((item) => ({
+                value: item.value,
+                label: item.label,
+              }))}
+            />
+
             <Select
               label="Phòng"
-              placeholder="Chọn phòng..."
-              data={dsPhong}
-              value={maPhong}
-              onChange={(value) => setMaPhong(value)}
-              clearable={false}
-              style={{ minWidth: 150, flexGrow: 1 }}
-            />
-            <TextInput
-              label="Mã sinh viên"
-              placeholder="Nhập mã sinh viên..."
-              value={maSinhVien}
-              onChange={(event) => setMaSinhVien(event.currentTarget.value)}
-              style={{ minWidth: 180, flexGrow: 1 }}
-            />
-            <TextInput
-              label="Họ tên"
-              placeholder="Nhập họ tên..."
-              value={hoTen}
-              onChange={(event) => setHoTen(event.currentTarget.value)}
-              style={{ minWidth: 200, flexGrow: 1 }}
+              placeholder="Chọn phòng"
+              value={syncMaPhong}
+              onChange={(value) => setSyncMaPhong(value || "-1")}
+              data={syncPhongOptions.map((item) => ({
+                value: item.value,
+                label: item.label,
+              }))}
             />
 
             <Button
-              leftSection={<IconSearch size={18} />}
               color="blue"
-              radius="md"
-              onClick={handleSearch}
+              leftSection={<IconEye size={18} />}
+              loading={previewLoading}
+              onClick={handlePreviewSinhVienUiis}
             >
-              Tìm kiếm
-            </Button>
-            <Button
-              leftSection={<IconRefresh size={18} />}
-              variant="default"
-              radius="md"
-              onClick={handleReset}
-            >
-              Làm mới
+              Xem dữ liệu
             </Button>
           </Group>
+
+          {showPreview && (
+            <>
+              <SimpleGrid cols={{ base: 1, md: 4 }} spacing="md">
+                <Paper
+                  withBorder
+                  radius="md"
+                  p="md"
+                  style={{ borderColor: "#bfdbfe", background: "#f8fbff" }}
+                >
+                  <Text size="sm" c="blue.6" fw={700}>
+                    Trong UIIS
+                  </Text>
+                  <Text size="xl" fw={800} c="blue.7">
+                    {previewSummary.totalUiis}
+                  </Text>
+                </Paper>
+
+                <Paper
+                  withBorder
+                  radius="md"
+                  p="md"
+                  style={{ borderColor: "#cce8d1", background: "#f3fbf4" }}
+                >
+                  <Text size="sm" c="green.6" fw={700}>
+                    Hoàn toàn mới
+                  </Text>
+                  <Text size="xl" fw={800} c="green.7">
+                    {previewSummary.totalNew}
+                  </Text>
+                </Paper>
+
+                <Paper
+                  withBorder
+                  radius="md"
+                  p="md"
+                  style={{ borderColor: "#fde0b5", background: "#fffaf1" }}
+                >
+                  <Text size="sm" c="orange.6" fw={700}>
+                    Có thay đổi
+                  </Text>
+                  <Text size="xl" fw={800} c="orange.7">
+                    {previewSummary.totalChanged}
+                  </Text>
+                </Paper>
+
+                <Paper
+                  withBorder
+                  radius="md"
+                  p="md"
+                  style={{ borderColor: "#e5e7eb", background: "#fafafa" }}
+                >
+                  <Text size="sm" c="gray.6" fw={700}>
+                    Không đổi
+                  </Text>
+                  <Text size="xl" fw={800} c="gray.7">
+                    {previewSummary.totalSame}
+                  </Text>
+                </Paper>
+              </SimpleGrid>
+
+              <ScrollArea h={420}>
+                <Table withColumnBorders highlightOnHover>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th w={60} ta="center">
+                        STT
+                      </Table.Th>
+                      <Table.Th w={140} ta="center">
+                        Mã sinh viên
+                      </Table.Th>
+                      <Table.Th ta="center">Dữ liệu UIIS</Table.Th>
+                      <Table.Th ta="center">Dữ liệu hiện tại</Table.Th>
+                      <Table.Th w={150} ta="center">
+                        Trạng thái
+                      </Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+
+                  <Table.Tbody>
+                    {previewRows.map((row) => (
+                      <Table.Tr
+                        key={`${row.maSinhVien}-${row.stt}`}
+                        style={{
+                          background:
+                            row.status === "NEW"
+                              ? "rgba(34, 197, 94, 0.06)"
+                              : row.status === "CHANGED"
+                                ? "rgba(245, 158, 11, 0.08)"
+                                : undefined,
+                        }}
+                      >
+                        <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                          {row.stt}
+                        </Table.Td>
+
+                        <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                          <Text fw={700}>{row.maSinhVien}</Text>
+                        </Table.Td>
+
+                        <Table.Td>
+                          <Text fw={700}>Họ tên: {row.uiis.hoTen}</Text>
+                          <Text>Lớp: {row.uiis.lop}</Text>
+                          <Text>Phòng: {row.uiis.maPhong}</Text>
+                          <Text>Khu: {row.uiis.maKhu}</Text>
+                        </Table.Td>
+
+                        <Table.Td>
+                          {row.current ? (
+                            <>
+                              <Text fw={700}>Họ tên: {row.current.hoTen}</Text>
+                              <Text>Lớp: {row.current.lop}</Text>
+                              <Text>Phòng: {row.current.maPhong}</Text>
+                              <Text>Khu: {row.current.maKhu}</Text>
+                            </>
+                          ) : (
+                            <Text c="green.7" fw={700}>
+                              Chưa có trong KTX
+                            </Text>
+                          )}
+                        </Table.Td>
+
+                        <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                          {renderStatusBadge(row.status)}
+                        </Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+              </ScrollArea>
+
+              <Divider />
+
+              {previewMessage && (
+                <Box>
+                  <Text fw={600} c={previewMessage.color}>
+                    {previewMessage.text}
+                  </Text>
+                </Box>
+              )}
+            </>
+          )}
         </Stack>
-      }
-      pagination={
-        <CustomPagination
-          totalItems={totalItems}
-          totalPages={totalPages}
-          page={page}
-          pageSize={pageSize}
-          setPage={setPage}
-          setPageSize={setPageSize}
-          fetchData={loadData}
-        />
-      }
-    />
+
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={handleCloseSync}>
+            Hủy
+          </Button>
+
+          {canConfirmSync && (
+            <Button
+              color="green"
+              leftSection={<IconArrowsShuffle size={18} />}
+              loading={confirmSyncLoading}
+              onClick={handleConfirmSyncSinhVienUiis}
+            >
+              Xác nhận đồng bộ
+            </Button>
+          )}
+        </Group>
+      </Modal>
+    </>
   );
 }

@@ -31,7 +31,6 @@ const CustomPagination: React.FC<PaginationProps> = ({
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchData?.(newPage, pageSize);
   };
 
   const handlePageSizeChange = (value: string | null) => {
@@ -39,7 +38,6 @@ const CustomPagination: React.FC<PaginationProps> = ({
     const newSize = parseInt(value, 10);
     setPageSize(newSize);
     setPage(1);
-    fetchData?.(1, newSize);
   };
 
   if (totalPages <= 0) return null;

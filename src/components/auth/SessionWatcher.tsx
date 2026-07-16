@@ -17,7 +17,7 @@ export default function SessionWatcher({
   reloginLabel: string;
   continueLabel: string;
 }) {
-  const expired = useSessionStore((s) => s.expired);
+  // const expired = useSessionStore((s) => s.expired);
   // const setExpired = useSessionStore((s) => s.setExpired);
   // const setAccessToken = useSessionStore((s) => s.setAccessToken);
   // const setRefreshToken = useSessionStore((s) => s.setRefreshToken);
@@ -25,9 +25,21 @@ export default function SessionWatcher({
   const setIsExpired = useSessionStore((s) => s.setIsExpired);
   const setTokens = useSessionStore((s) => s.setTokens);
 
+  // const logout = async () => {
+  //   setIsExpired(false);
+  //   await signOut({ callbackUrl: "/" });
+  // };
+
   const logout = async () => {
     setIsExpired(false);
-    await signOut({ callbackUrl: "/" });
+
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    const parts = window.location.pathname.split("/");
+    const locale = parts[1] || "vi";
+
+    await signOut({
+      callbackUrl: `/${locale}/login?from=${encodeURIComponent(currentPath)}`,
+    });
   };
 
   const continueSession = async () => {
@@ -59,9 +71,10 @@ export default function SessionWatcher({
       opened={isExpired}
       centered
       withCloseButton={false}
-      onClose={function (): void {
-        throw new Error("Function not implemented.");
-      }}
+      // onClose={function (): void {
+      //   throw new Error("Function not implemented.");
+      // }}
+      onClose={() => {}}
     >
       <Stack align="center">
         <ThemeIcon color="yellow" size={64}>

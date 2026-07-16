@@ -10,8 +10,8 @@ export interface KhuKtx {
   khuId?: number;
   maKhu?: string;
   tenKhu?: string;
-  khuMa?: string;
-  khuTen?: string;
+  khuTen: string | undefined;
+  khuMa: string | undefined;
   soLuongPhong?: string;
   moTa?: string | null;
   guid?: string;
@@ -117,6 +117,8 @@ export interface SinhVienKtx {
 }
 
 export interface PhongKtx {
+  khuTen: string | undefined;
+  khuMa: string | undefined;
   id?: number | string;
   guid?: string;
   maPhong?: string;
@@ -167,5 +169,13 @@ export interface DanhSachSinhVienKtxRequest {
 export type UiisKhuPayload = {
   nam_hoc: string;
   hoc_ky: string;
+};
+
+export type UiisSinhVienPayload = {
+  checksum?: string;
+  nam_hoc: number;
+  hoc_ky: number;
+  ma_phong?: string;
+  khu_id?: number;
 };
  

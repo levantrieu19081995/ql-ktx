@@ -20,7 +20,6 @@ import {
   SimpleGrid,
   Loader,
   Center,
-  Pagination,
   Paper,
   Box,
   Divider,
@@ -48,6 +47,7 @@ import {
 } from "recharts";
 import { fetchThongKeTheoMaSo, fetchSinhVienPaginate } from "@/services/dashboard/dashboardService";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
+import CustomPagination from "@/components/common/CustomPagination";
 
 export default function TheoMaSoSubPage() {
   const t = useTranslations("Statistics");
@@ -631,26 +631,14 @@ export default function TheoMaSoSubPage() {
                   </Table>
                 </ScrollArea>
 
-                {totalHistoryPages > 1 && (
-                  <Group justify="center" mt="md">
-                    <Pagination
-                      value={historyPage}
-                      onChange={setHistoryPage}
-                      total={totalHistoryPages}
-                      size="sm"
-                      radius="md"
-                      withEdges
-                      styles={{
-                        control: {
-                          fontFamily: "var(--font-readex-pro), sans-serif",
-                          "&[data-active]": {
-                            backgroundColor: "#1f5ca9",
-                          },
-                        },
-                      }}
-                    />
-                  </Group>
-                )}
+                <CustomPagination
+                  totalItems={historyList.length}
+                  totalPages={totalHistoryPages}
+                  page={historyPage}
+                  pageSize={pageSize}
+                  setPage={setHistoryPage}
+                  setPageSize={() => {}}
+                />
               </Card>
             </>
           ) : (

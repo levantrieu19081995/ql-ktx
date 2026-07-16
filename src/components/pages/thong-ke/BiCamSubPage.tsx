@@ -19,7 +19,6 @@ import {
   Center,
   Modal,
   Textarea,
-  Pagination,
   ActionIcon,
   Tooltip,
   Divider,
@@ -59,6 +58,7 @@ import {
   fetchSinhVienPaginate,
 } from "@/services/dashboard/dashboardService";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
+import CustomPagination from "@/components/common/CustomPagination";
 
 interface BannedItem {
   camId: number;
@@ -171,6 +171,106 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
   }
   return null;
+};
+
+const BannedChartLegend = () => {
+  return (
+    <Group justify="center" align="flex-end" gap="md" mt={8} wrap="wrap">
+      {/* Minh họa trục biểu đồ */}
+      <Box
+        style={{
+          position: "relative",
+          width: 96,
+          height: 40,
+          flexShrink: 0,
+        }}
+      >
+        {/* Tên trục Y */}
+        <Text
+          size="10px"
+          fw={600}
+          c="#64748b"
+          style={{
+            position: "absolute",
+            top: -2,
+            left: 0,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Số lượng
+        </Text>
+
+        {/* Trục Y */}
+        <Box
+          style={{
+            position: "absolute",
+            left: 5,
+            bottom: 4,
+            width: 1,
+            height: 21,
+            backgroundColor: "#64748b",
+          }}
+        />
+
+        {/* Trục X */}
+        <Box
+          style={{
+            position: "absolute",
+            left: 5,
+            bottom: 4,
+            width: 42,
+            height: 1,
+            backgroundColor: "#64748b",
+          }}
+        />
+
+        {/* Cột minh họa */}
+        <Box
+          style={{
+            position: "absolute",
+            left: 17,
+            bottom: 5,
+            width: 10,
+            height: 13,
+            borderRadius: "2px 2px 0 0",
+            backgroundColor: "#1f5ca9",
+          }}
+        />
+
+        {/* Tên trục X */}
+        <Text
+          size="10px"
+          fw={600}
+          c="#64748b"
+          style={{
+            position: "absolute",
+            left: 52,
+            bottom: 0,
+            whiteSpace: "nowrap",
+            right: -4,
+          }}
+        >
+          Mã số
+        </Text>
+      </Box>
+
+      {/* Chú thích cột */}
+      <Group gap={5} wrap="nowrap">
+        <Box
+          style={{
+            width: 11,
+            height: 11,
+            borderRadius: 2,
+            backgroundColor: "#1f5ca9",
+          }}
+        />
+
+        <Text size="12px" c="#64748b">
+          Sinh viên bị cấm
+        </Text>
+      </Group>
+    </Group>
+  );
 };
 
 export default function BiCamSubPage() {
@@ -453,11 +553,8 @@ export default function BiCamSubPage() {
   const chartData =
     bannedList.length > 0
       ? bannedList.slice(0, 10).map((item) => ({
-          name: svNameMap[item.maSinhVien]
-            ? svNameMap[item.maSinhVien].split(" ").pop() ||
-              svNameMap[item.maSinhVien]
-            : item.maSinhVien || `SV${item.sinhVienId}`,
-          fullName: svNameMap[item.maSinhVien] || item.maSinhVien,
+          name: item.maSinhVien || `SV${item.sinhVienId}`,
+          fullName: item.maSinhVien || `SV${item.sinhVienId}`,
           value: 1,
           lyDo: item.lyDo,
         }))
@@ -484,7 +581,6 @@ export default function BiCamSubPage() {
         fontFamily: "var(--font-readex-pro), sans-serif",
       }}
     >
-      {/* Toast - client-only, no SSR mismatch */}
       {toast && (
         <div
           style={{
@@ -520,17 +616,18 @@ export default function BiCamSubPage() {
         description="Theo dõi danh sách sinh viên bị cấm, lý do áp dụng và thời gian hiệu lực."
         icon={<IconReportAnalytics size={20} color="#1f5ca9" />}
         rightSection={
-          <Button
-            leftSection={<IconPlus size={16} />}
-            style={{
-              background: "linear-gradient(135deg, #1f5ca9, #00afef)",
-              fontFamily: "var(--font-readex-pro), sans-serif",
-              borderRadius: "8px",
-            }}
-            onClick={openAddModal}
-          >
-            {t("addBannedBtn")}
-          </Button>
+          <></>
+          // <Button
+          //   leftSection={<IconPlus size={16} />}
+          //   style={{
+          //     background: "linear-gradient(135deg, #1f5ca9, #00afef)",
+          //     fontFamily: "var(--font-readex-pro), sans-serif",
+          //     borderRadius: "8px",
+          //   }}
+          //   onClick={openAddModal}
+          // >
+          //   {t("addBannedBtn")}
+          // </Button>
         }
       />
 
@@ -538,66 +635,61 @@ export default function BiCamSubPage() {
       <Card
         withBorder
         radius="lg"
-        p="lg"
+        p="md"
         style={{
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
           borderColor: "#e2e8f0",
         }}
       >
-        <Stack gap="md">
-          {/* Row 1: 2 filter fields */}
-          <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
-            <TextInput
-              label={t("fullName").toUpperCase()}
-              placeholder={t("enterFullName") + "..."}
-              value={hoTenFilter}
-              onChange={(e) => setHoTenFilter(e.currentTarget.value)}
-              styles={{
-                label: {
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.5px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  height: "40px",
-                },
-              }}
-            />
-            <TextInput
-              label={t("studentId").toUpperCase()}
-              placeholder={t("enterMssv") + "..."}
-              value={mssvFilter}
-              onChange={(e) => setMssvFilter(e.currentTarget.value)}
-              styles={{
-                label: {
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.5px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  fontFamily: "var(--font-readex-pro), sans-serif",
-                  height: "40px",
-                },
-              }}
-            />
-          </SimpleGrid>
-
-          {/* Dotted divider */}
-          <Divider
-            variant="dashed"
-            style={{ borderStyle: "dashed", borderColor: "#cbd5e1" }}
-            my="xs"
+        <Box
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(220px, 1fr) minmax(220px, 1fr) auto",
+            gap: "16px",
+            alignItems: "end",
+          }}
+        >
+          <TextInput
+            label={t("fullName").toUpperCase()}
+            placeholder={`${t("enterFullName")}...`}
+            value={hoTenFilter}
+            onChange={(e) => setHoTenFilter(e.currentTarget.value)}
+            styles={{
+              label: {
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
+            }}
           />
 
-          {/* Row 2: Search buttons */}
-          <Group justify="flex-end" gap="sm">
+          <TextInput
+            label={t("studentId").toUpperCase()}
+            placeholder={`${t("enterMssv")}...`}
+            value={mssvFilter}
+            onChange={(e) => setMssvFilter(e.currentTarget.value)}
+            styles={{
+              label: {
+                fontSize: "11px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
+            }}
+          />
+
+          <Group gap="sm" wrap="nowrap">
             <Button
               leftSection={
                 loading ? (
@@ -606,17 +698,18 @@ export default function BiCamSubPage() {
                   <IconSearch size={16} />
                 )
               }
-              style={{
-                backgroundColor: "#1f5ca9",
-                fontFamily: "var(--font-readex-pro), sans-serif",
-                borderRadius: "8px",
-                height: "40px",
-              }}
               onClick={handleSearch}
               disabled={loading}
+              style={{
+                backgroundColor: "#1f5ca9",
+                borderRadius: "8px",
+                height: "40px",
+                whiteSpace: "nowrap",
+              }}
             >
               {t("search")}
             </Button>
+
             <Button
               leftSection={<IconRefresh size={16} />}
               variant="outline"
@@ -625,41 +718,43 @@ export default function BiCamSubPage() {
               style={{
                 borderColor: "#cbd5e1",
                 color: "#64748b",
-                fontFamily: "var(--font-readex-pro), sans-serif",
                 borderRadius: "8px",
                 height: "40px",
+                whiteSpace: "nowrap",
               }}
             >
               {t("reset")}
             </Button>
+
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
               style={{
                 borderColor: "#1f5ca9",
                 color: "#1f5ca9",
-                fontFamily: "var(--font-readex-pro), sans-serif",
                 borderRadius: "8px",
                 height: "40px",
+                whiteSpace: "nowrap",
               }}
             >
               {t("exportExcel")}
             </Button>
+
             <Button
               leftSection={<IconDownload size={16} />}
               variant="outline"
               style={{
                 borderColor: "#0ea5e9",
                 color: "#0ea5e9",
-                fontFamily: "var(--font-readex-pro), sans-serif",
                 borderRadius: "8px",
                 height: "40px",
+                whiteSpace: "nowrap",
               }}
             >
               {t("exportPdf")}
             </Button>
           </Group>
-        </Stack>
+        </Box>
       </Card>
 
       {error && (
@@ -685,13 +780,16 @@ export default function BiCamSubPage() {
       ) : (
         <>
           {/* Chart */}
+          {/* Chart */}
           <Grid gutter="md">
             <Grid.Col span={12}>
               <Card
                 withBorder
                 radius="lg"
                 p="lg"
-                style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}
+                style={{
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+                }}
               >
                 <Text
                   fw={700}
@@ -701,26 +799,81 @@ export default function BiCamSubPage() {
                   style={{
                     letterSpacing: "0.5px",
                     textTransform: "uppercase",
-                    fontFamily: "var(--font-readex-pro), sans-serif",
                   }}
                 >
                   {t("bannedChartTitle")}
                 </Text>
-                <div style={{ height: 220 }}>
+
+                <div style={{ height: 240 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                      <YAxis allowDecimals={false} />
-                      <RechartsTooltip content={<CustomTooltip />} />
+                    <BarChart
+                      data={chartData}
+                      margin={{
+                        top: 16,
+                        right: 16,
+                        left: 0,
+                        bottom: 4,
+                      }}
+                      barCategoryGap="34%"
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#d1d5db"
+                      />
+
+                      <XAxis
+                        dataKey="name"
+                        interval={0}
+                        tick={{
+                          fontSize: 11,
+                          fill: "#475569",
+                        }}
+                        tickLine={false}
+                        axisLine={{
+                          stroke: "#94a3b8",
+                        }}
+                      />
+
+                      <YAxis
+                        allowDecimals={false}
+                        width={40}
+                        domain={[0, "dataMax + 1"]}
+                        tick={{
+                          fontSize: 12,
+                          fill: "#475569",
+                        }}
+                        tickLine={false}
+                        axisLine={{
+                          stroke: "#94a3b8",
+                        }}
+                      />
+
+                      <RechartsTooltip
+                        content={<CustomTooltip />}
+                        cursor={{
+                          fill: "rgba(148, 163, 184, 0.08)",
+                        }}
+                      />
+
                       <Bar
                         dataKey="value"
+                        name="Sinh viên bị cấm"
                         fill="#1f5ca9"
                         radius={[4, 4, 0, 0]}
+                        maxBarSize={70}
+                        label={{
+                          position: "top",
+                          fill: "#475569",
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
+
+                <BannedChartLegend />
               </Card>
             </Grid.Col>
           </Grid>
@@ -918,18 +1071,14 @@ export default function BiCamSubPage() {
               </Table>
             </ScrollArea>
 
-            {totalPages > 1 && (
-              <Group justify="center" mt="lg">
-                <Pagination
-                  value={currentPage}
-                  onChange={(p) => setCurrentPage(p)}
-                  total={totalPages}
-                  size="sm"
-                  radius="md"
-                  color="#1f5ca9"
-                />
-              </Group>
-            )}
+            <CustomPagination
+              totalItems={totalElements}
+              totalPages={totalPages}
+              page={currentPage}
+              pageSize={PAGE_SIZE}
+              setPage={setCurrentPage}
+              setPageSize={() => {}}
+            />
           </Card>
         </>
       )}

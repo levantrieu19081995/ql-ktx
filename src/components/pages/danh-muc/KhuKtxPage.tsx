@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  Autocomplete,
   Badge,
   Box,
   Button,
@@ -11,7 +12,6 @@ import {
   Modal,
   Paper,
   ScrollArea,
-  Select,
   SimpleGrid,
   Stack,
   Table,
@@ -70,7 +70,8 @@ const displayText = (value?: string | null) => normalizeString(value) || "-";
 export default function KhuKtxPage() {
   const [items, setItems] = useState<KhuKtx[]>([]);
   const [dsKhu, setDsKhu] = useState<{ value: string; label: string }[]>([]);
-  const [maKhu, setMaKhu] = useState<string | null>("-1");
+  const [maKhu, setMaKhu] = useState("");
+  const [appliedMaKhu, setAppliedMaKhu] = useState("-1");
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -117,12 +118,16 @@ export default function KhuKtxPage() {
     }
   };
 
-  const loadData = async (pageValue = page, pageSizeValue = pageSize) => {
+  const loadData = async (
+    pageValue = page,
+    pageSizeValue = pageSize,
+    filters?: { maKhu?: string },
+  ) => {
     try {
       const res = await fetchDanhSachKhuKtx({
         page: pageValue,
         pageSize: pageSizeValue,
-        maKhu: maKhu || "-1",
+        maKhu: filters?.maKhu ?? appliedMaKhu,
       });
 
       setItems(res?.items || []);
@@ -137,12 +142,16 @@ export default function KhuKtxPage() {
   };
 
   const handleSearch = () => {
+    const effectiveMaKhu = maKhu.trim() || "-1";
+
+    setAppliedMaKhu(effectiveMaKhu);
     setPage(1);
-    loadData(1, pageSize);
+    loadData(1, pageSize, { maKhu: effectiveMaKhu });
   };
 
   const handleReset = async () => {
-    setMaKhu("-1");
+    setMaKhu("");
+    setAppliedMaKhu("-1");
     setPage(1);
 
     try {
@@ -351,14 +360,15 @@ export default function KhuKtxPage() {
         searchControls={
           <Stack gap="md" w="100%">
             <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
-              <Select
+              <Autocomplete
                 label="Mã khu"
                 placeholder="Chọn mã khu"
-                clearable={false}
                 style={{ minWidth: 200, flex: 1 }}
                 value={maKhu}
                 onChange={setMaKhu}
-                data={dsKhu}
+                data={dsKhu
+                  .map((item) => item.value)
+                  .filter((value) => value && value !== "-1")}
               />
 
               <Button

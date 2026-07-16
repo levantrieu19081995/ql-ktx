@@ -29,6 +29,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 import logo from "@/assets/images/CTU_logo.png";
+import PageTransitionOverlay from "@/components/common/PageTransitionOverlay";
+import {
+  PAGE_TRANSITION_DURATION_MS,
+  PAGE_TRANSITION_LOGIN_TO_APP,
+  PAGE_TRANSITION_STORAGE_KEY,
+} from "@/constants/pageTransition";
 import { fetchCaptchaAPI } from "@/services/auth/authService";
 
 const BRAND_BLUE = "#5AA4E7";
@@ -98,6 +104,7 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [captchaLoading, setCaptchaLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   const getLoginErrorMessage = useCallback(
     (code?: string | null) => {
@@ -189,7 +196,15 @@ function LoginContent() {
         return;
       }
 
-      router.replace(res.url ?? from);
+      setIsLeaving(true);
+      sessionStorage.setItem(
+        PAGE_TRANSITION_STORAGE_KEY,
+        PAGE_TRANSITION_LOGIN_TO_APP,
+      );
+
+      window.setTimeout(() => {
+        router.replace(res.url ?? from);
+      }, PAGE_TRANSITION_DURATION_MS);
     } catch (err: any) {
       await loadCaptcha();
       setCaptchaInput("");
@@ -228,161 +243,186 @@ function LoginContent() {
   };
 
   return (
-    <Paper
-      radius={18}
-      p="xl"
-      w={480}
-      withBorder
-      style={whiteCard}
-      className="login-card"
-    >
-      <Stack gap="lg">
-        <Group justify="center">
-          <Image
-            src={logo}
-            alt="Quan ly Ky tuc xa"
-            width={120}
-            height={120}
-            priority
-          />
-        </Group>
+    <>
+      {isLeaving ? <PageTransitionOverlay mode="leave" /> : null}
 
-        <Stack gap={4} align="center">
-          <Title order={3} c="#0b0f1a">
-            {t("title")}
-          </Title>
-          <Text size="sm" c="#475569" ta="center">
-            {t("welcome")}
-          </Text>
-        </Stack>
-
-        {error && (
-          <Alert
-            color="red"
-            icon={<IconAlertCircle size={16} />}
-            variant="light"
-            styles={{ label: { fontWeight: 600 } }}
-          >
-            {error}
-          </Alert>
-        )}
-
-        <form onSubmit={onSubmit}>
-          <Stack>
-            <TextInput
-              size="md"
-              label={t("username")}
-              placeholder={t("usernamePh")}
-              value={username}
-              onChange={(e) => setUsername(e.currentTarget.value)}
-              required
-              minLength={3}
-              autoComplete="username"
-              onInvalid={invalidUser}
-              onInput={clearValidity}
-              leftSection={<IconUser size={18} />}
-              leftSectionPointerEvents="none"
-              styles={{ label: { color: "#334155", fontWeight: 600 } }}
-              autoFocus
-            />
-
-            <PasswordInput
-              size="md"
-              label={t("password")}
-              placeholder={t("passwordPh")}
-              value={password}
-              onChange={(e) => setPassword(e.currentTarget.value)}
-              required
-              minLength={6}
-              autoComplete="current-password"
-              onInvalid={invalidPass}
-              onInput={clearValidity}
-              leftSection={<IconLock size={18} />}
-              leftSectionPointerEvents="none"
-              styles={{ label: { color: "#334155", fontWeight: 600 } }}
-            />
-
-            <Stack gap={8}>
-              <Group justify="space-between" align="flex-end" gap="sm">
-                <div style={{ flex: 1 }}>
-                  <Text size="sm" fw={600} c="#334155" mb={6}>
-                    {t("captcha")}
-                  </Text>
-                  <div className="captcha-box" aria-label={t("captchaCode")}>
-                    {captchaUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={captchaUrl}
-                        alt={t("captchaCode")}
-                        className="captcha-image"
-                      />
-                    ) : (
-                      <Text size="sm" c="#64748b">
-                        {captchaLoading ? "Loading..." : te("generic")}
-                      </Text>
-                    )}
-                  </div>
-                </div>
-
-                <ActionIcon
-                  variant="light"
-                  size={42}
-                  color="blue"
-                  onClick={refreshCaptcha}
-                  aria-label={t("captchaRefresh")}
-                  loading={captchaLoading}
-                >
-                  <IconRefresh size={18} />
-                </ActionIcon>
-              </Group>
-
-              <TextInput
-                size="md"
-                label={t("captchaInput")}
-                placeholder={t("captchaInputPh")}
-                value={captchaInput}
-                onChange={(e) => setCaptchaInput(e.currentTarget.value)}
-                required
-                autoComplete="off"
-                leftSection={<IconShieldCheck size={18} />}
-                leftSectionPointerEvents="none"
-                styles={{ label: { color: "#334155", fontWeight: 600 } }}
+      <div className={`login-transition-shell${isLeaving ? " is-leaving" : ""}`}>
+        <Paper
+          radius={18}
+          p="xl"
+          w={480}
+          withBorder
+          style={whiteCard}
+          className="login-card"
+        >
+          <Stack gap="lg">
+            <Group justify="center">
+              <Image
+                src={logo}
+                alt="Quan ly Ky tuc xa"
+                width={120}
+                height={120}
+                priority
               />
+            </Group>
+
+            <Stack gap={4} align="center">
+              <Title order={3} c="#0b0f1a">
+                {t("title")}
+              </Title>
+              <Text size="sm" c="#475569" ta="center">
+                {t("welcome")}
+              </Text>
             </Stack>
 
-            <Button
-              type="submit"
-              size="md"
-              loading={loading}
-              disabled={captchaLoading || !captchaGuid}
-              styles={{
-                root: {
-                  background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_RED})`,
-                },
-              }}
-            >
-              {t("submit")}
-            </Button>
+            {error && (
+              <Alert
+                color="red"
+                icon={<IconAlertCircle size={16} />}
+                variant="light"
+                styles={{ label: { fontWeight: 600 } }}
+              >
+                {error}
+              </Alert>
+            )}
 
-            <Divider
-              label={
-                <Text size="xs" c="#64748b">
-                  {t("divider")}
-                </Text>
-              }
-              color="#e5e7eb"
-            />
+            <form onSubmit={onSubmit}>
+              <Stack>
+                <TextInput
+                  size="md"
+                  label={t("username")}
+                  placeholder={t("usernamePh")}
+                  value={username}
+                  onChange={(e) => setUsername(e.currentTarget.value)}
+                  required
+                  minLength={3}
+                  autoComplete="username"
+                  onInvalid={invalidUser}
+                  onInput={clearValidity}
+                  leftSection={<IconUser size={18} />}
+                  leftSectionPointerEvents="none"
+                  styles={{ label: { color: "#334155", fontWeight: 600 } }}
+                  autoFocus
+                  disabled={isLeaving}
+                />
+
+                <PasswordInput
+                  size="md"
+                  label={t("password")}
+                  placeholder={t("passwordPh")}
+                  value={password}
+                  onChange={(e) => setPassword(e.currentTarget.value)}
+                  required
+                  minLength={6}
+                  autoComplete="current-password"
+                  onInvalid={invalidPass}
+                  onInput={clearValidity}
+                  leftSection={<IconLock size={18} />}
+                  leftSectionPointerEvents="none"
+                  styles={{ label: { color: "#334155", fontWeight: 600 } }}
+                  disabled={isLeaving}
+                />
+
+                <Stack gap={8}>
+                  <Group justify="space-between" align="flex-end" gap="sm">
+                    <div style={{ flex: 1 }}>
+                      <Text size="sm" fw={600} c="#334155" mb={6}>
+                        {t("captcha")}
+                      </Text>
+                      <div className="captcha-box" aria-label={t("captchaCode")}>
+                        {captchaUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={captchaUrl}
+                            alt={t("captchaCode")}
+                            className="captcha-image"
+                          />
+                        ) : (
+                          <Text size="sm" c="#64748b">
+                            {captchaLoading ? "Loading..." : te("generic")}
+                          </Text>
+                        )}
+                      </div>
+                    </div>
+
+                    <ActionIcon
+                      variant="light"
+                      size={42}
+                      color="blue"
+                      onClick={refreshCaptcha}
+                      aria-label={t("captchaRefresh")}
+                      loading={captchaLoading}
+                      disabled={isLeaving}
+                    >
+                      <IconRefresh size={18} />
+                    </ActionIcon>
+                  </Group>
+
+                  <TextInput
+                    size="md"
+                    label={t("captchaInput")}
+                    placeholder={t("captchaInputPh")}
+                    value={captchaInput}
+                    onChange={(e) => setCaptchaInput(e.currentTarget.value)}
+                    required
+                    autoComplete="off"
+                    leftSection={<IconShieldCheck size={18} />}
+                    leftSectionPointerEvents="none"
+                    styles={{ label: { color: "#334155", fontWeight: 600 } }}
+                    disabled={isLeaving}
+                  />
+                </Stack>
+
+                <Button
+                  type="submit"
+                  size="md"
+                  loading={loading || isLeaving}
+                  disabled={captchaLoading || !captchaGuid || isLeaving}
+                  styles={{
+                    root: {
+                      background: `linear-gradient(90deg, ${BRAND_BLUE}, ${BRAND_RED})`,
+                    },
+                  }}
+                >
+                  {t("submit")}
+                </Button>
+
+                <Divider
+                  label={
+                    <Text size="xs" c="#64748b">
+                      {t("divider")}
+                    </Text>
+                  }
+                  color="#e5e7eb"
+                />
+              </Stack>
+            </form>
+
+            <Text size="xs" c="#64748b" ta="center">
+              {t("forgot")}
+            </Text>
           </Stack>
-        </form>
-
-        <Text size="xs" c="#64748b" ta="center">
-          {t("forgot")}
-        </Text>
-      </Stack>
+        </Paper>
+      </div>
 
       <style
         dangerouslySetInnerHTML={{
           __html: `
+.login-transition-shell {
+  transition:
+    opacity ${PAGE_TRANSITION_DURATION_MS}ms cubic-bezier(0.32, 0.02, 0.2, 0.98),
+    transform ${PAGE_TRANSITION_DURATION_MS}ms cubic-bezier(0.32, 0.02, 0.2, 0.98),
+    filter ${PAGE_TRANSITION_DURATION_MS}ms cubic-bezier(0.32, 0.02, 0.2, 0.98);
+  transform-origin: center;
+  will-change: transform, opacity, filter;
+}
+
+.login-transition-shell.is-leaving {
+  opacity: 0;
+  transform: translateX(-108px) scale(0.982);
+  filter: blur(2px);
+}
+
 .captcha-box {
   min-height: 62px;
   display: flex;
@@ -406,7 +446,7 @@ function LoginContent() {
 `,
         }}
       />
-    </Paper>
+    </>
   );
 }
 

@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Group, Select, Stack } from "@mantine/core";
+import { Autocomplete, Button, Group, Stack } from "@mantine/core";
 import {
   IconBuildingTunnel,
   IconRefresh,
@@ -24,8 +24,12 @@ export default function PhongKtxPage() {
     [],
   );
 
-  const [maKhu, setMaKhu] = useState<string | null>("-1");
-  const [maPhong, setMaPhong] = useState<string | null>("-1");
+  const [maKhu, setMaKhu] = useState("");
+  const [maPhong, setMaPhong] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState({
+    maKhu: "-1",
+    maPhong: "-1",
+  });
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -48,7 +52,7 @@ export default function PhongKtxPage() {
     }
   };
 
-  const loadDanhMucPhongOptions = async (khuValue: string | null) => {
+  const loadDanhMucPhongOptions = async (khuValue: string) => {
     try {
       const res = await fetchDanhSachPhongKtx({
         page: 1,
@@ -69,13 +73,17 @@ export default function PhongKtxPage() {
     }
   };
 
-  const loadData = async (pageValue = page, pageSizeValue = pageSize) => {
+  const loadData = async (
+    pageValue = page,
+    pageSizeValue = pageSize,
+    filters?: { maKhu?: string; maPhong?: string },
+  ) => {
     try {
       const res = await fetchDanhSachPhongKtx({
         page: pageValue,
         pageSize: pageSizeValue,
-        maKhu: maKhu || "-1",
-        maPhong: maPhong || "-1",
+        maKhu: filters?.maKhu ?? appliedFilters.maKhu,
+        maPhong: filters?.maPhong ?? appliedFilters.maPhong,
       });
 
       setItems(res?.items || []);
@@ -90,13 +98,27 @@ export default function PhongKtxPage() {
   };
 
   const handleSearch = () => {
+    const effectiveMaKhu = maKhu.trim() || "-1";
+    const effectiveMaPhong = maPhong.trim() || "-1";
+
+    setAppliedFilters({
+      maKhu: effectiveMaKhu,
+      maPhong: effectiveMaPhong,
+    });
     setPage(1);
-    loadData(1, pageSize);
+    loadData(1, pageSize, {
+      maKhu: effectiveMaKhu,
+      maPhong: effectiveMaPhong,
+    });
   };
 
   const handleReset = async () => {
     setMaKhu("-1");
     setMaPhong("-1");
+    setAppliedFilters({
+      maKhu: "-1",
+      maPhong: "-1",
+    });
     setPage(1);
 
     try {
@@ -123,7 +145,7 @@ export default function PhongKtxPage() {
   }, []);
 
   useEffect(() => {
-    setMaPhong("-1");
+    setMaPhong("");
     loadDanhMucPhongOptions(maKhu);
   }, [maKhu]);
 
@@ -141,22 +163,24 @@ export default function PhongKtxPage() {
       searchControls={
         <Stack gap="md" w="100%">
           <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
-            <Select
+            <Autocomplete
               label="Khu ký túc xá"
               placeholder="Chọn khu..."
-              data={dsKhu}
+              data={dsKhu
+                .map((item) => item.value)
+                .filter((value) => value && value !== "-1")}
               value={maKhu}
-              onChange={(value) => setMaKhu(value)}
-              clearable={false}
+              onChange={setMaKhu}
               style={{ minWidth: 180, flex: 1 }}
             />
-            <Select
+            <Autocomplete
               label="Phòng"
               placeholder="Chọn phòng..."
-              data={dsPhong}
+              data={dsPhong
+                .map((item) => item.value)
+                .filter((value) => value && value !== "-1")}
               value={maPhong}
-              onChange={(value) => setMaPhong(value)}
-              clearable={false}
+              onChange={setMaPhong}
               style={{ minWidth: 180, flex: 1 }}
             />{" "}
             <Button

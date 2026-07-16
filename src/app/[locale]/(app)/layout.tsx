@@ -12,6 +12,7 @@ import SessionWatcherClientWrapper from "@/components/auth/SessionWatcherClientW
 import { UserProvider } from "@/context/UserContext";
 import ProtectedLayout from "@/components/common/ProtectedLayout";
 import SessionWatcher from "@/components/auth/SessionWatcher";
+import AppEntryTransition from "@/components/common/AppEntryTransition";
 type Props = {
   children: ReactNode;
   params: Promise<{ locale: string }>;
@@ -24,7 +25,8 @@ export default async function Layout({ children, params }: Props) {
   return (
     <SessionProviderClient>
       <UserProvider>
-        <AppFrame>
+        <AppEntryTransition>
+          <AppFrame>
           <SessionWatcherClientWrapper />
           <SessionWatcher
             title="Phiên đăng nhập hết hạn"
@@ -34,7 +36,8 @@ export default async function Layout({ children, params }: Props) {
           />
 
           <ProtectedLayout>{children}</ProtectedLayout>
-        </AppFrame>
+          </AppFrame>
+        </AppEntryTransition>
       </UserProvider>
     </SessionProviderClient>
   );

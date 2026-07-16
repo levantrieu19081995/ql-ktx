@@ -1,253 +1,140 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Table, Avatar, Select, Box } from '@mantine/core';
+import React from 'react';
+import { Table, Avatar, Box } from '@mantine/core';
 import { useTranslations } from 'next-intl';
-
-import { HistoryItem } from '../../../types/type-history';
 import dayjs from 'dayjs';
 
-// Kiểu Tab hiển thị để quyết định cột Loại render như thế nào
-export type LoaiTabHienThi = 'LICH_SU' | 'CO_MAT' | 'VANG_MAT' | 'CANH_BAO' | 'CAN_BO' | 'SINH_VIEN';
+import { HistoryItem } from '../../../types/type-history';
 
-// Định nghĩa giao diện thuộc tính cho Component Bảng lịch sử ra vào
+export type LoaiTabHienThi =
+  | 'LICH_SU'
+  | 'CO_MAT'
+  | 'VANG_MAT'
+  | 'CANH_BAO'
+  | 'CAN_BO'
+  | 'SINH_VIEN';
+
 interface ThuocTinhBangLichSu {
-    // Mảng dữ liệu lịch sử ra vào
-    duLieu: HistoryItem[];
-
-    // Trạng thái đang tải dữ liệu từ API
-    dangTai?: boolean;
-
-    // Loại tab hiện tại để điều chỉnh cột Loại
-    loaiTab?: LoaiTabHienThi;
-
-    // Bản ghi lịch sử đang được lựa chọn để xem chi tiết
-    lichSuDuocChon: HistoryItem | null;
-
-    // Hàm thiết lập bản ghi lịch sử đang được lựa chọn
-    datLichSuDuocChon: (lichSu: HistoryItem | null) => void;
-
-    // Active tab in main page
-    tabActive?: string;
+  duLieu: HistoryItem[];
+  dangTai?: boolean;
+  loaiTab?: LoaiTabHienThi;
+  lichSuDuocChon: HistoryItem | null;
+  datLichSuDuocChon: (lichSu: HistoryItem | null) => void;
+  tabActive?: string;
 }
 
-
-/**
- * Hàm lấy nhãn trạng thái hiện diện cho bảng Thông tin chi tiết.
- */
-export const layNhanTrangThai = (banGhi: HistoryItem, loaiTab: LoaiTabHienThi, t: any): { nhan: string; mauSac: string } => {
-    if (loaiTab === 'CO_MAT') return { nhan: t('filter.present'), mauSac: 'status-emerald' };
-    if (loaiTab === 'VANG_MAT') return { nhan: t('filter.absent'), mauSac: 'status-amber' };
-    if (banGhi.loaiDoiTuong === 'Người lạ') return { nhan: t('filter.stranger'), mauSac: 'status-red' };
-    if (banGhi.trangThaiSinhVien === 'NO_PHI') return { nhan: t('filter.unpaid'), mauSac: 'status-blue' };
-    if (banGhi.trangThaiSinhVien === 'BI_CAM') return { nhan: t('filter.banned'), mauSac: 'status-orange' };
-    if (banGhi.loai === 'IN') return { nhan: t('filter.in'), mauSac: 'status-blue' };
-    return { nhan: t('filter.out'), mauSac: 'status-emerald' };
+export const layNhanTrangThai = (
+  banGhi: HistoryItem,
+  loaiTab: LoaiTabHienThi,
+  t: any,
+): { nhan: string; mauSac: string } => {
+  if (loaiTab === 'CO_MAT') return { nhan: t('filter.present'), mauSac: 'status-emerald' };
+  if (loaiTab === 'VANG_MAT') return { nhan: t('filter.absent'), mauSac: 'status-amber' };
+  if (banGhi.loaiDoiTuong === 'NgÆ°á»i láº¡') return { nhan: t('filter.stranger'), mauSac: 'status-red' };
+  if (banGhi.trangThaiSinhVien === 'NO_PHI') return { nhan: t('filter.unpaid'), mauSac: 'status-blue' };
+  if (banGhi.trangThaiSinhVien === 'BI_CAM') return { nhan: t('filter.banned'), mauSac: 'status-orange' };
+  if (banGhi.loai === 'IN') return { nhan: t('filter.in'), mauSac: 'status-blue' };
+  return { nhan: t('filter.out'), mauSac: 'status-emerald' };
 };
 
-/**
- * Component Bảng hiển thị nhật ký ra vào ký túc xá (BangLichSu).
- * Chức năng: Render bảng danh sách lịch sử với cột Loại linh hoạt theo tab.
- */
 export default function BangLichSu({
-    duLieu,
-    dangTai = false,
-    loaiTab = 'LICH_SU',
-    lichSuDuocChon,
-    datLichSuDuocChon,
-    tabActive = 'LICH_SU',
+  duLieu,
+  dangTai = false,
+  lichSuDuocChon,
+  datLichSuDuocChon,
+  tabActive = 'LICH_SU',
 }: ThuocTinhBangLichSu) {
-    const t = useTranslations('History');
-    // Trạng thái phân trang cục bộ
-    const [trangHienTai, datTrangHienTai] = useState<number>(1);
-    const [soDongTrenTrang, datSoDongTrenTrang] = useState<number>(5);
+  const t = useTranslations('History');
 
-    // Tính toán danh sách trang hiện tại
-    const chiSoBatDau = (trangHienTai - 1) * soDongTrenTrang;
-    const chiSoKetThuc = chiSoBatDau + soDongTrenTrang;
-    const danhSachHienThi = duLieu.slice(chiSoBatDau, chiSoKetThuc);
-    const tongSoTrang = Math.ceil(duLieu.length / soDongTrenTrang);
-
-    // Hàm xử lý chuyển trang
-    const xuLyChuyenTrang = (soTrangMoi: number) => {
-        if (soTrangMoi >= 1 && soTrangMoi <= tongSoTrang) {
-            datTrangHienTai(soTrangMoi);
-        }
-    };
-
-    // Tạo mảng số trang hiển thị dạng "1 2 3 4 ... 52"
-    const taoSoTrangHienThi = (): (number | '...')[] => {
-        if (tongSoTrang <= 5) {
-            return Array.from({ length: tongSoTrang }, (_, i) => i + 1);
-        }
-        const trang: (number | '...')[] = [1, 2, 3, 4];
-        if (trangHienTai > 4 && trangHienTai < tongSoTrang - 1) {
-            trang.push('...');
-            trang.push(trangHienTai);
-        }
-        trang.push('...');
-        trang.push(tongSoTrang);
-        return trang;
-    };
-
-    return (
-        <div className="history-table-wrapper">
-            {/* BẢNG DỮ LIỆU */}
-            <div className="scroll-container">
-                <Table highlightOnHover verticalSpacing="md" horizontalSpacing="md" className="history-table">
-                    <Table.Thead className="table-header">
-                        <Table.Tr>
-                            <Table.Th style={{ width: 60, textAlign: 'center' }}>{t('table.no')}</Table.Th>
-                            <Table.Th style={{ width: 180 }}>{t('table.time')}</Table.Th>
-                            <Table.Th style={{ width: 220 }}>{t('table.fullName')}</Table.Th>
-                            <Table.Th style={{ width: 160, textAlign: 'center' }}>{t('table.image')}</Table.Th>
-                            <Table.Th style={{ width: 200 }}>{t('table.device')}</Table.Th>
-                            <Table.Th style={{ width: 150 }}>{t('table.group')}</Table.Th>
-                            <Table.Th style={{ width: 120 }}>{t('table.dormitory')}</Table.Th>
-                            {tabActive !== 'LICH_SU' && (
-                                <Table.Th style={{ width: 110 }}>
-                                    {tabActive === 'CAN_BO' ? t('table.unit') : t('table.room')}
-                                </Table.Th>
-                            )}
-                        </Table.Tr>
-                    </Table.Thead>
-                    <Table.Tbody>
-                        {dangTai ? (
-                            <Table.Tr>
-                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 7 : 8} className="table-cell-empty">
-                                    {t('table.loading')}
-                                </Table.Td>
-                            </Table.Tr>
-                        ) : danhSachHienThi.length === 0 ? (
-                            <Table.Tr>
-                                <Table.Td colSpan={tabActive === 'LICH_SU' ? 7 : 8} className="table-cell-empty">
-                                    {t('table.noData')}
-                                </Table.Td>
-                            </Table.Tr>
-                        ) : (
-                            danhSachHienThi.map((banGhi, index) => {
-                                const laDuocChon = lichSuDuocChon?.id === banGhi.id;
-                                return (
-                                    <Table.Tr
-                                        key={banGhi.id}
-                                        onClick={() => datLichSuDuocChon(banGhi)}
-                                        className={`table-row ${laDuocChon ? 'table-row-selected' : ''}`}
-                                    >
-                                        <Table.Td style={{ textAlign: 'center' }} className="cell-stt">
-                                            {chiSoBatDau + index + 1}
-                                        </Table.Td>
-                                        <Table.Td className="cell-time">
-                                            {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
-                                        </Table.Td>
-                                        <Table.Td className="cell-name">
-                                            {banGhi.hoVaTen}
-                                        </Table.Td>
-                                        <Table.Td style={{ textAlign: 'center' }}>
-                                            <Box style={{ display: 'flex', justifyContent: 'center' }}>
-                                                <Avatar
-                                                    src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
-                                                    radius="sm"
-                                                    size={60}
-                                                    className="avatar-image"
-                                                    styles={{ image: { objectFit: 'cover' } }}
-                                                />
-                                            </Box>
-                                        </Table.Td>
-                                        <Table.Td className={`${banGhi.loai === 'IN' ? 'status-blue' : 'status-emerald'} cell-text-medium`}>
-                                            {banGhi.thietBi || 'N/A'}
-                                        </Table.Td>
-                                        <Table.Td className="cell-text-medium">
-                                            {banGhi.loaiDoiTuong || 'N/A'}
-                                        </Table.Td>
-                                        <Table.Td className="cell-text-medium">
-                                            {banGhi.tenKtx}
-                                        </Table.Td>
-                                        {tabActive !== 'LICH_SU' && (
-                                            <Table.Td className="cell-text-medium">
-                                                {banGhi.tenPhong}
-                                            </Table.Td>
-                                        )}
-                                    </Table.Tr>
-                                );
-                            })
-                        )}
-                    </Table.Tbody>
-                </Table>
-            </div>
-
-            {/* THANH PHÂN TRANG THEO MOCKUP */}
-            <div className="pagination-bar">
-                {/* Thông tin số bản ghi */}
-                <div className="pagination-info">
-                    {t('table.paginationInfo', {
-                        start: duLieu.length === 0 ? 0 : chiSoBatDau + 1,
-                        end: Math.min(chiSoKetThuc, duLieu.length),
-                        total: duLieu.length
-                    })}
-                </div>
-
-                {/* Nút phân trang */}
-                <div className="pagination-buttons">
-                    {/* Nút về trang trước */}
-                    <button
-                        onClick={() => xuLyChuyenTrang(trangHienTai - 1)}
-                        disabled={trangHienTai === 1}
-                        className="btn-page"
+  return (
+    <div className="history-table-wrapper">
+      <div className="scroll-container">
+        <Table
+          highlightOnHover
+          verticalSpacing="md"
+          horizontalSpacing="md"
+          className="history-table"
+        >
+          <Table.Thead className="table-header">
+            <Table.Tr>
+              <Table.Th style={{ width: 60, textAlign: 'center' }}>{t('table.no')}</Table.Th>
+              <Table.Th style={{ width: 180 }}>{t('table.time')}</Table.Th>
+              <Table.Th style={{ width: 220 }}>{t('table.fullName')}</Table.Th>
+              <Table.Th style={{ width: 160, textAlign: 'center' }}>{t('table.image')}</Table.Th>
+              <Table.Th style={{ width: 200 }}>{t('table.device')}</Table.Th>
+              <Table.Th style={{ width: 150 }}>{t('table.group')}</Table.Th>
+              <Table.Th style={{ width: 120 }}>{t('table.dormitory')}</Table.Th>
+              {tabActive !== 'LICH_SU' && (
+                <Table.Th style={{ width: 110 }}>
+                  {tabActive === 'CAN_BO' ? t('table.unit') : t('table.room')}
+                </Table.Th>
+              )}
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {dangTai ? (
+              <Table.Tr>
+                <Table.Td colSpan={tabActive === 'LICH_SU' ? 7 : 8} className="table-cell-empty">
+                  {t('table.loading')}
+                </Table.Td>
+              </Table.Tr>
+            ) : duLieu.length === 0 ? (
+              <Table.Tr>
+                <Table.Td colSpan={tabActive === 'LICH_SU' ? 7 : 8} className="table-cell-empty">
+                  {t('table.noData')}
+                </Table.Td>
+              </Table.Tr>
+            ) : (
+              duLieu.map((banGhi, index) => {
+                const laDuocChon = lichSuDuocChon?.id === banGhi.id;
+                return (
+                  <Table.Tr
+                    key={banGhi.id}
+                    onClick={() => datLichSuDuocChon(banGhi)}
+                    className={`table-row ${laDuocChon ? 'table-row-selected' : ''}`}
+                  >
+                    <Table.Td style={{ textAlign: 'center' }} className="cell-stt">
+                      {index + 1}
+                    </Table.Td>
+                    <Table.Td className="cell-time">
+                      {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}
+                    </Table.Td>
+                    <Table.Td className="cell-name">{banGhi.hoVaTen}</Table.Td>
+                    <Table.Td style={{ textAlign: 'center' }}>
+                      <Box style={{ display: 'flex', justifyContent: 'center' }}>
+                        <Avatar
+                          src={banGhi.duongDanAnhChup || banGhi.duongDanAnhDaiDien}
+                          radius="sm"
+                          size={60}
+                          className="avatar-image"
+                          styles={{ image: { objectFit: 'cover' } }}
+                        />
+                      </Box>
+                    </Table.Td>
+                    <Table.Td
+                      className={`${banGhi.loai === 'IN' ? 'status-blue' : 'status-emerald'} cell-text-medium`}
                     >
-                        {'<'}
-                    </button>
+                      {banGhi.thietBi || 'N/A'}
+                    </Table.Td>
+                    <Table.Td className="cell-text-medium">
+                      {banGhi.loaiDoiTuong || 'N/A'}
+                    </Table.Td>
+                    <Table.Td className="cell-text-medium">{banGhi.tenKtx}</Table.Td>
+                    {tabActive !== 'LICH_SU' && (
+                      <Table.Td className="cell-text-medium">{banGhi.tenPhong}</Table.Td>
+                    )}
+                  </Table.Tr>
+                );
+              })
+            )}
+          </Table.Tbody>
+        </Table>
+      </div>
 
-                    {/* Danh sách trang */}
-                    {taoSoTrangHienThi().map((item, idx) => {
-                        if (item === '...') {
-                            return (
-                                <span key={`ellipsis-${idx}`} className="page-ellipsis">
-                                    ...
-                                </span>
-                            );
-                        }
-                        const soTrang = item as number;
-                        const laHienTai = soTrang === trangHienTai;
-                        return (
-                            <button
-                                key={soTrang}
-                                onClick={() => xuLyChuyenTrang(soTrang)}
-                                className={`btn-page ${laHienTai ? 'btn-page-active' : ''}`}
-                            >
-                                {soTrang}
-                            </button>
-                        );
-                    })}
-
-                    {/* Nút đến trang sau */}
-                    <button
-                        onClick={() => xuLyChuyenTrang(trangHienTai + 1)}
-                        disabled={trangHienTai === tongSoTrang || tongSoTrang === 0}
-                        className="btn-page"
-                    >
-                        {'>'}
-                    </button>
-                </div>
-
-                {/* Bộ chọn số dòng/trang */}
-                <Select
-                    value={soDongTrenTrang.toString()}
-                    onChange={(giaTri) => {
-                        datSoDongTrenTrang(Number(giaTri || '5'));
-                        datTrangHienTai(1);
-                    }}
-                    size="xs"
-                    radius="md"
-                    style={{ width: 110 }}
-                    data={[
-                        { value: '5', label: t('table.rowsPerPage', { count: 5 }) },
-                        { value: '10', label: t('table.rowsPerPage', { count: 10 }) },
-                    ]}
-                />
-            </div>
-            <style dangerouslySetInnerHTML={{ __html: tableStyles }} />
-        </div>
-    );
+      <style dangerouslySetInnerHTML={{ __html: tableStyles }} />
+    </div>
+  );
 }
 
 const tableStyles = `
@@ -321,15 +208,6 @@ const tableStyles = `
     flex-shrink: 0;
 }
 
-/* Badge status */
-.badge-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
 .status-emerald {
     color: #059669 !important;
 }
@@ -349,73 +227,4 @@ const tableStyles = `
 .status-orange {
     color: #ea580c !important;
 }
-
-/* Pagination bar */
-.pagination-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.75rem 1.25rem;
-    border-top: 1px solid #e4e4e7;
-    background-color: #ffffff;
-}
-
-.pagination-info {
-    color: #52525b;
-    font-size: 0.875rem;
-    white-space: nowrap;
-}
-
-.pagination-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.btn-page {
-    width: 1.75rem;
-    height: 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.25rem;
-    border: 1px solid #d4d4d8;
-    background-color: #ffffff;
-    color: #71717a;
-    font-size: 0.875rem;
-    transition: all 150ms;
-    cursor: pointer;
-}
-
-.btn-page:hover:not(:disabled) {
-    border-color: #00afef;
-    color: #00afef;
-}
-
-.btn-page:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.btn-page-active {
-    background-color: #ffffff !important;
-    color: #00afef !important;
-    border-color: #00afef !important;
-    font-weight: 600 !important;
-}
-
-.page-ellipsis {
-    width: 1.75rem;
-    height: 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #a1a1aa;
-    font-size: 0.875rem;
-}
 `;
-;
-
-

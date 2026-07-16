@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Card,
@@ -11,16 +11,11 @@ import {
   Avatar,
   Badge,
   Loader,
-  Pagination,
   Portal,
   Notification,
 } from "@mantine/core";
 import { useTranslations } from "next-intl";
-import {
-  IconAlertTriangle,
-  IconCheck,
-  IconX,
-} from "@tabler/icons-react";
+import { IconAlertTriangle, IconCheck, IconX } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { HistoryItem } from "../../../types/type-history";
 import { dichVuNguoiLa } from "./strangerService";
@@ -28,9 +23,15 @@ import BoLocNguoiLa from "./BoLocNguoiLa";
 import DrawerChiTietLichSu from "../history/DrawerChiTietLichSu";
 import { xuatRaFileExcel } from "../history/excelHelper";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
+import CustomPagination from "@/components/common/CustomPagination";
 
 export default function StrangerWarningsPage() {
   const t = useTranslations("History");
+  const ngayHienTai = dayjs().format("YYYY-MM-DD");
+  const taoBoLocMacDinh = () => ({
+    ngay: ngayHienTai,
+    maKtx: "-1",
+  });
   const [dangTai, setDangTai] = useState(false);
   const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
 
@@ -38,14 +39,11 @@ export default function StrangerWarningsPage() {
   const [trangHienTai, setTrangHienTai] = useState(1);
   const [tongSoTrang, setTongSoTrang] = useState(1);
   const [tongSoPhanTu, setTongSoPhanTu] = useState(0);
-  const sizeTrang = 8;
+  const [pageSize, setPageSize] = useState(10);
 
   // Bộ lọc — bắt đầu rỗng để hiện toàn bộ dữ liệu
-  const [boLoc, setBoLoc] = useState({
-    tuNgay: "",
-    denNgay: "",
-    maKtx: "-1",
-  });
+  const [boLocNhap, setBoLocNhap] = useState(taoBoLocMacDinh());
+  const [boLocDaApDung, setBoLocDaApDung] = useState(taoBoLocMacDinh());
 
   const [strangerDuocChon, setStrangerDuocChon] = useState<HistoryItem | null>(
     null,
@@ -91,54 +89,63 @@ export default function StrangerWarningsPage() {
     hienThongBao(t("messages.exportPdfSuccess"), "success");
   };
 
-  const taiDuLieu = async () => {
-    setDangTai(true);
-    try {
-      const response = await dichVuNguoiLa.layDanhSachNguoiLa({
-        tuNgay: boLoc.tuNgay,
-        denNgay: boLoc.denNgay,
-        maKtx: boLoc.maKtx,
-        page: trangHienTai,
-        pageSize: sizeTrang,
-      });
+  const taiDuLieu = useCallback(
+    async (page = trangHienTai, size = pageSize) => {
+      setDangTai(true);
+      try {
+        const response = await dichVuNguoiLa.layDanhSachNguoiLa({
+          ngay: boLocDaApDung.ngay,
+          maKtx: boLocDaApDung.maKtx,
+          page,
+          pageSize: size,
+        });
 
-      if (response && response.items) {
-        setDanhSachCanhBao(response.items);
-        setTongSoTrang(response.totalPages);
-        setTongSoPhanTu(response.totalElements);
-      } else {
+        if (response && response.items) {
+          console.log(
+            "[RUN_LOG] ===> Danh sách người lạ response.items  : ",
+            response.items,
+          );
+
+          setDanhSachCanhBao(response.items);
+          setTongSoTrang(response.totalPages);
+          setTongSoPhanTu(response.totalElements);
+        } else {
+          setDanhSachCanhBao([]);
+          setTongSoTrang(1);
+          setTongSoPhanTu(0);
+        }
+      } catch (err) {
+        console.error("Lỗi khi tải cảnh báo người lạ:", err);
         setDanhSachCanhBao([]);
         setTongSoTrang(1);
         setTongSoPhanTu(0);
+      } finally {
+        setDangTai(false);
       }
-    } catch (err) {
-      console.error("Lỗi khi tải cảnh báo người lạ:", err);
-      setDanhSachCanhBao([]);
-      setTongSoTrang(1);
-      setTongSoPhanTu(0);
-    } finally {
-      setDangTai(false);
-    }
-  };
+    },
+    [boLocDaApDung, trangHienTai, pageSize],
+  );
 
   const datLaiBoLoc = () => {
-    setBoLoc({
-      tuNgay: "",
-      denNgay: "",
-      maKtx: "-1",
-    });
+    const boLocMacDinh = taoBoLocMacDinh();
+    setBoLocNhap(boLocMacDinh);
+    setBoLocDaApDung(boLocMacDinh);
     setTrangHienTai(1);
   };
 
-  const datBoLocVaResetPage = (boLocMoi: any) => {
-    setBoLoc((prev) => ({ ...prev, ...boLocMoi }));
+  const datBoLoc = (boLocMoi: { ngay?: string; maKtx?: string }) => {
+    setBoLocNhap((prev) => ({ ...prev, ...boLocMoi }));
+  };
+
+  const xuLyTimKiem = () => {
     setTrangHienTai(1);
+    setBoLocDaApDung({ ...boLocNhap });
   };
 
   // Tự động tải lại dữ liệu khi bộ lọc hoặc số trang thay đổi
   useEffect(() => {
     taiDuLieu();
-  }, [boLoc.tuNgay, boLoc.denNgay, boLoc.maKtx, trangHienTai]);
+  }, [taiDuLieu]);
 
   return (
     <Box className="stranger-page-container">
@@ -149,10 +156,10 @@ export default function StrangerWarningsPage() {
       />
 
       <BoLocNguoiLa
-        boLoc={boLoc}
-        datBoLoc={datBoLocVaResetPage}
+        boLoc={boLocNhap}
+        datBoLoc={datBoLoc}
         datLaiBoLoc={datLaiBoLoc}
-        khiTimKiem={taiDuLieu}
+        khiTimKiem={xuLyTimKiem}
         khiXuatExcel={xuLyXuatExcel}
         khiXuatPdf={xuLyXuatPdf}
       />
@@ -204,7 +211,7 @@ export default function StrangerWarningsPage() {
                   style={{ cursor: "pointer" }}
                 >
                   <Table.Td style={{ textAlign: "center" }} className="td-stt">
-                    {(trangHienTai - 1) * sizeTrang + index + 1}
+                    {(trangHienTai - 1) * pageSize + index + 1}
                   </Table.Td>
                   <Table.Td className="td-highlight">
                     {dayjs(banGhi.thoiGian).format("DD/MM/YYYY HH:mm:ss")}
@@ -218,7 +225,7 @@ export default function StrangerWarningsPage() {
                         radius="md"
                         size={60}
                         className="avatar-warning"
-                        styles={{ image: { objectFit: 'cover' } }}
+                        styles={{ image: { objectFit: "cover" } }}
                       />
                     </Box>
                   </Table.Td>
@@ -235,25 +242,14 @@ export default function StrangerWarningsPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {tongSoTrang > 1 && (
-        <div
-          className="pagination-wrapper"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "1.5rem",
-          }}
-        >
-          <Pagination
-            value={trangHienTai}
-            onChange={setTrangHienTai}
-            total={tongSoTrang}
-            color="#1f5ca9"
-            radius="md"
-          />
-        </div>
-      )}
+      <CustomPagination
+        totalItems={tongSoPhanTu}
+        totalPages={tongSoTrang}
+        page={trangHienTai}
+        pageSize={pageSize}
+        setPage={setTrangHienTai}
+        setPageSize={setPageSize}
+      />
 
       {/* Drawer chi tiết người lạ */}
       <DrawerChiTietLichSu

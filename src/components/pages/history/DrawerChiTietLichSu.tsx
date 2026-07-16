@@ -1,175 +1,222 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Card, Image, Button, Drawer, Box, Badge } from '@mantine/core';
-import { useTranslations } from 'next-intl';
-import { IconAlertTriangle } from '@tabler/icons-react';
-import { HistoryItem } from '../../../types/type-history';
+import React from "react";
+import { Card, Image, Button, Drawer, Box, Badge } from "@mantine/core";
+import { useTranslations } from "next-intl";
+import { IconAlertTriangle } from "@tabler/icons-react";
+import { HistoryItem } from "../../../types/type-history";
 
 interface ThuocTinhDrawerChiTietLichSu {
-    open: boolean;
-    onClose: () => void;
-    lichSuDuocChon: HistoryItem | null;
-    isStranger?: boolean;
-    khiPhanHoi?: (item: HistoryItem) => void;
+  open: boolean;
+  onClose: () => void;
+  lichSuDuocChon: HistoryItem | null;
+  isStranger?: boolean;
+  khiPhanHoi?: (item: HistoryItem) => void;
 }
 
 /**
  * Component Ngăn kéo hiển thị thông tin chi tiết lượt ra vào (DrawerChiTietLichSu).
  */
 export const DrawerChiTietLichSu: React.FC<ThuocTinhDrawerChiTietLichSu> = ({
-    open,
-    onClose,
-    lichSuDuocChon,
-    isStranger = false,
-    khiPhanHoi,
+  open,
+  onClose,
+  lichSuDuocChon,
+  isStranger = false,
+  khiPhanHoi,
 }) => {
-    const t = useTranslations('History');
+  const t = useTranslations("History");
 
-    // Nếu không có bản ghi nào được chọn thì không hiển thị gì
-    if (!lichSuDuocChon) {
-        return null;
-    }
+  // Nếu không có bản ghi nào được chọn thì không hiển thị gì
+  if (!lichSuDuocChon) {
+    return null;
+  }
 
-    const laCanBo = lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
-                    lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("can bo");
+  const laCanBo =
+    lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("cán bộ") ||
+    lichSuDuocChon.loaiDoiTuong?.toLowerCase().includes("can bo");
 
-    return (
-        <Drawer
-            opened={open}
-            onClose={onClose}
-            title={<span className="drawer-title">{isStranger ? t('drawer.detailTitleStranger') : t('drawer.detailTitle')}</span>}
-            position="right"
-            size={600}
-            styles={{
-                header: {
-                    borderBottom: '1px solid #f0f0f0',
-                    padding: '12px 20px',
-                    backgroundColor: '#fdfdfd',
-                },
-                body: {
-                    padding: '16px 20px',
-                    overflow: 'hidden',
-                },
-            }}
-        >
-            <div className="drawer-body">
-                {/* Chỉ hiển thị ảnh chụp từ camera thực tế */}
-                <Card
-                    withBorder
-                    radius="lg"
-                    p={0}
-                    className="portrait-card-wrapper"
-                >
-                    <img
-                        src={lichSuDuocChon.duongDanAnhChup || 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=250'}
-                        alt="Camera chụp"
-                        className="portrait-img-main"
-                    />
-                </Card>
+  return (
+    <Drawer
+      opened={open}
+      onClose={onClose}
+      title={
+        <span className="drawer-title">
+          {isStranger
+            ? t("drawer.detailTitleStranger")
+            : t("drawer.detailTitle")}
+        </span>
+      }
+      position="right"
+      size={600}
+      styles={{
+        header: {
+          borderBottom: "1px solid #f0f0f0",
+          padding: "12px 20px",
+          backgroundColor: "#fdfdfd",
+        },
+        body: {
+          padding: "16px 20px",
+          overflow: "hidden",
+        },
+      }}
+    >
+      <div className="drawer-body">
+        {/* Chỉ hiển thị ảnh chụp từ camera thực tế */}
+        <Card withBorder radius="lg" p={0} className="portrait-card-wrapper">
+          <img
+            src={
+              lichSuDuocChon.duongDanAnhChup ||
+              "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=250"
+            }
+            alt="Camera chụp"
+            className="portrait-img-main"
+          />
+        </Card>
 
-                {/* Thông tin mô tả chi tiết của sự kiện ra vào dưới dạng lưới 2 cột */}
-                <Card withBorder radius="lg" p="sm" className="details-table-card">
-                    <h4 className="details-card-title">{t('card.detailTitle')}</h4>
-                    <div className="details-grid">
-                        {isStranger ? (
-                            <>
-                                <div className="details-item">
-                                    <span className="details-label">{t('filter.studentId')}</span>
-                                    <span className="details-val td-mono-val">{lichSuDuocChon.mssv || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">LOẠI ĐỐI TƯỢNG</span>
-                                    <span className="details-val td-bold-val">{lichSuDuocChon.loaiDoiTuong || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">THỜI GIAN KIỂM TRA</span>
-                                    <span className="details-val">{lichSuDuocChon.thoiGian || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">NGÀY PHÁT HIỆN</span>
-                                    <span className="details-val">{lichSuDuocChon.ngayNguoiLa || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">GIỜ PHÁT HIỆN</span>
-                                    <span className="details-val">{lichSuDuocChon.gioNguoiLa || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">KHU KTX PHÁT HIỆN</span>
-                                    <span className="details-val">{lichSuDuocChon.tenKtx || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">THIẾT BỊ / CAMERA</span>
-                                    <span className="details-val">{lichSuDuocChon.thietBi || 'N/A'}</span>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className="details-item">
-                                    <span className="details-label">{t('filter.studentId')}</span>
-                                    <span className="details-val td-mono-val">{lichSuDuocChon.mssv || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">{t('table.fullName')}</span>
-                                    <span className="details-val td-bold-val">{lichSuDuocChon.hoVaTen}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">{t('table.time')}</span>
-                                    <span className="details-val">{lichSuDuocChon.thoiGian}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">{t('drawer.dormLabel')}</span>
-                                    <span className="details-val">{lichSuDuocChon.tenKtx || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">
-                                        {laCanBo ? t('table.unit') : t('drawer.roomLabel')}
-                                    </span>
-                                    <span className="details-val">{lichSuDuocChon.tenPhong || 'N/A'}</span>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">{t('drawer.eventLabel')}</span>
-                                    <div className="details-val">
-                                        {lichSuDuocChon.loai === 'IN' ? (
-                                            <Badge color="green" radius="xl" size="sm">{t('filter.in').toUpperCase()}</Badge>
-                                        ) : (
-                                            <Badge color="blue" radius="xl" size="sm">{t('filter.out').toUpperCase()}</Badge>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="details-item">
-                                    <span className="details-label">{t('drawer.deviceLabel')}</span>
-                                    <span className="details-val">{lichSuDuocChon.thietBi || 'N/A'}</span>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </Card>
-
-                {/* Nút phản hồi và nút đóng */}
-                <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '25px', width: '100%' }}>
-                    {!isStranger && khiPhanHoi ? (
-                        <Button
-                            variant="light"
-                            color="red"
-                            leftSection={<IconAlertTriangle size={15} />}
-                            onClick={() => khiPhanHoi(lichSuDuocChon)}
-                            className="btn-feedback"
-                            size="sm"
-                        >
-                            {t('card.feedbackBtn')}
-                        </Button>
+        {/* Thông tin mô tả chi tiết của sự kiện ra vào dưới dạng lưới 2 cột */}
+        <Card withBorder radius="lg" p="sm" className="details-table-card">
+          <h4 className="details-card-title">{t("card.detailTitle")}</h4>
+          <div className="details-grid">
+            {isStranger ? (
+              <>
+                <div className="details-item">
+                  <span className="details-label">MÃ SỐ</span>
+                  <span className="details-val td-mono-val">---</span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">LOẠI ĐỐI TƯỢNG</span>
+                  <span className="details-val td-bold-val">---</span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">THỜI GIAN KIỂM TRA</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.thoiGian || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">NGÀY PHÁT HIỆN</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.ngayNguoiLa || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">GIỜ PHÁT HIỆN</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.gioNguoiLa || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">KHU KTX PHÁT HIỆN</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.tenKtx || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">THIẾT BỊ / CAMERA</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.thietBi || "N/A"}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="details-item">
+                  <span className="details-label">{t("filter.studentId")}</span>
+                  <span className="details-val td-mono-val">
+                    {lichSuDuocChon.mssv || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">{t("table.fullName")}</span>
+                  <span className="details-val td-bold-val">
+                    {lichSuDuocChon.hoVaTen}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">{t("table.time")}</span>
+                  <span className="details-val">{lichSuDuocChon.thoiGian}</span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">{t("drawer.dormLabel")}</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.tenKtx || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">
+                    {laCanBo ? t("table.unit") : t("drawer.roomLabel")}
+                  </span>
+                  <span className="details-val">
+                    {lichSuDuocChon.tenPhong || "N/A"}
+                  </span>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">
+                    {t("drawer.eventLabel")}
+                  </span>
+                  <div className="details-val">
+                    {lichSuDuocChon.loai === "IN" ? (
+                      <Badge color="green" radius="xl" size="sm">
+                        {t("filter.in").toUpperCase()}
+                      </Badge>
                     ) : (
-                        <div />
+                      <Badge color="blue" radius="xl" size="sm">
+                        {t("filter.out").toUpperCase()}
+                      </Badge>
                     )}
-                    <Button variant="outline" color="gray" onClick={onClose} className="btn-close" size="sm">
-                        {t('drawer.closeBtn')}
-                    </Button>
-                </Box>
-            </div>
-            <style dangerouslySetInnerHTML={{ __html: drawerDetailStyles }} />
-        </Drawer>
-    );
+                  </div>
+                </div>
+                <div className="details-item">
+                  <span className="details-label">
+                    {t("drawer.deviceLabel")}
+                  </span>
+                  <span className="details-val">
+                    {lichSuDuocChon.thietBi || "N/A"}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </Card>
+
+        {/* Nút phản hồi và nút đóng */}
+        <Box
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "25px",
+            width: "100%",
+          }}
+        >
+          {!isStranger && khiPhanHoi ? (
+            <Button
+              variant="light"
+              color="red"
+              leftSection={<IconAlertTriangle size={15} />}
+              onClick={() => khiPhanHoi(lichSuDuocChon)}
+              className="btn-feedback"
+              size="sm"
+            >
+              {t("card.feedbackBtn")}
+            </Button>
+          ) : (
+            <div />
+          )}
+          <Button
+            variant="outline"
+            color="gray"
+            onClick={onClose}
+            className="btn-close"
+            size="sm"
+          >
+            {t("drawer.closeBtn")}
+          </Button>
+        </Box>
+      </div>
+      <style dangerouslySetInnerHTML={{ __html: drawerDetailStyles }} />
+    </Drawer>
+  );
 };
 
 const drawerDetailStyles = `

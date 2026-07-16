@@ -14,6 +14,13 @@ import { notFound } from "next/navigation";
 import { NotificationsProviderClient } from "@/providers/NotificationsProviderClient";
 import { Suspense } from "react";
 import { FONT } from "@/constants/theme";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 type Props = { children: React.ReactNode; params: { locale: string } };
 
@@ -31,7 +38,7 @@ export default async function RootLayout({ children, params }: Props) {
   const messages = await getMessages({ locale });
 
   return (
-    <html lang={locale} {...mantineHtmlProps}>
+    <html lang={locale} {...mantineHtmlProps} className={inter.variable}>
       <head>
         <ColorSchemeScript defaultColorScheme="light" />
       </head>

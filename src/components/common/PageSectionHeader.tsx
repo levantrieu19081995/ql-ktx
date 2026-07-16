@@ -26,7 +26,15 @@ export default function PageSectionHeader({
           {icon || <IconCategory size={20} />}
         </Box>
         <Box>
-          <Title order={titleOrder} c="#0f172a" fw={800}>
+          <Title
+            order={titleOrder}
+            c="#172033"
+            fw={650}
+            style={{
+              letterSpacing: "-0.015em",
+              lineHeight: 1.25,
+            }}
+          >
             {title}
           </Title>
           {description && (
