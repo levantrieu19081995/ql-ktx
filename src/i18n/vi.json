@@ -89,6 +89,7 @@
     "history-staff": "Cán bộ",
     "history-student": "Sinh viên",
     "warningsMenu": "Cảnh báo người lạ",
+    "cameraMenu": "Giám sát Camera",
     "unit": "Đơn vị"
   },
   "Integrations": {
@@ -485,5 +486,30 @@
     "toastAddSuccess": "Thêm lệnh cấm thành công!",
     "toastSaveError": "Lỗi khi lưu dữ liệu. Vui lòng thử lại.",
     "selected": "Đã chọn"
+  },
+  "Camera": {
+    "title": "GIÁM SÁT CAMERA TRỰC TIẾP",
+    "searchCam": "Tìm kiếm camera...",
+    "allAreas": "Tất cả các khu",
+    "online": "Đang hoạt động",
+    "offline": "Mất kết nối",
+    "grid1": "Chế độ 1 camera",
+    "grid4": "Chế độ 4 camera",
+    "grid9": "Chế độ 9 camera",
+    "snapshot": "Chụp ảnh",
+    "aiOverlay": "Nhận diện AI",
+    "ptzControl": "Bảng điều khiển",
+    "eventLog": "Nhật ký phát hiện AI",
+    "live": "TRỰC TIẾP",
+    "cameraList": "Danh sách Camera",
+    "location": "Vị trí",
+    "ipAddress": "Địa chỉ IP",
+    "deviceType": "Loại thiết bị",
+    "snapshotSuccess": "Đã chụp và tải ảnh camera thành công!",
+    "expand": "Mở rộng xem chi tiết",
+    "changeCamera": "Chọn camera...",
+    "zoomOut": "Thu nhỏ",
+    "zoomIn": "Phóng to",
+    "otherControl": "ĐIỀU KHIỂN KHÁC"
   }
 }
