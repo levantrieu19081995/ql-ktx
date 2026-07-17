@@ -1879,7 +1879,11 @@ export default function LuotRaVaoSubPage() {
             position="right"
             size="xl"
             padding="lg"
-            title={<Title c="#0f172a">Chi tiết lịch sử ra vào</Title>}
+            title={
+              <Text c="#0f172a" fw={700} size="xl">
+                Chi tiết lịch sử ra vào
+              </Text>
+            }
             styles={{
               header: {
                 borderBottom: "1px solid #e2e8f0",

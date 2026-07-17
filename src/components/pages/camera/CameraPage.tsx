@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
@@ -82,20 +83,116 @@ interface AIEvent {
 }
 
 const DANH_SACH_CAM_MOCK: CameraItem[] = [
-  { id: "cam-01", name: "Camera Cổng chính Khu A (Vào)", area: "KHU_A", type: "Cổng chính", ip: "192.168.10.11", status: "ONLINE", ptzCapable: true },
-  { id: "cam-02", name: "Camera Cổng chính Khu A (Ra)", area: "KHU_A", type: "Cổng chính", ip: "192.168.10.12", status: "ONLINE", ptzCapable: true },
-  { id: "cam-03", name: "Surveillance Nhà xe Khu A", area: "KHU_A", type: "Nhà xe", ip: "192.168.10.25", status: "ONLINE", ptzCapable: false },
-  { id: "cam-04", name: "Dome Hành lang Tầng 1 - Block A1", area: "KHU_A", type: "Hành lang", ip: "192.168.11.41", status: "ONLINE", ptzCapable: false },
-  { id: "cam-05", name: "Dome Hành lang Tầng 2 - Block A1", area: "KHU_A", type: "Hành lang", ip: "192.168.11.42", status: "ONLINE", ptzCapable: false },
-  { id: "cam-06", name: "Camera Cổng chính Khu B (Vào)", area: "KHU_B", type: "Cổng chính", ip: "192.168.20.11", status: "ONLINE", ptzCapable: true },
-  { id: "cam-07", name: "Camera Cổng chính Khu B (Ra)", area: "KHU_B", type: "Cổng chính", ip: "192.168.20.12", status: "ONLINE", ptzCapable: true },
-  { id: "cam-08", name: "Surveillance Nhà xe Khu B", area: "KHU_B", type: "Nhà xe", ip: "192.168.20.25", status: "ONLINE", ptzCapable: false },
-  { id: "cam-09", name: "Camera Cổng phụ Khu C (Offline)", area: "KHU_C", type: "Cổng phụ", ip: "192.168.30.15", status: "OFFLINE", ptzCapable: true },
+  {
+    id: "cam-01",
+    name: "Camera Cổng chính Khu A (Vào)",
+    area: "KHU_A",
+    type: "Cổng chính",
+    ip: "192.168.10.11",
+    status: "ONLINE",
+    ptzCapable: true,
+  },
+  {
+    id: "cam-02",
+    name: "Camera Cổng chính Khu A (Ra)",
+    area: "KHU_A",
+    type: "Cổng chính",
+    ip: "192.168.10.12",
+    status: "ONLINE",
+    ptzCapable: true,
+  },
+  {
+    id: "cam-03",
+    name: "Surveillance Nhà xe Khu A",
+    area: "KHU_A",
+    type: "Nhà xe",
+    ip: "192.168.10.25",
+    status: "ONLINE",
+    ptzCapable: false,
+  },
+  {
+    id: "cam-04",
+    name: "Dome Hành lang Tầng 1 - Block A1",
+    area: "KHU_A",
+    type: "Hành lang",
+    ip: "192.168.11.41",
+    status: "ONLINE",
+    ptzCapable: false,
+  },
+  {
+    id: "cam-05",
+    name: "Dome Hành lang Tầng 2 - Block A1",
+    area: "KHU_A",
+    type: "Hành lang",
+    ip: "192.168.11.42",
+    status: "ONLINE",
+    ptzCapable: false,
+  },
+  {
+    id: "cam-06",
+    name: "Camera Cổng chính Khu B (Vào)",
+    area: "KHU_B",
+    type: "Cổng chính",
+    ip: "192.168.20.11",
+    status: "ONLINE",
+    ptzCapable: true,
+  },
+  {
+    id: "cam-07",
+    name: "Camera Cổng chính Khu B (Ra)",
+    area: "KHU_B",
+    type: "Cổng chính",
+    ip: "192.168.20.12",
+    status: "ONLINE",
+    ptzCapable: true,
+  },
+  {
+    id: "cam-08",
+    name: "Surveillance Nhà xe Khu B",
+    area: "KHU_B",
+    type: "Nhà xe",
+    ip: "192.168.20.25",
+    status: "ONLINE",
+    ptzCapable: false,
+  },
+  {
+    id: "cam-09",
+    name: "Camera Cổng phụ Khu C (Offline)",
+    area: "KHU_C",
+    type: "Cổng phụ",
+    ip: "192.168.30.15",
+    status: "OFFLINE",
+    ptzCapable: true,
+  },
 ];
 
-const TEN_SINH_VIEN = ["Nguyễn Văn An", "Trần Thị Bình", "Lê Văn Cường", "Phạm Minh Duy", "Đặng Hoàng Em", "Vũ Thị Hương", "Hoàng Văn Nam", "Bùi Thị Tuyết"];
-const MSSV_MOCK = ["B2103847", "B2005829", "B2109287", "B1902845", "B2208945", "B2103840", "B2002345", "B2107483"];
-const BIEN_SO_XE = ["65-A1 123.45", "65-B2 567.89", "65-C1 246.80", "59-D3 135.79", "43-G1 999.99"];
+const TEN_SINH_VIEN = [
+  "Nguyễn Văn An",
+  "Trần Thị Bình",
+  "Lê Văn Cường",
+  "Phạm Minh Duy",
+  "Đặng Hoàng Em",
+  "Vũ Thị Hương",
+  "Hoàng Văn Nam",
+  "Bùi Thị Tuyết",
+];
+const MSSV_MOCK = [
+  "B2103847",
+  "B2005829",
+  "B2109287",
+  "B1902845",
+  "B2208945",
+  "B2103840",
+  "B2002345",
+  "B2107483",
+];
+const BIEN_SO_XE = [
+  "65-A1 123.45",
+  "65-B2 567.89",
+  "65-C1 246.80",
+  "59-D3 135.79",
+  "43-G1 999.99",
+];
 
 export default function CameraPage() {
   const t = useTranslations("Camera");
@@ -106,10 +203,14 @@ export default function CameraPage() {
   const [khuVuc, setKhuVuc] = useState<string | null>("ALL");
 
   // State quản lý xem cam
-  const [cameraHienTai, setCameraHienTai] = useState<CameraItem>(DANH_SACH_CAM_MOCK[0]);
-  const [cheDoGrid, setCheDoGrid] = useState<"SINGLE" | "GRID_4" | "GRID_9">("SINGLE");
+  const [cameraHienTai, setCameraHienTai] = useState<CameraItem>(
+    DANH_SACH_CAM_MOCK[0],
+  );
+  const [cheDoGrid, setCheDoGrid] = useState<"SINGLE" | "GRID_4" | "GRID_9">(
+    "SINGLE",
+  );
   const [aiOverlay, setAiOverlay] = useState(true);
-  
+
   // Custom camera selection lists for grid modes
   const [grid4Cams, setGrid4Cams] = useState<string[]>(() => [
     DANH_SACH_CAM_MOCK[0]?.id || "",
@@ -131,8 +232,11 @@ export default function CameraPage() {
   ]);
 
   // State PTZ cho từng camera (để giữ góc khi chuyển đổi)
-  const [ptzState, setPtzState] = useState<Record<string, { pan: number; tilt: number; zoom: number }>>(() => {
-    const states: Record<string, { pan: number; tilt: number; zoom: number }> = {};
+  const [ptzState, setPtzState] = useState<
+    Record<string, { pan: number; tilt: number; zoom: number }>
+  >(() => {
+    const states: Record<string, { pan: number; tilt: number; zoom: number }> =
+      {};
     DANH_SACH_CAM_MOCK.forEach((cam) => {
       states[cam.id] = { pan: 0, tilt: 0, zoom: 1 };
     });
@@ -145,7 +249,9 @@ export default function CameraPage() {
   // Lọc danh sách camera
   const danhSachCamLoc = useMemo(() => {
     return DANH_SACH_CAM_MOCK.filter((cam) => {
-      const matchTuKhoa = cam.name.toLowerCase().includes(tuKhoa.toLowerCase()) || cam.ip.includes(tuKhoa);
+      const matchTuKhoa =
+        cam.name.toLowerCase().includes(tuKhoa.toLowerCase()) ||
+        cam.ip.includes(tuKhoa);
       const matchKhu = khuVuc === "ALL" || !khuVuc ? true : cam.area === khuVuc;
       return matchTuKhoa && matchKhu;
     });
@@ -198,10 +304,14 @@ export default function CameraPage() {
       if (isWarning) {
         message = `CẢNH BÁO: Phát hiện đối tượng lạ chưa đăng ký thẻ KTX!`;
         // Hiển thị notification
-        showNoti("warning", `[Cảnh báo người lạ] Phát hiện đối tượng lạ tại vị trí: ${randomCam.name}`);
+        showNoti(
+          "warning",
+          `[Cảnh báo người lạ] Phát hiện đối tượng lạ tại vị trí: ${randomCam.name}`,
+        );
       } else {
         if (randomCam.type === "Nhà xe") {
-          const randPlate = BIEN_SO_XE[Math.floor(Math.random() * BIEN_SO_XE.length)];
+          const randPlate =
+            BIEN_SO_XE[Math.floor(Math.random() * BIEN_SO_XE.length)];
           message = `Phát hiện phương tiện: Biển số ${randPlate} ra vào`;
         } else {
           const randomIdx = Math.floor(Math.random() * TEN_SINH_VIEN.length);
@@ -244,7 +354,16 @@ export default function CameraPage() {
   }, []);
 
   // Điều khiển PTZ cho camera hiện tại
-  const handlePtz = (direction: "UP" | "DOWN" | "LEFT" | "RIGHT" | "RESET" | "ZOOM_IN" | "ZOOM_OUT") => {
+  const handlePtz = (
+    direction:
+      | "UP"
+      | "DOWN"
+      | "LEFT"
+      | "RIGHT"
+      | "RESET"
+      | "ZOOM_IN"
+      | "ZOOM_OUT",
+  ) => {
     if (!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE") return;
 
     setPtzState((prev) => {
@@ -291,26 +410,37 @@ export default function CameraPage() {
 
   const handlePreset = (num: number) => {
     if (!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE") return;
-    
+
     // Preset coordinates mock
-    const presets: Record<number, { pan: number; tilt: number; zoom: number }> = {
-      1: { pan: -30, tilt: 10, zoom: 1.5 },
-      2: { pan: 30, tilt: -10, zoom: 2.0 },
-      3: { pan: 0, tilt: 20, zoom: 1.2 },
-      4: { pan: -60, tilt: -20, zoom: 2.5 }
-    };
-    
+    const presets: Record<number, { pan: number; tilt: number; zoom: number }> =
+      {
+        1: { pan: -30, tilt: 10, zoom: 1.5 },
+        2: { pan: 30, tilt: -10, zoom: 2.0 },
+        3: { pan: 0, tilt: 20, zoom: 1.2 },
+        4: { pan: -60, tilt: -20, zoom: 2.5 },
+      };
+
     const target = presets[num] || { pan: 0, tilt: 0, zoom: 1 };
-    
+
     setPtzState((prev) => ({
       ...prev,
-      [cameraHienTai.id]: target
+      [cameraHienTai.id]: target,
     }));
-    
-    showNoti("info", `Đã chuyển camera sang Preset ${num} (Pan: ${target.pan}°, Tilt: ${target.tilt}°, Zoom: ${target.zoom}x)`);
+
+    showNoti(
+      "info",
+      `Đã chuyển camera sang Preset ${num} (Pan: ${target.pan}°, Tilt: ${target.tilt}°, Zoom: ${target.zoom}x)`,
+    );
   };
 
-  const handleOtherAction = (actionType: "AUTO_SCAN" | "WIDE_VIEW" | "FOCUS_NEAR" | "FOCUS_FAR" | "PTZ_SETTINGS") => {
+  const handleOtherAction = (
+    actionType:
+      | "AUTO_SCAN"
+      | "WIDE_VIEW"
+      | "FOCUS_NEAR"
+      | "FOCUS_FAR"
+      | "PTZ_SETTINGS",
+  ) => {
     if (!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE") return;
 
     switch (actionType) {
@@ -325,11 +455,15 @@ export default function CameraPage() {
         } else {
           setIsScanning(true);
           showNoti("info", "Bắt đầu chế độ tự động quét camera.");
-          
+
           let direction = 1; // 1: right, -1: left
           scanIntervalRef.current = setInterval(() => {
             setPtzState((prev) => {
-              const state = prev[cameraHienTai.id] || { pan: 0, tilt: 0, zoom: 1 };
+              const state = prev[cameraHienTai.id] || {
+                pan: 0,
+                tilt: 0,
+                zoom: 1,
+              };
               let { pan, tilt, zoom } = state;
               pan += direction * 15;
               if (pan >= 90) {
@@ -341,7 +475,7 @@ export default function CameraPage() {
               }
               return {
                 ...prev,
-                [cameraHienTai.id]: { pan, tilt, zoom }
+                [cameraHienTai.id]: { pan, tilt, zoom },
               };
             });
           }, 1000);
@@ -350,7 +484,7 @@ export default function CameraPage() {
       case "WIDE_VIEW":
         setPtzState((prev) => ({
           ...prev,
-          [cameraHienTai.id]: { pan: 0, tilt: 0, zoom: 1.0 }
+          [cameraHienTai.id]: { pan: 0, tilt: 0, zoom: 1.0 },
         }));
         showNoti("info", "Đã thiết lập góc nhìn rộng (Zoom 1.0x).");
         break;
@@ -367,7 +501,10 @@ export default function CameraPage() {
   };
 
   // Chụp ảnh màn hình camera hiện tại
-  const runSnapshot = (camId: string, canvasRef: React.RefObject<HTMLCanvasElement | null>) => {
+  const runSnapshot = (
+    camId: string,
+    canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  ) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -435,87 +572,112 @@ export default function CameraPage() {
       <Grid gutter="md">
         {/* Cột trái: Bộ lọc và danh sách camera */}
         <Grid.Col span={{ base: 12, md: 3 }}>
-          <Card withBorder radius="lg" p="md" className="camera-sidebar-card shadow-sm">
+          <Card
+            withBorder
+            radius="lg"
+            p="md"
+            className="camera-sidebar-card shadow-sm"
+          >
             <div className="camera-sidebar-inner">
-              <Text fw={700} fz="md" c="#1f5ca9" className="sidebar-section-title" mb="md">
+              <Text
+                fw={700}
+                fz="md"
+                c="#1f5ca9"
+                className="sidebar-section-title"
+                mb="md"
+              >
                 {t("cameraList")}
               </Text>
 
-            <Stack gap="xs">
-              <TextInput
-                placeholder={t("searchCam")}
-                leftSection={<IconSearch size={16} />}
-                value={tuKhoa}
-                onChange={(e) => setTuKhoa(e.target.value)}
-                radius="md"
-              />
+              <Stack gap="xs">
+                <TextInput
+                  placeholder={t("searchCam")}
+                  leftSection={<IconSearch size={16} />}
+                  value={tuKhoa}
+                  onChange={(e) => setTuKhoa(e.target.value)}
+                  radius="md"
+                />
 
-              <Select
-                data={[
-                  { value: "ALL", label: t("allAreas") },
-                  { value: "KHU_A", label: "Ký túc xá Khu A" },
-                  { value: "KHU_B", label: "Ký túc xá Khu B" },
-                  { value: "KHU_C", label: "Ký túc xá Khu C" },
-                ]}
-                value={khuVuc}
-                onChange={(val) => setKhuVuc(val)}
-                radius="md"
-              />
+                <Select
+                  data={[
+                    { value: "ALL", label: t("allAreas") },
+                    { value: "KHU_A", label: "Ký túc xá Khu A" },
+                    { value: "KHU_B", label: "Ký túc xá Khu B" },
+                    { value: "KHU_C", label: "Ký túc xá Khu C" },
+                  ]}
+                  value={khuVuc}
+                  onChange={(val) => setKhuVuc(val)}
+                  radius="md"
+                />
 
-              <ScrollArea h={{ base: 300, md: 620 }} scrollbarSize={6} offsetScrollbars>
-                <Stack gap={6} pr={5}>
-                  {danhSachCamLoc.map((cam) => {
-                    const isSelected = cheDoGrid === "SINGLE" && cameraHienTai.id === cam.id;
-                    const isOffline = cam.status === "OFFLINE";
-                    return (
-                      <div
-                        key={cam.id}
-                        onClick={() => {
-                          if (cheDoGrid !== "SINGLE") {
-                            setCheDoGrid("SINGLE");
-                          }
-                          setCameraHienTai(cam);
-                        }}
-                        className={`camera-list-item ${isSelected ? "active" : ""} ${isOffline ? "offline" : ""}`}
-                      >
-                        <div className="cam-thumbnail-mock">
-                          {isOffline ? (
-                            <IconVideoOff size={18} color="#94a3b8" />
-                          ) : (
-                            <IconVideo size={18} color="#1f5ca9" />
-                          )}
-                          <div className="cam-scanline" />
-                        </div>
-                        <div className="cam-info">
-                          <Text fw={650} fz={12} className="cam-name text-truncate">
-                            {cam.name}
-                          </Text>
-                          <Group gap="xs" mt={1}>
-                            <Text fz={10} c="dimmed">
-                              IP: {cam.ip}
-                            </Text>
-                            <Badge
-                              color={isOffline ? "red" : "green"}
-                              variant="dot"
-                              size="xs"
-                              p={0}
-                              styles={{ root: { background: "transparent", border: 0 } }}
+                <ScrollArea
+                  h={{ base: 300, md: 620 }}
+                  scrollbarSize={6}
+                  offsetScrollbars
+                >
+                  <Stack gap={6} pr={5}>
+                    {danhSachCamLoc.map((cam) => {
+                      const isSelected =
+                        cheDoGrid === "SINGLE" && cameraHienTai.id === cam.id;
+                      const isOffline = cam.status === "OFFLINE";
+                      return (
+                        <div
+                          key={cam.id}
+                          onClick={() => {
+                            if (cheDoGrid !== "SINGLE") {
+                              setCheDoGrid("SINGLE");
+                            }
+                            setCameraHienTai(cam);
+                          }}
+                          className={`camera-list-item ${isSelected ? "active" : ""} ${isOffline ? "offline" : ""}`}
+                        >
+                          <div className="cam-thumbnail-mock">
+                            {isOffline ? (
+                              <IconVideoOff size={18} color="#94a3b8" />
+                            ) : (
+                              <IconVideo size={18} color="#1f5ca9" />
+                            )}
+                            <div className="cam-scanline" />
+                          </div>
+                          <div className="cam-info">
+                            <Text
+                              fw={650}
+                              fz={12}
+                              className="cam-name text-truncate"
                             >
-                              {isOffline ? t("offline") : t("online")}
-                            </Badge>
-                          </Group>
+                              {cam.name}
+                            </Text>
+                            <Group gap="xs" mt={1}>
+                              <Text fz={10} c="dimmed">
+                                IP: {cam.ip}
+                              </Text>
+                              <Badge
+                                color={isOffline ? "red" : "green"}
+                                variant="dot"
+                                size="xs"
+                                p={0}
+                                styles={{
+                                  root: {
+                                    background: "transparent",
+                                    border: 0,
+                                  },
+                                }}
+                              >
+                                {isOffline ? t("offline") : t("online")}
+                              </Badge>
+                            </Group>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                  {danhSachCamLoc.length === 0 && (
-                    <Text c="dimmed" fz="sm" ta="center" py="xl">
-                      Không tìm thấy camera phù hợp
-                    </Text>
-                  )}
-                </Stack>
-              </ScrollArea>
-            </Stack>
+                      );
+                    })}
+                    {danhSachCamLoc.length === 0 && (
+                      <Text c="dimmed" fz="sm" ta="center" py="xl">
+                        Không tìm thấy camera phù hợp
+                      </Text>
+                    )}
+                  </Stack>
+                </ScrollArea>
+              </Stack>
             </div>
           </Card>
         </Grid.Col>
@@ -525,7 +687,12 @@ export default function CameraPage() {
           {cheDoGrid === "SINGLE" ? (
             // CHẾ ĐỘ 1 CAMERA
             <Stack gap="md">
-              <Card className="player-wrapper-card" withBorder p={0} radius="xl">
+              <Card
+                className="player-wrapper-card"
+                withBorder
+                p={0}
+                radius="xl"
+              >
                 <Box className="player-container">
                   <SurveillanceFeed
                     camera={cameraHienTai}
@@ -539,19 +706,46 @@ export default function CameraPage() {
               </Card>
 
               {/* Điều khiển Camera */}
-              <Card withBorder radius="lg" p="md" className="ptz-control-panel-card">
-                <Text fw={700} fz={14} c="#1f5ca9" style={{ fontFamily: "var(--font-k2d)", textTransform: "uppercase", borderBottom: '1px solid #e2e8f0', paddingBottom: '8px', marginBottom: '12px' }}>
-                  {t("ptzControl") || "Bảng điều khiển"} {cameraHienTai.ptzCapable ? "" : " (Không hỗ trợ PTZ)"}
+              <Card
+                withBorder
+                radius="lg"
+                p="md"
+                className="ptz-control-panel-card"
+              >
+                <Text
+                  fw={700}
+                  fz={14}
+                  c="#1f5ca9"
+                  style={{
+                    fontFamily: "var(--font-k2d)",
+                    textTransform: "uppercase",
+                    borderBottom: "1px solid #e2e8f0",
+                    paddingBottom: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  {t("ptzControl") || "Bảng điều khiển"}{" "}
+                  {cameraHienTai.ptzCapable ? "" : " (Không hỗ trợ PTZ)"}
                 </Text>
-                <Group gap={0} wrap="nowrap" justify="space-between" className="ptz-horizontal-layout">
+                <Group
+                  gap={0}
+                  wrap="nowrap"
+                  justify="space-between"
+                  className="ptz-horizontal-layout"
+                >
                   {/* Left Column: Joystick */}
                   <div className="ptz-section joystick-section">
-                    <Box className={`joystick-pad ${!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE" ? "disabled" : ""}`}>
+                    <Box
+                      className={`joystick-pad ${!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE" ? "disabled" : ""}`}
+                    >
                       <ActionIcon
                         className="ptz-btn up"
                         variant="transparent"
                         onClick={() => handlePtz("UP")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         <IconChevronUp size={16} />
                       </ActionIcon>
@@ -559,7 +753,10 @@ export default function CameraPage() {
                         className="ptz-btn left"
                         variant="transparent"
                         onClick={() => handlePtz("LEFT")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         <IconChevronLeft size={16} />
                       </ActionIcon>
@@ -567,7 +764,10 @@ export default function CameraPage() {
                         className="ptz-btn reset"
                         variant="transparent"
                         onClick={() => handlePtz("RESET")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         <IconHome size={16} />
                       </ActionIcon>
@@ -575,7 +775,10 @@ export default function CameraPage() {
                         className="ptz-btn right"
                         variant="transparent"
                         onClick={() => handlePtz("RIGHT")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         <IconChevronRight size={16} />
                       </ActionIcon>
@@ -583,7 +786,10 @@ export default function CameraPage() {
                         className="ptz-btn down"
                         variant="transparent"
                         onClick={() => handlePtz("DOWN")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         <IconChevronDown size={16} />
                       </ActionIcon>
@@ -601,7 +807,10 @@ export default function CameraPage() {
                         className="zoom-action-btn"
                         leftSection={<IconZoomOut size={16} />}
                         onClick={() => handlePtz("ZOOM_OUT")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         {t("zoomOut") || "Thu nhỏ"}
                       </Button>
@@ -612,7 +821,10 @@ export default function CameraPage() {
                         className="zoom-action-btn"
                         leftSection={<IconZoomIn size={16} />}
                         onClick={() => handlePtz("ZOOM_IN")}
-                        disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                        disabled={
+                          !cameraHienTai.ptzCapable ||
+                          cameraHienTai.status === "OFFLINE"
+                        }
                       >
                         {t("zoomIn") || "Phóng to"}
                       </Button>
@@ -625,12 +837,20 @@ export default function CameraPage() {
                           <Button
                             variant="subtle"
                             className="preset-btn"
-                            disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                            disabled={
+                              !cameraHienTai.ptzCapable ||
+                              cameraHienTai.status === "OFFLINE"
+                            }
                             onClick={() => handlePreset(num)}
                           >
                             P{num}
                           </Button>
-                          <Text fz={10} c="dimmed" ta="center" className="preset-label">
+                          <Text
+                            fz={10}
+                            c="dimmed"
+                            ta="center"
+                            className="preset-label"
+                          >
                             Preset {num}
                           </Text>
                         </div>
@@ -643,7 +863,13 @@ export default function CameraPage() {
 
                   {/* Right Column: Other Controls */}
                   <div className="ptz-section other-controls-section">
-                    <Text fw={700} fz={13} c="#1f5ca9" className="other-controls-title" mb="xs">
+                    <Text
+                      fw={700}
+                      fz={13}
+                      c="#1f5ca9"
+                      className="other-controls-title"
+                      mb="xs"
+                    >
                       {t("otherControl") || "ĐIỀU KHIỂN KHÁC"}
                     </Text>
                     <Group gap="md" justify="start">
@@ -651,12 +877,20 @@ export default function CameraPage() {
                         <ActionIcon
                           variant="subtle"
                           className="other-control-btn"
-                          disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                          disabled={
+                            !cameraHienTai.ptzCapable ||
+                            cameraHienTai.status === "OFFLINE"
+                          }
                           onClick={() => handleOtherAction("AUTO_SCAN")}
                         >
                           <IconRotateDot size={20} />
                         </ActionIcon>
-                        <Text fz={9.5} c="dimmed" ta="center" className="other-btn-label">
+                        <Text
+                          fz={9.5}
+                          c="dimmed"
+                          ta="center"
+                          className="other-btn-label"
+                        >
                           Tự động quét
                         </Text>
                       </div>
@@ -665,12 +899,20 @@ export default function CameraPage() {
                         <ActionIcon
                           variant="subtle"
                           className="other-control-btn"
-                          disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                          disabled={
+                            !cameraHienTai.ptzCapable ||
+                            cameraHienTai.status === "OFFLINE"
+                          }
                           onClick={() => handleOtherAction("WIDE_VIEW")}
                         >
                           <IconScan size={20} />
                         </ActionIcon>
-                        <Text fz={9.5} c="dimmed" ta="center" className="other-btn-label">
+                        <Text
+                          fz={9.5}
+                          c="dimmed"
+                          ta="center"
+                          className="other-btn-label"
+                        >
                           Góc nhìn rộng
                         </Text>
                       </div>
@@ -679,12 +921,20 @@ export default function CameraPage() {
                         <ActionIcon
                           variant="subtle"
                           className="other-control-btn"
-                          disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                          disabled={
+                            !cameraHienTai.ptzCapable ||
+                            cameraHienTai.status === "OFFLINE"
+                          }
                           onClick={() => handleOtherAction("FOCUS_NEAR")}
                         >
                           <IconFocus2 size={20} />
                         </ActionIcon>
-                        <Text fz={9.5} c="dimmed" ta="center" className="other-btn-label">
+                        <Text
+                          fz={9.5}
+                          c="dimmed"
+                          ta="center"
+                          className="other-btn-label"
+                        >
                           Lấy nét gần
                         </Text>
                       </div>
@@ -693,12 +943,20 @@ export default function CameraPage() {
                         <ActionIcon
                           variant="subtle"
                           className="other-control-btn"
-                          disabled={!cameraHienTai.ptzCapable || cameraHienTai.status === "OFFLINE"}
+                          disabled={
+                            !cameraHienTai.ptzCapable ||
+                            cameraHienTai.status === "OFFLINE"
+                          }
                           onClick={() => handleOtherAction("FOCUS_FAR")}
                         >
                           <IconFocus size={20} />
                         </ActionIcon>
-                        <Text fz={9.5} c="dimmed" ta="center" className="other-btn-label">
+                        <Text
+                          fz={9.5}
+                          c="dimmed"
+                          ta="center"
+                          className="other-btn-label"
+                        >
                           Lấy nét xa
                         </Text>
                       </div>
@@ -710,93 +968,114 @@ export default function CameraPage() {
           ) : (
             // CHẾ ĐỘ NHIỀU CAMERA (GRID VIEW)
             <Grid gutter="sm">
-              {(cheDoGrid === "GRID_4" ? grid4Cams : grid9Cams).map((camId, index) => {
-                const cam = DANH_SACH_CAM_MOCK.find((c) => c.id === camId) || DANH_SACH_CAM_MOCK[0];
-                return (
-                  <Grid.Col span={cheDoGrid === "GRID_4" ? 6 : 4} key={`${camId}-${index}`}>
-                    <Card
-                      withBorder
-                      p={0}
-                      radius="md"
-                      className="grid-player-card"
-                      onClick={() => {
-                        setCameraHienTai(cam);
-                        setCheDoGrid("SINGLE");
-                      }}
-                      style={{ cursor: "pointer" }}
+              {(cheDoGrid === "GRID_4" ? grid4Cams : grid9Cams).map(
+                (camId, index) => {
+                  const cam =
+                    DANH_SACH_CAM_MOCK.find((c) => c.id === camId) ||
+                    DANH_SACH_CAM_MOCK[0];
+                  return (
+                    <Grid.Col
+                      span={cheDoGrid === "GRID_4" ? 6 : 4}
+                      key={`${camId}-${index}`}
                     >
-                      <Box style={{ height: cheDoGrid === "GRID_4" ? "200px" : "140px", position: "relative" }}>
-                        <SurveillanceFeed
-                          camera={cam}
-                          aiOverlay={aiOverlay}
-                          pan={0}
-                          tilt={0}
-                          zoom={1}
-                          miniGrid={true}
-                        />
-                        {/* Nút mở rộng camera (Expand overlay) */}
-                        <div className="grid-expand-btn-wrapper" onClick={(e) => e.stopPropagation()}>
-                          <Tooltip label={t("expand")}>
-                            <ActionIcon
-                              variant="filled"
-                              color="blue"
-                              onClick={() => {
-                                setCameraHienTai(cam);
-                                setCheDoGrid("SINGLE");
-                              }}>
-                              <IconMaximize size={12} />
-                            </ActionIcon>
-                          </Tooltip>
-                        </div>
-                      </Box>
-                      <div className="grid-player-footer" onClick={(e) => e.stopPropagation()}>
-                        <Select
-                          size="xs"
-                          data={DANH_SACH_CAM_MOCK.map((c) => ({ value: c.id, label: c.name }))}
-                          value={cam.id}
-                          onChange={(newVal) => {
-                            if (newVal) {
-                              if (cheDoGrid === "GRID_4") {
-                                setGrid4Cams((prev) => {
-                                  const next = [...prev];
-                                  next[index] = newVal;
-                                  return next;
-                                });
-                              } else {
-                                setGrid9Cams((prev) => {
-                                  const next = [...prev];
-                                  next[index] = newVal;
-                                  return next;
-                                });
+                      <Card
+                        withBorder
+                        p={0}
+                        radius="md"
+                        className="grid-player-card"
+                        onClick={() => {
+                          setCameraHienTai(cam);
+                          setCheDoGrid("SINGLE");
+                        }}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <Box
+                          style={{
+                            height: cheDoGrid === "GRID_4" ? "200px" : "140px",
+                            position: "relative",
+                          }}
+                        >
+                          <SurveillanceFeed
+                            camera={cam}
+                            aiOverlay={aiOverlay}
+                            pan={0}
+                            tilt={0}
+                            zoom={1}
+                            miniGrid={true}
+                          />
+                          {/* Nút mở rộng camera (Expand overlay) */}
+                          <div
+                            className="grid-expand-btn-wrapper"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Tooltip label={t("expand")}>
+                              <ActionIcon
+                                variant="filled"
+                                color="blue"
+                                onClick={() => {
+                                  setCameraHienTai(cam);
+                                  setCheDoGrid("SINGLE");
+                                }}
+                              >
+                                <IconMaximize size={12} />
+                              </ActionIcon>
+                            </Tooltip>
+                          </div>
+                        </Box>
+                        <div
+                          className="grid-player-footer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Select
+                            size="xs"
+                            data={DANH_SACH_CAM_MOCK.map((c) => ({
+                              value: c.id,
+                              label: c.name,
+                            }))}
+                            value={cam.id}
+                            onChange={(newVal) => {
+                              if (newVal) {
+                                if (cheDoGrid === "GRID_4") {
+                                  setGrid4Cams((prev) => {
+                                    const next = [...prev];
+                                    next[index] = newVal;
+                                    return next;
+                                  });
+                                } else {
+                                  setGrid9Cams((prev) => {
+                                    const next = [...prev];
+                                    next[index] = newVal;
+                                    return next;
+                                  });
+                                }
                               }
-                            }
-                          }}
-                          className="grid-camera-select"
-                          comboboxProps={{ withinPortal: false }}
-                          styles={{
-                            input: {
-                              fontWeight: 650,
-                              fontSize: "11px",
-                              backgroundColor: "transparent",
-                              color: "#e2e8f0",
-                              border: "none",
-                              paddingLeft: 0,
-                              height: "22px",
-                              minHeight: "22px",
-                              cursor: "pointer",
-                            },
-                          }}
-                        />
-                      </div>
-                    </Card>
-                  </Grid.Col>
-                );
-              })}
+                            }}
+                            className="grid-camera-select"
+                            comboboxProps={{ withinPortal: false }}
+                            styles={{
+                              input: {
+                                fontWeight: 650,
+                                fontSize: "11px",
+                                backgroundColor: "transparent",
+                                color: "#e2e8f0",
+                                border: "none",
+                                paddingLeft: 0,
+                                height: "22px",
+                                minHeight: "22px",
+                                cursor: "pointer",
+                              },
+                            }}
+                          />
+                        </div>
+                      </Card>
+                    </Grid.Col>
+                  );
+                },
+              )}
             </Grid>
           )}
         </Grid.Col>
       </Grid>
-
 
       {/* Embedded CSS for Styling */}
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />
@@ -816,7 +1095,16 @@ interface FeedProps {
   onExpand?: () => void;
 }
 
-function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false, onSnapshot, onExpand }: FeedProps) {
+function SurveillanceFeed({
+  camera,
+  aiOverlay,
+  pan,
+  tilt,
+  zoom,
+  miniGrid = false,
+  onSnapshot,
+  onExpand,
+}: FeedProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const objectsRef = useRef<MovingObject[]>([]);
   const requestRef = useRef<number | null>(null);
@@ -835,7 +1123,8 @@ function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false
     const count = camera.type === "Nhà xe" ? 2 : 3;
 
     for (let i = 0; i < count; i++) {
-      const type = camera.type === "Nhà xe" && Math.random() > 0.4 ? "vehicle" : "person";
+      const type =
+        camera.type === "Nhà xe" && Math.random() > 0.4 ? "vehicle" : "person";
       const isStr = Math.random() < 0.25;
 
       let label = "";
@@ -916,7 +1205,7 @@ function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false
         ctx.fillStyle = "#94a3b8";
         ctx.font = `${miniGrid ? "10px" : "12px"} var(--font-readex-pro), sans-serif`;
         ctx.fillText(`CAMERA IP: ${camera.ip}`, width / 2, height / 2 + 15);
-        
+
         requestRef.current = requestAnimationFrame(render);
         return;
       }
@@ -1028,7 +1317,13 @@ function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false
       if (recDotBlink) {
         ctx.fillStyle = "#ef4444";
         ctx.beginPath();
-        ctx.arc(miniGrid ? 16 : 28, miniGrid ? 16 : 28, miniGrid ? 3 : 6, 0, Math.PI * 2);
+        ctx.arc(
+          miniGrid ? 16 : 28,
+          miniGrid ? 16 : 28,
+          miniGrid ? 3 : 6,
+          0,
+          Math.PI * 2,
+        );
         ctx.fill();
       }
 
@@ -1039,8 +1334,16 @@ function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false
 
       // Tên Camera và IP
       ctx.font = `${miniGrid ? "8px" : "11px"} var(--font-mono), monospace`;
-      ctx.fillText(`CAM: ${camera.id.toUpperCase()}`, miniGrid ? 12 : 24, height - (miniGrid ? 26 : 38));
-      ctx.fillText(`IP: ${camera.ip}`, miniGrid ? 12 : 24, height - (miniGrid ? 14 : 20));
+      ctx.fillText(
+        `CAM: ${camera.id.toUpperCase()}`,
+        miniGrid ? 12 : 24,
+        height - (miniGrid ? 26 : 38),
+      );
+      ctx.fillText(
+        `IP: ${camera.ip}`,
+        miniGrid ? 12 : 24,
+        height - (miniGrid ? 14 : 20),
+      );
 
       // Thời gian thực
       const now = new Date();
@@ -1050,19 +1353,34 @@ function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false
         String(now.getMilliseconds()).padStart(3, "0");
       timeSecRef.current = formatTime;
       ctx.textAlign = "right";
-      ctx.fillText(formatTime, width - (miniGrid ? 12 : 24), miniGrid ? 20 : 32);
+      ctx.fillText(
+        formatTime,
+        width - (miniGrid ? 12 : 24),
+        miniGrid ? 20 : 32,
+      );
 
       // Bitrate & FPS & PTZ
-      const simulatedBitrate = (3500 + Math.sin(Date.now() / 1000) * 450).toFixed(0);
+      const simulatedBitrate = (
+        3500 +
+        Math.sin(Date.now() / 1000) * 450
+      ).toFixed(0);
       ctx.fillText(
         `30.0 FPS | ${simulatedBitrate} kbps`,
         width - (miniGrid ? 12 : 24),
-        height - (miniGrid ? 26 : 38)
+        height - (miniGrid ? 26 : 38),
       );
       if (camera.ptzCapable) {
-        ctx.fillText(`PTZ: H:${pan}° V:${tilt}° Z:${zoom}x`, width - (miniGrid ? 12 : 24), height - (miniGrid ? 14 : 20));
+        ctx.fillText(
+          `PTZ: H:${pan}° V:${tilt}° Z:${zoom}x`,
+          width - (miniGrid ? 12 : 24),
+          height - (miniGrid ? 14 : 20),
+        );
       } else {
-        ctx.fillText(`PTZ: FIXED`, width - (miniGrid ? 12 : 24), height - (miniGrid ? 14 : 20));
+        ctx.fillText(
+          `PTZ: FIXED`,
+          width - (miniGrid ? 12 : 24),
+          height - (miniGrid ? 14 : 20),
+        );
       }
 
       // Vẽ crosshair (tâm ngắm camera) ở chính giữa
@@ -1094,11 +1412,21 @@ function SurveillanceFeed({ camera, aiOverlay, pan, tilt, zoom, miniGrid = false
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
+      <canvas
+        ref={canvasRef}
+        style={{ width: "100%", height: "100%", display: "block" }}
+      />
 
       {/* Snapshot/Expand overlay buttons inside player */}
       {!miniGrid && (
-        <div style={{ position: "absolute", bottom: "16px", right: "24px", zIndex: 10 }}>
+        <div
+          style={{
+            position: "absolute",
+            bottom: "16px",
+            right: "24px",
+            zIndex: 10,
+          }}
+        >
           <Group gap="xs">
             {!isOffline && onSnapshot && (
               <Tooltip label="Chụp ảnh màn hình camera">
