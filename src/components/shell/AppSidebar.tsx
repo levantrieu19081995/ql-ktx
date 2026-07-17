@@ -44,6 +44,7 @@ import {
   IconShieldLock,
   IconLayoutSidebarLeftExpand,
   IconLayoutSidebarLeftCollapse,
+  IconDeviceCctv,
 } from "@tabler/icons-react";
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, Link, useRouter } from "@/i18n/navigation";
@@ -104,6 +105,11 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           label: t("warningsMenu"),
           href: "/warnings",
           icon: <IconAlertTriangle size={16} />,
+        },
+        {
+          label: t("cameraMenu"),
+          href: "/camera",
+          icon: <IconDeviceCctv size={16} />,
         },
         {
           label: t("tollManagement"),

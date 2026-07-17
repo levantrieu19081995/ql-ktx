@@ -4,6 +4,7 @@ export const KTX_DEVELOPMENT_VISIBLE_ROUTES = [
     "/thong-ke",
     "/history",
     "/warnings",
+    "/camera",
     "/danh-muc",
 
 // Quản trị hệ thống

@@ -87,6 +87,7 @@
     "history-staff": "Staff",
     "history-student": "Students",
     "warningsMenu": "Stranger Warnings",
+    "cameraMenu": "Live Camera",
     "historyWarning": "History/Warnings",
     "unit": "Unit"
   },
@@ -485,5 +486,30 @@
     "toastAddSuccess": "Ban added successfully!",
     "toastSaveError": "Error saving data. Please try again.",
     "selected": "Selected"
+  },
+  "Camera": {
+    "title": "LIVE CAMERA MONITORING",
+    "searchCam": "Search camera...",
+    "allAreas": "All areas",
+    "online": "Online",
+    "offline": "Offline",
+    "grid1": "Single View",
+    "grid4": "4-Camera Grid",
+    "grid9": "9-Camera Grid",
+    "snapshot": "Snapshot",
+    "aiOverlay": "AI Detection",
+    "ptzControl": "Control Panel",
+    "eventLog": "AI Detection Log",
+    "live": "LIVE",
+    "cameraList": "Camera List",
+    "location": "Location",
+    "ipAddress": "IP Address",
+    "deviceType": "Device Type",
+    "snapshotSuccess": "Camera snapshot downloaded successfully!",
+    "expand": "Expand detailed view",
+    "changeCamera": "Select camera...",
+    "zoomOut": "Zoom Out",
+    "zoomIn": "Zoom In",
+    "otherControl": "OTHER CONTROLS"
   }
 }
