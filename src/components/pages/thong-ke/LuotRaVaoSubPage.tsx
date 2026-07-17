@@ -628,6 +628,7 @@ export default function LuotRaVaoSubPage() {
 
   return (
     <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+      <style dangerouslySetInnerHTML={{ __html: localFilterStyles }} />
       <Group justify="space-between" align="center">
         <Group gap="md">
           <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
@@ -650,71 +651,213 @@ export default function LuotRaVaoSubPage() {
         <Stack gap="md">
           {/* Filter fields and actions (collapsed/expanded depending on showAdvancedFilter) */}
           {!showAdvancedFilter ? (
-            /* Collapsed State: All 4 inputs + action buttons on 1 unified Grid row */
-            <Grid align="flex-end" gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <DateInput
-                  label={t("fromDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={tuNgay}
-                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <DateInput
-                  label={t("toDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={denNgay}
-                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <Select
-                  label={t("dormZone")}
-                  value={khuKtx}
-                  onChange={(val) => setKhuKtx(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Khu A", label: t("dormA") },
-                    { value: "Khu B", label: t("dormB") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <Select
-                  label={t("status")}
-                  value={trangThai}
-                  onChange={(val) => setTrangThai(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Hợp lệ", label: t("statusValid") },
-                    { value: "Nghi vấn", label: t("statusSuspicious") },
-                    { value: "Không hợp lệ", label: t("statusInvalid") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
-                <Group justify="flex-end" gap="sm" wrap="wrap">
+            /* Collapsed State: Responsive filter layouts using custom CSS */
+            <div className="luot-ra-vao-filter-container">
+              <div className="filter-inputs-group">
+                <div>
+                  <DateInput
+                    label={t("fromDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={tuNgay}
+                    onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <DateInput
+                    label={t("toDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={denNgay}
+                    onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("dormZone")}
+                    value={khuKtx}
+                    onChange={(val) => setKhuKtx(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Khu A", label: t("dormA") },
+                      { value: "Khu B", label: t("dormB") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("status")}
+                    value={trangThai}
+                    onChange={(val) => setTrangThai(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Hợp lệ", label: t("statusValid") },
+                      { value: "Nghi vấn", label: t("statusSuspicious") },
+                      { value: "Không hợp lệ", label: t("statusInvalid") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="filter-actions-group">
+                <Button
+                  leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                  style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  onClick={() => loadThongKeData()}
+                  disabled={loading}
+                >
+                  {t("search")}
+                </Button>
+                <Button
+                  leftSection={<IconRefresh size={16} />}
+                  variant="outline"
+                  color="gray"
+                  onClick={handleReset}
+                  style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                >
+                  {t("reset")}
+                </Button>
+                <ActionIcon
+                  variant="outline"
+                  color="gray"
+                  size="lg"
+                  onClick={() => setShowAdvancedFilter(true)}
+                  style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+                >
+                  <IconChevronDown size={18} color="#64748b" />
+                </ActionIcon>
+              </div>
+            </div>
+          ) : (
+            /* Expanded State: 2 rows of responsive filters using custom CSS */
+            <div className="flex flex-col gap-4 w-full">
+              {/* Row 1: The 5 inputs */}
+              <div className="expanded-row-1">
+                <div>
+                  <DateInput
+                    label={t("fromDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={tuNgay}
+                    onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <DateInput
+                    label={t("toDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={denNgay}
+                    onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("dormZone")}
+                    value={khuKtx}
+                    onChange={(val) => setKhuKtx(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Khu A", label: t("dormA") },
+                      { value: "Khu B", label: t("dormB") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("status")}
+                    value={trangThai}
+                    onChange={(val) => setTrangThai(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Hợp lệ", label: t("statusValid") },
+                      { value: "Nghi vấn", label: t("statusSuspicious") },
+                      { value: "Không hợp lệ", label: t("statusInvalid") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("objectType")}
+                    value={loaiDoiTuong}
+                    onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Sinh viên", label: t("roleStudent") },
+                      { value: "Cán bộ", label: t("roleStaff") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Advanced inputs + buttons */}
+              <div className="expanded-row-2">
+                <div className="expanded-inputs-group">
+                  <div>
+                    <TextInput
+                      label={t("fullName").toUpperCase()}
+                      placeholder="Họ tên..."
+                      value={hoTen}
+                      onChange={(e) => setHoTen(e.currentTarget.value)}
+                      styles={{
+                        label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                        input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <TextInput
+                      label="MSSV / MÃ SỐ"
+                      placeholder="MSSV..."
+                      value={mssv}
+                      onChange={(e) => setMssv(e.currentTarget.value)}
+                      styles={{
+                        label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                        input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="expanded-actions-group">
                   <Button
                     leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                     style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
@@ -732,164 +875,32 @@ export default function LuotRaVaoSubPage() {
                   >
                     {t("reset")}
                   </Button>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    {t("exportExcel")}
+                  </Button>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    {t("exportPdf")}
+                  </Button>
                   <ActionIcon
                     variant="outline"
                     color="gray"
                     size="lg"
-                    onClick={() => setShowAdvancedFilter(true)}
+                    onClick={() => setShowAdvancedFilter(false)}
                     style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
                   >
-                    <IconChevronDown size={18} color="#64748b" />
+                    <IconChevronUp size={18} color="#64748b" />
                   </ActionIcon>
-                </Group>
-              </Grid.Col>
-            </Grid>
-          ) : (
-            /* Expanded State: 2 rows of filters */
-            <>
-              {/* Row 1: The 5 inputs */}
-              <SimpleGrid cols={{ base: 1, sm: 2, md: 5 }} spacing="md">
-                <DateInput
-                  label={t("fromDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={tuNgay}
-                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <DateInput
-                  label={t("toDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={denNgay}
-                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <Select
-                  label={t("dormZone")}
-                  value={khuKtx}
-                  onChange={(val) => setKhuKtx(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Khu A", label: t("dormA") },
-                    { value: "Khu B", label: t("dormB") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <Select
-                  label={t("status")}
-                  value={trangThai}
-                  onChange={(val) => setTrangThai(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Hợp lệ", label: t("statusValid") },
-                    { value: "Nghi vấn", label: t("statusSuspicious") },
-                    { value: "Không hợp lệ", label: t("statusInvalid") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <Select
-                  label={t("objectType")}
-                  value={loaiDoiTuong}
-                  onChange={(val) => setLoaiDoiTuong(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Sinh viên", label: t("roleStudent") },
-                    { value: "Cán bộ", label: t("roleStaff") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </SimpleGrid>
-
-              {/* Row 2: Advanced inputs + buttons (No divider) */}
-              <Grid align="flex-end" gutter="md" mt="md">
-                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
-                  <TextInput
-                    label={t("fullName").toUpperCase()}
-                    placeholder="Họ tên..."
-                    value={hoTen}
-                    onChange={(e) => setHoTen(e.currentTarget.value)}
-                    styles={{
-                      label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
-                  <TextInput
-                    label="MSSV / MÃ SỐ"
-                    placeholder="MSSV..."
-                    value={mssv}
-                    onChange={(e) => setMssv(e.currentTarget.value)}
-                    styles={{
-                      label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, md: 7 }}>
-                  <Group justify="flex-end" gap="sm" wrap="wrap">
-                    <Button
-                      leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                      style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                      onClick={() => loadThongKeData()}
-                      disabled={loading}
-                    >
-                      {t("search")}
-                    </Button>
-                    <Button
-                      leftSection={<IconRefresh size={16} />}
-                      variant="outline"
-                      color="gray"
-                      onClick={handleReset}
-                      style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    >
-                      {t("reset")}
-                    </Button>
-                    <Button
-                      leftSection={<IconDownload size={16} />}
-                      variant="outline"
-                      style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    >
-                      {t("exportExcel")}
-                    </Button>
-                    <Button
-                      leftSection={<IconDownload size={16} />}
-                      variant="outline"
-                      style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    >
-                      {t("exportPdf")}
-                    </Button>
-                    <ActionIcon
-                      variant="outline"
-                      color="gray"
-                      size="lg"
-                      onClick={() => setShowAdvancedFilter(false)}
-                      style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
-                    >
-                      <IconChevronUp size={18} color="#64748b" />
-                    </ActionIcon>
-                  </Group>
-                </Grid.Col>
-              </Grid>
-            </>
+                </div>
+              </div>
+            </div>
           )}
         </Stack>
       </Card>
@@ -1284,3 +1295,104 @@ export default function LuotRaVaoSubPage() {
     </Stack>
   );
 }
+
+const localFilterStyles = `
+.luot-ra-vao-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.filter-inputs-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+
+.filter-actions-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.expanded-row-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+
+.expanded-row-2 {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.expanded-inputs-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+
+.expanded-actions-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+/* Tablet screens (>= 640px) */
+@media (min-width: 640px) {
+    .filter-inputs-group {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .expanded-row-1 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .expanded-inputs-group {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop screens (>= 1024px) */
+@media (min-width: 1024px) {
+    .luot-ra-vao-filter-container {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+    .filter-inputs-group {
+        grid-template-columns: repeat(4, 1fr);
+        flex: 1;
+    }
+    .filter-actions-group {
+        width: auto;
+    }
+    
+    .expanded-row-1 {
+        grid-template-columns: repeat(5, 1fr);
+    }
+    .expanded-row-2 {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+    .expanded-inputs-group {
+        max-width: 50%;
+        flex: 1;
+    }
+    .expanded-actions-group {
+        width: auto;
+        margin-left: auto;
+    }
+}
+`;
+

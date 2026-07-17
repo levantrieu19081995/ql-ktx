@@ -476,67 +476,67 @@ export default function BiCamSubPage() {
 
       {/* Filter Card */}
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-        <Grid align="flex-end" gutter="md">
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <TextInput
-              label={t("fullName").toUpperCase()}
-              placeholder={t("enterFullName") + "..."}
-              value={hoTenFilter}
-              onChange={(e) => setHoTenFilter(e.currentTarget.value)}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 6, md: 3 }}>
-            <TextInput
-              label={t("studentId").toUpperCase()}
-              placeholder={t("enterMssv") + "..."}
-              value={mssvFilter}
-              onChange={(e) => setMssvFilter(e.currentTarget.value)}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Group justify="flex-end" gap="sm" wrap="wrap">
-              <Button
-                leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                onClick={handleSearch}
-                disabled={loading}
-              >
-                {t("search")}
-              </Button>
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                variant="outline"
-                color="gray"
-                onClick={handleReset}
-                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("reset")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("exportExcel")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("exportPdf")}
-              </Button>
-            </Group>
-          </Grid.Col>
-        </Grid>
+        <div className="flex flex-col gap-4 w-full lg:flex-row lg:items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+            <div>
+              <TextInput
+                label={t("fullName").toUpperCase()}
+                placeholder={t("enterFullName") + "..."}
+                value={hoTenFilter}
+                onChange={(e) => setHoTenFilter(e.currentTarget.value)}
+                styles={{
+                  label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
+                }}
+              />
+            </div>
+            <div>
+              <TextInput
+                label={t("studentId").toUpperCase()}
+                placeholder={t("enterMssv") + "..."}
+                value={mssvFilter}
+                onChange={(e) => setMssvFilter(e.currentTarget.value)}
+                styles={{
+                  label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" },
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 justify-end w-full lg:w-auto">
+            <Button
+              leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {t("search")}
+            </Button>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              variant="outline"
+              color="gray"
+              onClick={handleReset}
+              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
+              {t("reset")}
+            </Button>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
+              {t("exportExcel")}
+            </Button>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
+              {t("exportPdf")}
+            </Button>
+          </div>
+        </div>
       </Card>
 
       {error && (

@@ -397,13 +397,13 @@ const filterStyles = `
     min-width: 280px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
     .filter-inputs-group-row-1 {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 1150px) {
     .filter-inputs-group-row-1 {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
@@ -568,7 +568,7 @@ const filterStyles = `
     justify-content: flex-end;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .filter-row-1-custom .date-field,
     .filter-row-1-custom .ktx-field,
     .filter-row-1-custom .status-field,

@@ -272,71 +272,197 @@ export default function VangMatSubPage() {
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
         <Stack gap="md">
           {!showAdvancedFilter ? (
-            /* Collapsed State: All 4 inputs + action buttons on 1 unified Grid row */
-            <Grid align="flex-end" gutter="md">
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <DateInput
-                  label={t("fromDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={tuNgay}
-                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <DateInput
-                  label={t("toDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={denNgay}
-                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <Select
-                  label={t("dormZone")}
-                  value={khuKtx}
-                  onChange={(val) => setKhuKtx(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Khu A", label: t("dormA") },
-                    { value: "Khu B", label: t("dormB") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 6, md: 2 }}>
-                <Select
-                  label={t("status")}
-                  value={trangThai}
-                  onChange={(val) => setTrangThai(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
-                    { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
-                    { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </Grid.Col>
-              <Grid.Col span={{ base: 12, sm: 12, md: 4 }}>
-                <Group justify="flex-end" gap="sm" wrap="wrap">
+            /* Collapsed State: Responsive filter layouts using flex/grid */
+            <div className="flex flex-col gap-4 w-full lg:flex-row lg:items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+                <div>
+                  <DateInput
+                    label={t("fromDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={tuNgay}
+                    onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <DateInput
+                    label={t("toDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={denNgay}
+                    onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("dormZone")}
+                    value={khuKtx}
+                    onChange={(val) => setKhuKtx(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Khu A", label: t("dormA") },
+                      { value: "Khu B", label: t("dormB") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("status")}
+                    value={trangThai}
+                    onChange={(val) => setTrangThai(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
+                      { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
+                      { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-end w-full lg:w-auto">
+                <Button
+                  leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+                  style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  onClick={() => loadAbsentData()}
+                  disabled={loading}
+                >
+                  {t("search")}
+                </Button>
+                <Button
+                  leftSection={<IconRefresh size={16} />}
+                  variant="outline"
+                  color="gray"
+                  onClick={handleReset}
+                  style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                >
+                  {t("reset")}
+                </Button>
+                <ActionIcon
+                  variant="outline"
+                  color="gray"
+                  size="lg"
+                  onClick={() => setShowAdvancedFilter(true)}
+                  style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+                >
+                  <IconChevronDown size={18} color="#64748b" />
+                </ActionIcon>
+              </div>
+            </div>
+          ) : (
+            /* Expanded State: 2 rows of responsive filters */
+            <div className="flex flex-col gap-4 w-full">
+              {/* Row 1: The 4 inputs */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <DateInput
+                    label={t("fromDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={tuNgay}
+                    onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <DateInput
+                    label={t("toDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={denNgay}
+                    onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("dormZone")}
+                    value={khuKtx}
+                    onChange={(val) => setKhuKtx(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Khu A", label: t("dormA") },
+                      { value: "Khu B", label: t("dormB") }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+                <div>
+                  <Select
+                    label={t("status")}
+                    value={trangThai}
+                    onChange={(val) => setTrangThai(val || "Tất cả")}
+                    data={[
+                      { value: "Tất cả", label: t("all") },
+                      { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
+                      { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
+                      { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
+                    ]}
+                    styles={{
+                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Advanced inputs + buttons */}
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end mt-2 w-full">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 lg:max-w-[50%]">
+                  <div>
+                    <TextInput
+                      label={t("fullName")}
+                      placeholder={t("enterFullName") + "..."}
+                      value={hoTen}
+                      onChange={(e) => setHoTen(e.currentTarget.value)}
+                      styles={{
+                        label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                        input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <TextInput
+                      label={t("studentId")}
+                      placeholder={t("enterMssv") + "..."}
+                      value={mssv}
+                      onChange={(e) => setMssv(e.currentTarget.value)}
+                      styles={{
+                        label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                        input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 justify-end w-full lg:w-auto ml-auto">
                   <Button
                     leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
                     style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
@@ -354,150 +480,32 @@ export default function VangMatSubPage() {
                   >
                     {t("reset")}
                   </Button>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    {t("exportExcel")}
+                  </Button>
+                  <Button
+                    leftSection={<IconDownload size={16} />}
+                    variant="outline"
+                    style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  >
+                    {t("exportPdf")}
+                  </Button>
                   <ActionIcon
                     variant="outline"
                     color="gray"
                     size="lg"
-                    onClick={() => setShowAdvancedFilter(true)}
+                    onClick={() => setShowAdvancedFilter(false)}
                     style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
                   >
-                    <IconChevronDown size={18} color="#64748b" />
+                    <IconChevronUp size={18} color="#64748b" />
                   </ActionIcon>
-                </Group>
-              </Grid.Col>
-            </Grid>
-          ) : (
-            /* Expanded State: 2 rows of filters */
-            <>
-              {/* Row 1: The 4 inputs */}
-              <SimpleGrid cols={{ base: 1, sm: 2, md: 4 }} spacing="md">
-                <DateInput
-                  label={t("fromDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={tuNgay}
-                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <DateInput
-                  label={t("toDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={denNgay}
-                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <Select
-                  label={t("dormZone")}
-                  value={khuKtx}
-                  onChange={(val) => setKhuKtx(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Khu A", label: t("dormA") },
-                    { value: "Khu B", label: t("dormB") }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-                <Select
-                  label={t("status")}
-                  value={trangThai}
-                  onChange={(val) => setTrangThai(val || "Tất cả")}
-                  data={[
-                    { value: "Tất cả", label: t("all") },
-                    { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
-                    { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
-                    { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
-                  ]}
-                  styles={{
-                    label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                    input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                  }}
-                />
-              </SimpleGrid>
-
-              {/* Row 2: Advanced inputs + buttons (No divider) */}
-              <Grid align="flex-end" gutter="md" mt="md">
-                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
-                  <TextInput
-                    label={t("fullName")}
-                    placeholder={t("enterFullName") + "..."}
-                    value={hoTen}
-                    onChange={(e) => setHoTen(e.currentTarget.value)}
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, sm: 6, md: 2.5 }}>
-                  <TextInput
-                    label={t("studentId")}
-                    placeholder={t("enterMssv") + "..."}
-                    value={mssv}
-                    onChange={(e) => setMssv(e.currentTarget.value)}
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </Grid.Col>
-                <Grid.Col span={{ base: 12, md: 7 }}>
-                  <Group justify="flex-end" gap="sm" wrap="wrap">
-                    <Button
-                      leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                      style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                      onClick={() => loadAbsentData()}
-                      disabled={loading}
-                    >
-                      {t("search")}
-                    </Button>
-                    <Button
-                      leftSection={<IconRefresh size={16} />}
-                      variant="outline"
-                      color="gray"
-                      onClick={handleReset}
-                      style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    >
-                      {t("reset")}
-                    </Button>
-                    <Button
-                      leftSection={<IconDownload size={16} />}
-                      variant="outline"
-                      style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    >
-                      {t("exportExcel")}
-                    </Button>
-                    <Button
-                      leftSection={<IconDownload size={16} />}
-                      variant="outline"
-                      style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    >
-                      {t("exportPdf")}
-                    </Button>
-                    <ActionIcon
-                      variant="outline"
-                      color="gray"
-                      size="lg"
-                      onClick={() => setShowAdvancedFilter(false)}
-                      style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
-                    >
-                      <IconChevronUp size={18} color="#64748b" />
-                    </ActionIcon>
-                  </Group>
-                </Grid.Col>
-              </Grid>
-            </>
+                </div>
+              </div>
+            </div>
           )}
         </Stack>
       </Card>

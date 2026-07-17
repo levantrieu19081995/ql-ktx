@@ -208,10 +208,15 @@ const filterStyles = `
     min-width: 180px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 1024px) {
     .filter-inputs-group-row-1.stranger-fields {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        min-width: 580px;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    .filter-inputs-group-row-1.stranger-fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

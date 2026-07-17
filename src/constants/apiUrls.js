@@ -6,6 +6,7 @@ import {
   FILE_SERVICE,
   GATEWAY_SERVICE,
   KTX_SERVICE,
+  FACE_DETECT_SERVICE,
 } from "./servicePaths";
 import SettingPaymentInfo from "@/components/pages/settings/SettingPaymentInfo";
 const API_URLS = {
@@ -262,6 +263,19 @@ const API_URLS = {
   },
   excel: {
     convert: `${QLDK_SERVICE}/api/excel/convert`,
+  },
+
+  faceDetect: {
+    paginateNguoiLa: `${FACE_DETECT_SERVICE}/face-web-check-time/paginate-nguoi-la`,
+    paginateLichSuRaVao: `${FACE_DETECT_SERVICE}/face-web-check-time/paginate`,
+  },
+
+  thongKeKtx: {
+    luotRaVao: `${KTX_SERVICE}/thong-ke/luot-ra-vao`,
+    svBiCamNoPhi: `${KTX_SERVICE}/thong-ke/sv-bi-cam-no-phi`,
+    theoMaSo: `${KTX_SERVICE}/thong-ke/theo-ma-so`,
+    nguoiLa: `${KTX_SERVICE}/thong-ke/nguoi-la`,
+    suKienRaVaoPaginate: "/ktx-su-kien-ra-vao/paginate",
   },
 
   // Add other URLs here as needed

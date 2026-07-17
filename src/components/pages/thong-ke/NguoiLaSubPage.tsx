@@ -243,11 +243,6 @@ export default function NguoiLaSubPage() {
 
       const formats = [
         { Ngay: formatDateToMMDDYYYY(activeDate, new Date()), maKhu: activeKhu },
-        { ngay: formatDateToMMDDYYYY(activeDate, new Date()), maKhu: activeKhu },
-        { Ngay: formatDateToDDMMYYYY(activeDate, new Date()), maKhu: activeKhu },
-        { ngay: formatDateToDDMMYYYY(activeDate, new Date()), maKhu: activeKhu },
-        { Ngay: formatDateToYYYYMMDD(activeDate, new Date()), maKhu: activeKhu },
-        { ngay: formatDateToYYYYMMDD(activeDate, new Date()), maKhu: activeKhu },
       ];
 
       let lastErr = null;
@@ -342,84 +337,84 @@ export default function NguoiLaSubPage() {
 
       {/* Filter Card */}
       <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-        <Grid align="flex-end" gutter="md">
-          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
-            <DateInput
-              label={t("fromDate").toUpperCase()}
-              placeholder="MM/DD/YYYY"
-              value={tuNgay}
-              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
-            <DateInput
-              label={t("toDate").toUpperCase()}
-              placeholder="MM/DD/YYYY"
-              value={denNgay}
-              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, sm: 4, md: 2 }}>
-            <Select
-              label={t("dormZone").toUpperCase()}
-              value={khuKtx}
-              onChange={(val) => setKhuKtx(val || "-1")}
-              data={zonesDropdownData}
-              disabled={zonesLoading}
-              styles={{
-                label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-              }}
-            />
-          </Grid.Col>
-          <Grid.Col span={{ base: 12, md: 6 }}>
-            <Group justify="flex-end" gap="sm" wrap="wrap">
-              <Button
-                leftSection={nguoiLaLoading || chartLoading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                onClick={handleSearch}
-                disabled={nguoiLaLoading || chartLoading}
-              >
-                {t("search")}
-              </Button>
-              <Button
-                leftSection={<IconRefresh size={16} />}
-                variant="outline"
-                color="gray"
-                onClick={handleReset}
-                style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("reset")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("exportExcel")}
-              </Button>
-              <Button
-                leftSection={<IconDownload size={16} />}
-                variant="outline"
-                style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-              >
-                {t("exportPdf")}
-              </Button>
-            </Group>
-          </Grid.Col>
-        </Grid>
+        <div className="flex flex-col gap-4 w-full lg:flex-row lg:items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
+            <div>
+              <DateInput
+                label={t("fromDate").toUpperCase()}
+                placeholder="MM/DD/YYYY"
+                value={tuNgay}
+                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                valueFormat="DD/MM/YYYY"
+                clearable
+                styles={{
+                  label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                }}
+              />
+            </div>
+            <div>
+              <DateInput
+                label={t("toDate").toUpperCase()}
+                placeholder="MM/DD/YYYY"
+                value={denNgay}
+                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                valueFormat="DD/MM/YYYY"
+                clearable
+                styles={{
+                  label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                }}
+              />
+            </div>
+            <div>
+              <Select
+                label={t("dormZone").toUpperCase()}
+                value={khuKtx}
+                onChange={(val) => setKhuKtx(val || "-1")}
+                data={zonesDropdownData}
+                disabled={zonesLoading}
+                styles={{
+                  label: { fontSize: "11px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
+                  input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 justify-end w-full lg:w-auto">
+            <Button
+              leftSection={nguoiLaLoading || chartLoading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
+              style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+              onClick={handleSearch}
+              disabled={nguoiLaLoading || chartLoading}
+            >
+              {t("search")}
+            </Button>
+            <Button
+              leftSection={<IconRefresh size={16} />}
+              variant="outline"
+              color="gray"
+              onClick={handleReset}
+              style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
+              {t("reset")}
+            </Button>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
+              {t("exportExcel")}
+            </Button>
+            <Button
+              leftSection={<IconDownload size={16} />}
+              variant="outline"
+              style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+            >
+              {t("exportPdf")}
+            </Button>
+          </div>
+        </div>
       </Card>
 
       {/* Main Grid: Chart and Daily details */}

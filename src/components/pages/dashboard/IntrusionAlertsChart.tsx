@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
-import { Card, Text, Box, Group, Button, UnstyledButton } from '@mantine/core';
+import React from 'react';
+import { Card, Text, Box, Group, Button } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
 import { useTranslations } from 'next-intl';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { IntrusionAlert } from './dashboardTypes';
+import { IconCalendar } from '@tabler/icons-react';
 
 interface IntrusionAlertsChartProps {
   data?: IntrusionAlert[];
+  filterType: 'area' | 'time';
+  setFilterType: (type: 'area' | 'time') => void;
+  selectedDate: Date | null;
+  setSelectedDate: (date: Date | null) => void;
 }
 
-export default function IntrusionAlertsChart({ data = [] }: IntrusionAlertsChartProps) {
-  const [filterType, setFilterType] = useState<'area' | 'time'>('area');
+export default function IntrusionAlertsChart({
+  data = [],
+  filterType,
+  setFilterType,
+  selectedDate,
+  setSelectedDate,
+}: IntrusionAlertsChartProps) {
   const t = useTranslations("Dashboard");
 
   return (
@@ -32,7 +43,29 @@ export default function IntrusionAlertsChart({ data = [] }: IntrusionAlertsChart
           </Text>
         </Box>
 
-        <Group gap="xs">
+        <Group gap="xs" align="center">
+          {filterType === 'time' && (
+            <DateInput
+              size="xs"
+              placeholder="Chọn ngày/tháng"
+              value={selectedDate}
+              onChange={(val) => setSelectedDate(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              leftSection={<IconCalendar size={14} color="#64748b" />}
+              styles={{
+                input: {
+                  height: '30px',
+                  width: '140px',
+                  fontSize: '11px',
+                  borderRadius: '8px',
+                  borderColor: '#cbd5e1',
+                  fontFamily: 'var(--font-readex-pro), sans-serif'
+                }
+              }}
+            />
+          )}
+
           <Button
             size="xs"
             variant={filterType === 'area' ? 'filled' : 'default'}
@@ -45,62 +78,76 @@ export default function IntrusionAlertsChart({ data = [] }: IntrusionAlertsChart
                 fontSize: '11px',
                 paddingLeft: '12px',
                 paddingRight: '12px',
+                height: '30px',
               },
             }}
           >
             {t("ktxButton")}
           </Button>
-          <UnstyledButton
+
+          <Button
+            size="xs"
+            variant={filterType === 'time' ? 'filled' : 'default'}
+            color="blue"
+            radius="md"
             onClick={() => setFilterType('time')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '8px',
-              fontSize: '11px',
-              fontWeight: 600,
-              backgroundColor: filterType === 'time' ? '#e2e8f0' : 'transparent',
-              color: '#475569',
-              transition: 'all 0.15s ease',
+            styles={{
+              root: {
+                fontWeight: 600,
+                fontSize: '11px',
+                paddingLeft: '12px',
+                paddingRight: '12px',
+                height: '30px',
+              },
             }}
           >
             {t("dayMonthButton")}
-          </UnstyledButton>
+          </Button>
         </Group>
       </Group>
 
-      <Box h={240}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis
-              dataKey="ktx"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#94a3b8', fontSize: 11 }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#94a3b8', fontSize: 11 }}
-            />
-            <Tooltip
-              cursor={{ fill: '#f8fafc' }}
-              contentStyle={{
-                border: 'none',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                fontSize: '12px',
-              }}
-            />
-            <Bar
-              dataKey="count"
-              name={t("alertsCount")}
-              fill="#2563eb"
-              radius={[4, 4, 0, 0]}
-              maxBarSize={22}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </Box>
+      {data.length === 0 ? (
+        <Box h={240} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Text c="dimmed" size="sm" fw={500} style={{ fontFamily: 'var(--font-readex-pro), sans-serif' }}>
+            Hiện tại chưa có dữ liệu.
+          </Text>
+        </Box>
+      ) : (
+        <Box h={240}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="ktx"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#94a3b8', fontSize: 11 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#94a3b8', fontSize: 11 }}
+              />
+              <Tooltip
+                cursor={{ fill: '#f8fafc' }}
+                contentStyle={{
+                  border: 'none',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                  fontSize: '12px',
+                }}
+              />
+              <Bar
+                dataKey="count"
+                name={t("alertsCount")}
+                fill="#2563eb"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={22}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      )}
     </Card>
   );
 }

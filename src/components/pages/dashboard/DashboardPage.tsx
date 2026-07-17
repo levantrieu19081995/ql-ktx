@@ -55,6 +55,10 @@ export default function DashboardPage() {
     useState<KtxDistribution[]>([]);
   const [intrusionData, setIntrusionData] =
     useState<IntrusionAlert[]>([]);
+  const [intrusionAlertsDate, setIntrusionAlertsDate] = useState<Date | null>(
+    new Date("2026-06-06"),
+  );
+  const [intrusionFilterType, setIntrusionFilterType] = useState<"area" | "time">("area");
   const [topStudentsData, setTopStudentsData] =
     useState<StudentActivity[]>([]);
 
@@ -402,22 +406,24 @@ export default function DashboardPage() {
     });
     setStrangerData(groupedStrangers);
 
-    // Map Intrusion Alerts Chart
-    const combinedZoneCounts: { [key: string]: number } = {};
-    Object.keys(rawZoneBannedCount).forEach((zone) => {
-      combinedZoneCounts[zone] = (combinedZoneCounts[zone] || 0) + rawZoneBannedCount[zone];
-    });
-    Object.keys(zoneDebtCount).forEach((zone) => {
-      combinedZoneCounts[zone] = (combinedZoneCounts[zone] || 0) + zoneDebtCount[zone];
-    });
+    // Map Intrusion Alerts Chart (Only if filter type is area)
+    if (intrusionFilterType === "area") {
+      const combinedZoneCounts: { [key: string]: number } = {};
+      Object.keys(rawZoneBannedCount).forEach((zone) => {
+        combinedZoneCounts[zone] = (combinedZoneCounts[zone] || 0) + rawZoneBannedCount[zone];
+      });
+      Object.keys(zoneDebtCount).forEach((zone) => {
+        combinedZoneCounts[zone] = (combinedZoneCounts[zone] || 0) + zoneDebtCount[zone];
+      });
 
-    const colorsAlerts = ['#e03131', '#f03e3e', '#fa5252', '#ff6b6b', '#ff8787'];
-    const mappedIntrusions = Object.keys(combinedZoneCounts).map((name, idx) => ({
-      ktx: name,
-      count: combinedZoneCounts[name],
-      color: colorsAlerts[idx % colorsAlerts.length],
-    }));
-    setIntrusionData(mappedIntrusions);
+      const colorsAlerts = ['#e03131', '#f03e3e', '#fa5252', '#ff6b6b', '#ff8787'];
+      const mappedIntrusions = Object.keys(combinedZoneCounts).map((name, idx) => ({
+        ktx: name,
+        count: combinedZoneCounts[name],
+        color: colorsAlerts[idx % colorsAlerts.length],
+      }));
+      setIntrusionData(mappedIntrusions);
+    }
 
     // Map Check-in/out History List - dùng trực tiếp từ API lịch sử ra vào
     if (rawHistoryItems.length > 0) {
@@ -665,7 +671,63 @@ export default function DashboardPage() {
     });
     setStats(mappedStats);
 
-  }, [filterType, rawStatsRes, rawStrangerStats, rawTotalBanned, rawBannedItems, rawZoneBannedCount, rawTotalStudents, rawZones, rawStudentCache, rawHistoryItems, rawTopStudents, timeUnit]);
+  }, [filterType, rawStatsRes, rawStrangerStats, rawTotalBanned, rawBannedItems, rawZoneBannedCount, rawTotalStudents, rawZones, rawStudentCache, rawHistoryItems, rawTopStudents, timeUnit, intrusionFilterType]);
+
+  // 3. Dynamic Date filter effect for Intrusion Alerts Chart (Ngày/Tháng)
+  useEffect(() => {
+    let active = true;
+
+    async function loadIntrusionDataByDate() {
+      if (intrusionFilterType !== "time" || !intrusionAlertsDate) {
+        return;
+      }
+      try {
+        const dateStr = dayjs(intrusionAlertsDate).format("MM/DD/YYYY");
+        const statsRes = await fetchThongKeSvBiCamNoPhi({
+          tuNgay: dateStr,
+          denNgay: dateStr,
+        });
+
+        if (!active) return;
+
+        const zoneCounts: { [key: string]: number } = {};
+        if (statsRes && Array.isArray(statsRes.payload)) {
+          statsRes.payload.forEach((studentItem: any) => {
+            // Count if they are banned or have debt
+            const isBanned = studentItem.tongSoLanCamRaVao > 0 || studentItem.daCam || studentItem.tongSoLanBiCam > 0;
+            const isDebt = studentItem.tongSoLanNoPhi > 0 || (studentItem.danhSachNoPhi && studentItem.danhSachNoPhi.length > 0);
+
+            if (isBanned || isDebt) {
+              const code = studentItem.maSinhVien || studentItem.maSo || studentItem.maso;
+              if (code) {
+                const cached = rawStudentCache[code] || {};
+                const rawKhu = cached.tenKhu || studentItem.tenKhu || (studentItem.maKhu ? `Khu ${studentItem.maKhu}` : null) || "Khu A";
+                zoneCounts[rawKhu] = (zoneCounts[rawKhu] || 0) + 1;
+              }
+            }
+          });
+        }
+
+        const colorsAlerts = ['#e03131', '#f03e3e', '#fa5252', '#ff6b6b', '#ff8787'];
+        const mappedIntrusions = Object.keys(zoneCounts).map((name, idx) => ({
+          ktx: name,
+          count: zoneCounts[name],
+          color: colorsAlerts[idx % colorsAlerts.length],
+        }));
+
+        setIntrusionData(mappedIntrusions);
+      } catch (e) {
+        console.error("Failed to load intrusion data by date", e);
+        if (active) setIntrusionData([]);
+      }
+    }
+
+    loadIntrusionDataByDate();
+
+    return () => {
+      active = false;
+    };
+  }, [intrusionFilterType, intrusionAlertsDate, rawStudentCache]);
 
 
 
@@ -911,7 +973,13 @@ export default function DashboardPage() {
             <StrangerDetectionChart data={strangerData} />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <IntrusionAlertsChart data={intrusionData} />
+            <IntrusionAlertsChart
+              data={intrusionData}
+              filterType={intrusionFilterType}
+              setFilterType={setIntrusionFilterType}
+              selectedDate={intrusionAlertsDate}
+              setSelectedDate={setIntrusionAlertsDate}
+            />
           </Grid.Col>
         </Grid>
       </Stack>
