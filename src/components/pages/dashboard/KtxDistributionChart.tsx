@@ -105,16 +105,6 @@ export default function KtxDistributionChart({
         <Text size="xs" c="dimmed">
           {t("totalStudentsText", { count: total })}
         </Text>
-        <Anchor
-          component="button"
-          size="sm"
-          fw={600}
-          c="#1A73E8"
-          onClick={onViewDetails}
-          style={{ textDecoration: 'none' }}
-        >
-          {t("viewDetails")}
-        </Anchor>
       </Group>
     </Card>
   );

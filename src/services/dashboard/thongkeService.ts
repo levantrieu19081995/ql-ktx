@@ -1,3 +1,4 @@
+import API_URLS from "@/constants/apiUrls";
 import { post } from "@/utils/axios";
 
 export interface ThongKeRequest {
@@ -12,7 +13,7 @@ export const fetchThongKeRaVao = async (params: ThongKeRequest) => {
     denNgay: params.denNgay,
     groupBy: params.groupBy || "DAY",
   };
-  const response = await post<any>("/ktx-service/thong-ke/luot-ra-vao", payload);
+  const response = await post<any>(API_URLS.thongKeKtx.luotRaVao, payload);
   return response;
 };
 
@@ -23,6 +24,6 @@ export interface SinhVienCamRequest {
 }
 
 export const fetchSinhVienCamPaginate = async (params: SinhVienCamRequest) => {
-  const response = await post<any>("/ktx-service/ktx-sinh-vien-cam/paginate", params);
+  const response = await post<any>(API_URLS.danhMucKtx.sinhVienBiCam.paginate, params);
   return response;
 }; 

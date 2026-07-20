@@ -1,4 +1,5 @@
 // src/services/dashboard/dashboardService.ts
+import API_URLS from "@/constants/apiUrls";
 import { post, get, put } from "@/utils/axios";
 
 export interface PaginateRequest {
@@ -86,7 +87,7 @@ export interface NguoiLaPagedResponse {
 // Paginate danh sách người lạ
 export const fetchNguoiLaPaginate = async (params: NguoiLaPaginateRequest): Promise<NguoiLaPagedResponse> => {
   try {
-    const res = await post<NguoiLaPagedResponse>("/face-detect-service/face-web-check-time/paginate-nguoi-la", params);
+    const res = await post<NguoiLaPagedResponse>(API_URLS.faceDetect.paginateNguoiLa, params);
     return res;
   } catch (error) {
     console.error("Error fetching stranger pagination:", error);
@@ -97,7 +98,7 @@ export const fetchNguoiLaPaginate = async (params: NguoiLaPaginateRequest): Prom
 // Lấy danh sách sinh viên ký túc xá
 export const fetchSinhVienPaginate = async (params: PaginateRequest): Promise<PaginatedResponse<any>> => {
   try {
-    const res = await post<PaginatedResponse<any>>("/ktx-service/ktx-dm-sinh-vien/paginate", params);
+    const res = await post<PaginatedResponse<any>>(API_URLS.danhMucKtx.sinhVien.paginate, params);
     return res;
   } catch (error) {
     console.error("Error fetching sinh vien pagination:", error);
@@ -108,7 +109,7 @@ export const fetchSinhVienPaginate = async (params: PaginateRequest): Promise<Pa
 // Lấy danh sách phòng ký túc xá
 export const fetchPhongPaginate = async (params: PaginateRequest): Promise<PaginatedResponse<any>> => {
   try {
-    const res = await post<PaginatedResponse<any>>("/ktx-service/ktx-dm-phong/paginate", params);
+    const res = await post<PaginatedResponse<any>>(API_URLS.danhMucKtx.phong.paginate, params);
     return res;
   } catch (error) {
     console.error("Error fetching phong pagination:", error);
@@ -119,7 +120,7 @@ export const fetchPhongPaginate = async (params: PaginateRequest): Promise<Pagin
 // 4. Lấy danh sách khu trong ký túc xá
 export const fetchKhuPaginate = async (params: PaginateRequest): Promise<PaginatedResponse<any>> => {
   try {
-    const res = await post<PaginatedResponse<any>>("/ktx-service/ktx-dm-khu/paginate", params);
+    const res = await post<PaginatedResponse<any>>(API_URLS.danhMucKtx.khu.paginate, params);
     return res;
   } catch (error) {
     console.error("Error fetching khu pagination:", error);
@@ -130,7 +131,7 @@ export const fetchKhuPaginate = async (params: PaginateRequest): Promise<Paginat
 // 5. Thống kê lượt ra vào
 export const fetchThongKeLuotRaVao = async (params: LuotRaVaoRequest): Promise<any> => {
   try {
-    const res = await post<any>("/ktx-service/thong-ke/luot-ra-vao", params);
+    const res = await post<any>(API_URLS.thongKeKtx.luotRaVao, params);
     return res;
   } catch (error) {
     console.error("Error fetching thong ke luot ra vao:", error);
@@ -141,7 +142,7 @@ export const fetchThongKeLuotRaVao = async (params: LuotRaVaoRequest): Promise<a
 // 6. Lấy danh sách sự kiện ra vào
 export const fetchSuKienRaVaoPaginate = async (page: number, pageSize: number): Promise<any> => {
   try {
-    const res = await get<any>("/ktx-su-kien-ra-vao/paginate", { page, pageSize });
+    const res = await get<any>(API_URLS.thongKeKtx.suKienRaVaoPaginate, { page, pageSize });
     return res;
   } catch (error) {
     console.error("Error fetching su kien ra vao paginate:", error);
@@ -170,7 +171,7 @@ export const fetchLichSuRaVaoTheoNgay = async (params: {
       maNhom: params.maNhom ?? "-1",
       keyword: params.keyword ?? "",
     };
-    const res = await post<any>("/face-detect-service/face-web-check-time/paginate", body);
+    const res = await post<any>(API_URLS.faceDetect.paginateLichSuRaVao, body);
     return res;
   } catch (error) {
     console.error(`Error fetching lich su ra vao for ngay=${params.ngay}:`, error);
@@ -181,7 +182,7 @@ export const fetchLichSuRaVaoTheoNgay = async (params: {
 // 7. Lấy danh sách sinh viên bị cấm
 export const fetchSinhVienCamPaginate = async (params: PaginateRequest): Promise<any> => {
   try {
-    const res = await post<any>("/ktx-service/ktx-sinh-vien-cam/paginate", params);
+    const res = await post<any>(API_URLS.danhMucKtx.sinhVienBiCam.paginate, params);
     return res;
   } catch (error) {
     console.error("Error fetching banned student pagination:", error);
@@ -195,11 +196,11 @@ export const createOrUpdateSinhVienCam = async (data: any, isUpdate = false): Pr
     if (isUpdate) {
       // UPDATE: dùng PUT /ktx-sinh-vien-cam/{camId}
       const camId = data.camId;
-      const res = await put<any>(`/ktx-service/ktx-sinh-vien-cam/${camId}`, data);
+      const res = await put<any>(`${API_URLS.danhMucKtx.sinhVienBiCam.update}/${camId}`, data);
       return res;
     } else {
       // CREATE: dùng POST /ktx-sinh-vien-cam/create
-      const res = await post<any>("/ktx-service/ktx-sinh-vien-cam/create", data);
+      const res = await post<any>(API_URLS.danhMucKtx.sinhVienBiCam.create, data);
       return res;
     }
   } catch (error) {
@@ -218,7 +219,7 @@ export const fetchThongKeSvBiCamNoPhi = async (params: {
   " groupBy"?: string;
 }): Promise<any> => {
   try {
-    const res = await post<any>("/ktx-service/thong-ke/sv-bi-cam-no-phi", params);
+    const res = await post<any>(API_URLS.thongKeKtx.svBiCamNoPhi, params);
     return res;
   } catch (error) {
     console.error("Error fetching thong ke sv bi cam / no phi:", error);
@@ -229,7 +230,7 @@ export const fetchThongKeSvBiCamNoPhi = async (params: {
 // 10. Thống kê theo mã số (Sinh viên hoặc cán bộ)
 export const fetchThongKeTheoMaSo = async (params: { tuNgay: string; denNgay: string; maSo: string }): Promise<any> => {
   try {
-    const res = await post<any>("/ktx-service/thong-ke/theo-ma-so", params);
+    const res = await post<any>(API_URLS.thongKeKtx.theoMaSo, params);
     return res;
   } catch (error) {
     console.error("Error fetching thong ke theo ma so:", error);
@@ -240,7 +241,7 @@ export const fetchThongKeTheoMaSo = async (params: { tuNgay: string; denNgay: st
 // 11. Thống kê lượt ra vào người lạ (POST)
 export const fetchThongKeNguoiLa = async (params: { tuNgay: string; denNgay: string; maKhu: string }): Promise<any> => {
   try {
-    const res = await post<any>("/ktx-service/thong-ke/nguoi-la", params);
+    const res = await post<any>(API_URLS.thongKeKtx.nguoiLa, params);
     return res;
   } catch (error) {
     console.error("Error fetching thong ke nguoi la:", error);
@@ -250,7 +251,7 @@ export const fetchThongKeNguoiLa = async (params: { tuNgay: string; denNgay: str
 
 // 12. Thống kê chi tiết người lạ (GET)
 export const fetchThongKeChiTietNguoiLa = async (params: any): Promise<any> => {
-  return get<any>("/ktx-service/thong-ke/nguoi-la/chi-tiet", params);
+  return get<any>(API_URLS.thongKeKtx.nguoiLa, params);
 };
 
 // 13. Dashboard summary (POST) - sử dụng endpoint thong-ke/luot-ra-vao để lấy tổng quan
@@ -261,7 +262,7 @@ export const fetchDashboardSummary = async (params: { tuNgay: string; denNgay: s
       denNgay: params.denNgay,
       groupBy: "DAY",
     };
-    const res = await post<any>("/ktx-service/thong-ke/luot-ra-vao", payload);
+    const res = await post<any>(API_URLS.thongKeKtx.luotRaVao, payload);
     return res;
   } catch (error) {
     console.error("Error fetching dashboard summary:", error);

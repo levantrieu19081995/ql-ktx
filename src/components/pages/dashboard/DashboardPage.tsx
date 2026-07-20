@@ -1,19 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import {
-  Stack,
-  Title,
-  Grid,
-  Loader,
-  Center,
-  Group,
-  Select,
-  Text,
-  Box,
-} from "@mantine/core";
+import { Stack, Title, Grid, Loader, Center, Group, Select } from "@mantine/core";
 import { useTranslations } from "next-intl";
-import { IconHome2 } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import QuickStatsCards from "./QuickStatsCards";
 import RecentHistoryTable from "./RecentHistoryTable";
@@ -50,21 +39,29 @@ import {
   StudentActivity,
   INITIAL_QUICK_STATS,
 } from "./dashboardTypes";
-import PageSectionHeader from "@/components/common/PageSectionHeader";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
 
   const [stats, setStats] = useState<QuickStat[]>(INITIAL_QUICK_STATS);
   const [timeData, setTimeData] = useState<TimeChartData[]>([]);
-  const [strangerData, setStrangerData] = useState<StrangerDetection[]>([]);
-  const [ktxInOutData, setKtxInOutData] = useState<KtxInOutData[]>([]);
-  const [historyData, setHistoryData] = useState<InOutHistory[]>([]);
-  const [ktxDistributionData, setKtxDistributionData] = useState<
-    KtxDistribution[]
-  >([]);
-  const [intrusionData, setIntrusionData] = useState<IntrusionAlert[]>([]);
-  const [topStudentsData, setTopStudentsData] = useState<StudentActivity[]>([]);
+  const [strangerData, setStrangerData] =
+    useState<StrangerDetection[]>([]);
+  const [ktxInOutData, setKtxInOutData] =
+    useState<KtxInOutData[]>([]);
+  const [historyData, setHistoryData] =
+    useState<InOutHistory[]>([]);
+  const [ktxDistributionData, setKtxDistributionData] =
+    useState<KtxDistribution[]>([]);
+  const [intrusionData, setIntrusionData] =
+    useState<IntrusionAlert[]>([]);
+  const [intrusionAlertsDate, setIntrusionAlertsDate] = useState<Date | null>(
+    new Date("2026-06-06"),
+  );
+  const [intrusionFilterType, setIntrusionFilterType] = useState<"area" | "time">("area");
+  const [topStudentsData, setTopStudentsData] =
+    useState<StudentActivity[]>([]);
+
 
   // Dynamic Date and Time Unit states
   const [selectedDate, setSelectedDate] = useState<Date | null>(
@@ -78,16 +75,13 @@ export default function DashboardPage() {
   const [rawStrangerStats, setRawStrangerStats] = useState<any[]>([]);
   const [rawTotalBanned, setRawTotalBanned] = useState<number>(0);
   const [rawBannedItems, setRawBannedItems] = useState<any[]>([]);
-  const [rawZoneBannedCount, setRawZoneBannedCount] = useState<{
-    [key: string]: number;
-  }>({});
+  const [rawZoneBannedCount, setRawZoneBannedCount] = useState<{ [key: string]: number }>({});
   const [rawTotalStudents, setRawTotalStudents] = useState<number>(0);
   const [rawZones, setRawZones] = useState<any[]>([]);
-  const [rawStudentCache, setRawStudentCache] = useState<{
-    [key: string]: { tenKhu: string; tenPhong: string };
-  }>({});
+  const [rawStudentCache, setRawStudentCache] = useState<{ [key: string]: { tenKhu: string; tenPhong: string } }>({});
   const [rawHistoryItems, setRawHistoryItems] = useState<any[]>([]);
   const [rawTopStudents, setRawTopStudents] = useState<any[]>([]);
+
 
   // 1. Initial fetch of all raw data once on mount
   useEffect(() => {
@@ -97,9 +91,7 @@ export default function DashboardPage() {
       setLoading(true);
       try {
         // Preload ALL students to build a complete local cache mapping maSinhVien -> { tenKhu, tenPhong }
-        const studentCache: {
-          [key: string]: { tenKhu: string; tenPhong: string };
-        } = {};
+        const studentCache: { [key: string]: { tenKhu: string; tenPhong: string } } = {};
         try {
           const allSvRes = await fetchSinhVienPaginate({
             page: "1",
@@ -110,8 +102,7 @@ export default function DashboardPage() {
           const svList = allSvRes?.payload?.items || [];
           svList.forEach((sv: any) => {
             if (sv.maSinhVien) {
-              const tenKhu =
-                sv.tenKhu || (sv.maKhu ? `Khu ${sv.maKhu}` : "Khu A");
+              const tenKhu = sv.tenKhu || (sv.maKhu ? `Khu ${sv.maKhu}` : "Khu A");
               const tenPhong = sv.maPhong || sv.tenPhong || "Chưa rõ";
               studentCache[sv.maSinhVien] = { tenKhu, tenPhong };
             }
@@ -130,8 +121,7 @@ export default function DashboardPage() {
             maPhong: "-1",
           });
           if (svRes && svRes.payload) {
-            totalStudents =
-              svRes.payload.totalElements ?? svRes.payload.items?.length ?? 0;
+            totalStudents = svRes.payload.totalElements ?? svRes.payload.items?.length ?? 0;
           }
         } catch (e) {
           console.error("Failed to fetch Sinh Vien pagination data", e);
@@ -191,9 +181,7 @@ export default function DashboardPage() {
             maKhu: "-1",
           });
           if (strangerRes && strangerRes.payload) {
-            strangerStats = Array.isArray(strangerRes.payload)
-              ? strangerRes.payload
-              : [];
+            strangerStats = Array.isArray(strangerRes.payload) ? strangerRes.payload : [];
           }
         } catch (e) {
           console.error("Failed to fetch Stranger statistics data", e);
@@ -217,24 +205,13 @@ export default function DashboardPage() {
         try {
           // Tạo danh sách ngày từ 01/06/2026 đến 06/06/2026 (dữ liệu có trong mock server)
           const danhSachNgay = [
-            "06/01/2026",
-            "06/02/2026",
-            "06/03/2026",
-            "06/04/2026",
-            "06/05/2026",
-            "06/06/2026",
+            "06/01/2026", "06/02/2026", "06/03/2026",
+            "06/04/2026", "06/05/2026", "06/06/2026",
           ];
           const allResults = await Promise.all(
             danhSachNgay.map((ngay) =>
-              fetchLichSuRaVaoTheoNgay({
-                page: 1,
-                pageSize: 100,
-                ngay,
-                maKhu: "-1",
-                maNhom: "-1",
-                keyword: "",
-              }),
-            ),
+              fetchLichSuRaVaoTheoNgay({ page: 1, pageSize: 100, ngay, maKhu: "-1", maNhom: "-1", keyword: "" })
+            )
           );
           allResults.forEach((res) => {
             if (!res) return;
@@ -271,20 +248,12 @@ export default function DashboardPage() {
                     denNgay: "06/06/2026",
                     maSo: code,
                   });
-                  console.log(
-                    "[RUN_LOG] ===> fetchThongKeTheoMaSo  res: ",
-                    res,
-                  );
-
                   return res?.payload?.[0] || null;
                 } catch (err) {
-                  console.error(
-                    `Error fetching thong-ke/theo-ma-so for ${code}:`,
-                    err,
-                  );
+                  console.error(`Error fetching thong-ke/theo-ma-so for ${code}:`, err);
                   return null;
                 }
-              }),
+              })
             );
             topStudentsDataFetched = details.filter(Boolean);
           } catch (e) {
@@ -366,10 +335,7 @@ export default function DashboardPage() {
       }
 
       if (filterType === "month") {
-        return (
-          d.getMonth() === maxDate.getMonth() &&
-          d.getFullYear() === maxDate.getFullYear()
-        );
+        return d.getMonth() === maxDate.getMonth() && d.getFullYear() === maxDate.getFullYear();
       }
 
       return true;
@@ -383,20 +349,13 @@ export default function DashboardPage() {
       const uniqueDebtSv = new Set<string>();
 
       rawStatsRes.payload.forEach((studentItem: any) => {
-        const isDebt =
-          studentItem.tongSoLanNoPhi > 0 ||
-          (studentItem.danhSachNoPhi && studentItem.danhSachNoPhi.length > 0);
+        const isDebt = studentItem.tongSoLanNoPhi > 0 || (studentItem.danhSachNoPhi && studentItem.danhSachNoPhi.length > 0);
         if (isDebt) {
-          const code =
-            studentItem.maSinhVien || studentItem.maSo || studentItem.maso;
+          const code = studentItem.maSinhVien || studentItem.maSo || studentItem.maso;
           if (code) {
             uniqueDebtSv.add(code);
             const cached = rawStudentCache[code] || {};
-            const rawKhu =
-              cached.tenKhu ||
-              studentItem.tenKhu ||
-              (studentItem.maKhu ? `Khu ${studentItem.maKhu}` : null) ||
-              "Khu A";
+            const rawKhu = cached.tenKhu || studentItem.tenKhu || (studentItem.maKhu ? `Khu ${studentItem.maKhu}` : null) || "Khu A";
             zoneDebtCount[rawKhu] = (zoneDebtCount[rawKhu] || 0) + 1;
           }
         }
@@ -408,11 +367,6 @@ export default function DashboardPage() {
     // Map Top Students Chart using rawTopStudents (from thong-ke/theo-ma-so API)
     const mappedTopStudents = (rawTopStudents || []).map((item: any) => ({
       name: item.hoTen || item.maSo || "Ẩn danh",
-      studentId: item.maSo || item.maSinhVien || item.maso || "",
-      displayLabel:
-        item.maSo || item.maSinhVien || item.maso || ""
-          ? `${item.hoTen || item.maSo || "áº¨n danh"} - ${item.maSo || item.maSinhVien || item.maso || ""}`
-          : item.hoTen || item.maSo || "áº¨n danh",
       count: item.tongLuot || 0,
     }));
     mappedTopStudents.sort((a, b) => b.count - a.count);
@@ -429,10 +383,7 @@ export default function DashboardPage() {
       }
       return true;
     });
-    const strangerVal = filteredStrangers.reduce(
-      (acc: number, curr: any) => acc + (curr.soLuong || 0),
-      0,
-    );
+    const strangerVal = filteredStrangers.reduce((acc: number, curr: any) => acc + (curr.soLuong || 0), 0);
 
     // Map Stranger Detection Line Chart using pre-grouped stats
     const groupedStrangers = filteredStrangers.map((item: any) => {
@@ -455,69 +406,42 @@ export default function DashboardPage() {
     });
     setStrangerData(groupedStrangers);
 
-    // Map Intrusion Alerts Chart
-    const combinedZoneCounts: { [key: string]: number } = {};
-    Object.keys(rawZoneBannedCount).forEach((zone) => {
-      combinedZoneCounts[zone] =
-        (combinedZoneCounts[zone] || 0) + rawZoneBannedCount[zone];
-    });
-    Object.keys(zoneDebtCount).forEach((zone) => {
-      combinedZoneCounts[zone] =
-        (combinedZoneCounts[zone] || 0) + zoneDebtCount[zone];
-    });
+    // Map Intrusion Alerts Chart (Only if filter type is area)
+    if (intrusionFilterType === "area") {
+      const combinedZoneCounts: { [key: string]: number } = {};
+      Object.keys(rawZoneBannedCount).forEach((zone) => {
+        combinedZoneCounts[zone] = (combinedZoneCounts[zone] || 0) + rawZoneBannedCount[zone];
+      });
+      Object.keys(zoneDebtCount).forEach((zone) => {
+        combinedZoneCounts[zone] = (combinedZoneCounts[zone] || 0) + zoneDebtCount[zone];
+      });
 
-    const colorsAlerts = [
-      "#e03131",
-      "#f03e3e",
-      "#fa5252",
-      "#ff6b6b",
-      "#ff8787",
-    ];
-    const mappedIntrusions = Object.keys(combinedZoneCounts).map(
-      (name, idx) => ({
+      const colorsAlerts = ['#e03131', '#f03e3e', '#fa5252', '#ff6b6b', '#ff8787'];
+      const mappedIntrusions = Object.keys(combinedZoneCounts).map((name, idx) => ({
         ktx: name,
         count: combinedZoneCounts[name],
         color: colorsAlerts[idx % colorsAlerts.length],
-      }),
-    );
-    setIntrusionData(mappedIntrusions);
+      }));
+      setIntrusionData(mappedIntrusions);
+    }
 
     // Map Check-in/out History List - dùng trực tiếp từ API lịch sử ra vào
     if (rawHistoryItems.length > 0) {
       const historyList = rawHistoryItems.map((item: any) => {
-        const studentIdVal =
-          item.maso || item.maSinhVien || item.studentId || "N/A";
+        const studentIdVal = item.maso || item.maSinhVien || item.studentId || "N/A";
         const cached = rawStudentCache[studentIdVal];
         const nhom = String(item.tennhom || "").toLowerCase();
-        const isStudent =
-          nhom.includes("sinh viên") ||
-          nhom.includes("sinhvien") ||
-          (!nhom.includes("cán bộ") &&
-            !nhom.includes("can bo") &&
-            !nhom.includes("người lạ") &&
-            !nhom.includes("nguoi la") &&
-            studentIdVal.startsWith("B"));
+        const isStudent = nhom.includes("sinh viên") || nhom.includes("sinhvien") || (!nhom.includes("cán bộ") && !nhom.includes("can bo") && !nhom.includes("người lạ") && !nhom.includes("nguoi la") && studentIdVal.startsWith("B"));
 
         let resolvedKhu = "KTX";
         let resolvedPhong = "Chưa rõ";
 
         if (isStudent) {
-          resolvedKhu =
-            cached?.tenKhu ||
-            item.tenKhu ||
-            item.khu ||
-            (item.maKhu ? `Khu ${item.maKhu}` : "KTX");
-          resolvedPhong =
-            cached?.tenPhong ||
-            item.tenPhong ||
-            item.phong ||
-            (item.maPhong ? `Phòng ${item.maPhong}` : "Chưa rõ");
+          resolvedKhu = cached?.tenKhu || item.tenKhu || item.khu || (item.maKhu ? `Khu ${item.maKhu}` : "KTX");
+          resolvedPhong = cached?.tenPhong || item.tenPhong || item.phong || (item.maPhong ? `Phòng ${item.maPhong}` : "Chưa rõ");
         } else {
           // Cán bộ or Người lạ don't have KTX room
-          resolvedKhu =
-            item.tenKhu ||
-            item.khu ||
-            (item.maKhu ? `Khu ${item.maKhu}` : "KTX");
+          resolvedKhu = item.tenKhu || item.khu || (item.maKhu ? `Khu ${item.maKhu}` : "KTX");
           resolvedPhong = "—";
         }
 
@@ -527,20 +451,14 @@ export default function DashboardPage() {
           hoTen: item.hoten || item.hoTen || item.fullName || "Ẩn danh",
           avatarUrl: item.pathimage || item.imageUrl || item.avatar || null,
           cameraName: item.cameraName || item.loai || item.action || "",
-          cameraIdId: item.cameraIdId, // Truyền qua để mapSuKienRaVao dùng số phân loại chính xác
+          cameraIdId: item.cameraIdId,          // Truyền qua để mapSuKienRaVao dùng số phân loại chính xác
           tenKhu: resolvedKhu,
           maPhong: resolvedPhong,
         };
       });
       historyList.sort((a: any, b: any) => {
-        const ta =
-          typeof a.timecheck === "number"
-            ? a.timecheck
-            : new Date(a.timecheck).getTime() / 1000;
-        const tb =
-          typeof b.timecheck === "number"
-            ? b.timecheck
-            : new Date(b.timecheck).getTime() / 1000;
+        const ta = typeof a.timecheck === "number" ? a.timecheck : new Date(a.timecheck).getTime() / 1000;
+        const tb = typeof b.timecheck === "number" ? b.timecheck : new Date(b.timecheck).getTime() / 1000;
         return tb - ta;
       });
       setHistoryData(mapSuKienRaVao(historyList));
@@ -548,20 +466,7 @@ export default function DashboardPage() {
 
     // Map Time In/Out Chart & KTX In/Out Chart
     const hourlyGroups: { [key: string]: { vao: number; ra: number } } = {};
-    const hourBuckets = [
-      "0h",
-      "2h",
-      "4h",
-      "6h",
-      "8h",
-      "10h",
-      "12h",
-      "14h",
-      "16h",
-      "18h",
-      "20h",
-      "22h",
-    ];
+    const hourBuckets = ["0h", "2h", "4h", "6h", "8h", "10h", "12h", "14h", "16h", "18h", "20h", "22h"];
     hourBuckets.forEach((h) => {
       hourlyGroups[h] = { vao: 0, ra: 0 };
     });
@@ -571,27 +476,16 @@ export default function DashboardPage() {
     const ktxGroups: { [key: string]: { vao: number; ra: number } } = {};
 
     rawHistoryItems.forEach((scan: any) => {
-      const rawTime = scan.timecheck
-        ? scan.timecheck * 1000
-        : scan.time || scan.checkTime || scan.thoiGian;
+      const rawTime = scan.timecheck ? scan.timecheck * 1000 : scan.time || scan.checkTime || scan.thoiGian;
       if (!rawTime) return;
       const d = new Date(rawTime);
       if (isNaN(d.getTime())) return;
       if (!isMatchFilter(d)) return;
 
-      const isVao =
-        String(scan.cameraName || "")
-          .toLowerCase()
-          .includes("vào") ||
-        scan.cameraIdId === 1 ||
-        scan.cameraIdId === "1";
+      const isVao = String(scan.cameraName || "").toLowerCase().includes("vào") || scan.cameraIdId === 1 || scan.cameraIdId === "1";
       const code = scan.maso || scan.maSinhVien || scan.studentId;
       const cached = rawStudentCache[code] || {};
-      const rawKhu =
-        cached.tenKhu ||
-        scan.tenKhu ||
-        (scan.maKhu ? `Khu ${scan.maKhu}` : null) ||
-        "Khu A";
+      const rawKhu = cached.tenKhu || scan.tenKhu || (scan.maKhu ? `Khu ${scan.maKhu}` : null) || "Khu A";
 
       if (!ktxGroups[rawKhu]) {
         ktxGroups[rawKhu] = { vao: 0, ra: 0 };
@@ -676,14 +570,7 @@ export default function DashboardPage() {
     setKtxInOutData(mappedKtxInOut);
 
     // KTX Student Distribution Chart (Donut)
-    const colorsDist = [
-      "#4CAF50",
-      "#1E88E5",
-      "#FF9800",
-      "#F44336",
-      "#9C27B0",
-      "#00BCD4",
-    ];
+    const colorsDist = ['#4CAF50', '#1E88E5', '#FF9800', '#F44336', '#9C27B0', '#00BCD4'];
     const distributionPromise = async () => {
       try {
         const zoneCounts = await Promise.all(
@@ -707,7 +594,7 @@ export default function DashboardPage() {
                 value: 0,
               };
             }
-          }),
+          })
         );
         const sum = zoneCounts.reduce((acc, curr) => acc + curr.value, 0);
         const mappedDistribution = zoneCounts.map((item, idx) => {
@@ -733,84 +620,116 @@ export default function DashboardPage() {
     const bannedVal = rawTotalBanned;
     const strangerValMapped = strangerVal;
 
-    const mappedStats: QuickStat[] = INITIAL_QUICK_STATS.map(
-      (item: QuickStat) => {
-        if (item.id === "total_sv") {
-          return {
-            ...item,
-            value: totalStudentsVal.toLocaleString("vi-VN"),
-            caption: "Tổng số sinh viên",
-          };
-        }
-        if (item.id === "present") {
-          const percent =
-            totalStudentsVal > 0
-              ? ((presentVal / totalStudentsVal) * 100).toFixed(1)
-              : "0.0";
-          return {
-            ...item,
-            value: presentVal.toLocaleString("vi-VN"),
-            caption: `${percent.replace(".", ",")}% tổng số SV`,
-          };
-        }
-        if (item.id === "out") {
-          const percent =
-            totalStudentsVal > 0
-              ? ((outVal / totalStudentsVal) * 100).toFixed(1)
-              : "0.0";
-          return {
-            ...item,
-            value: outVal.toLocaleString("vi-VN"),
-            caption: `${percent.replace(".", ",")}% tổng số SV`,
-          };
-        }
-        if (item.id === "debt") {
-          const percent =
-            totalStudentsVal > 0
-              ? ((debtVal / totalStudentsVal) * 100).toFixed(1)
-              : "0.0";
-          return {
-            ...item,
-            value: debtVal.toLocaleString("vi-VN"),
-            caption: `${percent.replace(".", ",")}% tổng số SV`,
-          };
-        }
-        if (item.id === "banned") {
-          const percent =
-            totalStudentsVal > 0
-              ? ((bannedVal / totalStudentsVal) * 100).toFixed(1)
-              : "0.0";
-          return {
-            ...item,
-            value: bannedVal.toLocaleString("vi-VN"),
-            caption: `${percent.replace(".", ",")}% tổng số SV`,
-          };
-        }
-        if (item.id === "stranger") {
-          return {
-            ...item,
-            value: strangerValMapped.toLocaleString("vi-VN"),
-            caption: t("strangerChartSubtitle"),
-          };
-        }
-        return item;
-      },
-    );
+    const mappedStats: QuickStat[] = INITIAL_QUICK_STATS.map((item: QuickStat) => {
+      if (item.id === "total_sv") {
+        return {
+          ...item,
+          value: totalStudentsVal.toLocaleString("vi-VN"),
+          caption: "Tổng số sinh viên",
+        };
+      }
+      if (item.id === "present") {
+        const percent = totalStudentsVal > 0 ? ((presentVal / totalStudentsVal) * 100).toFixed(1) : "0.0";
+        return {
+          ...item,
+          value: presentVal.toLocaleString("vi-VN"),
+          caption: `${percent.replace(".", ",")}% tổng số SV`,
+        };
+      }
+      if (item.id === "out") {
+        const percent = totalStudentsVal > 0 ? ((outVal / totalStudentsVal) * 100).toFixed(1) : "0.0";
+        return {
+          ...item,
+          value: outVal.toLocaleString("vi-VN"),
+          caption: `${percent.replace(".", ",")}% tổng số SV`,
+        };
+      }
+      if (item.id === "debt") {
+        const percent = totalStudentsVal > 0 ? ((debtVal / totalStudentsVal) * 100).toFixed(1) : "0.0";
+        return {
+          ...item,
+          value: debtVal.toLocaleString("vi-VN"),
+          caption: `${percent.replace(".", ",")}% tổng số SV`,
+        };
+      }
+      if (item.id === "banned") {
+        const percent = totalStudentsVal > 0 ? ((bannedVal / totalStudentsVal) * 100).toFixed(1) : "0.0";
+        return {
+          ...item,
+          value: bannedVal.toLocaleString("vi-VN"),
+          caption: `${percent.replace(".", ",")}% tổng số SV`,
+        };
+      }
+      if (item.id === "stranger") {
+        return {
+          ...item,
+          value: strangerValMapped.toLocaleString("vi-VN"),
+          caption: t("strangerChartSubtitle"),
+        };
+      }
+      return item;
+    });
     setStats(mappedStats);
-  }, [
-    filterType,
-    rawStatsRes,
-    rawStrangerStats,
-    rawTotalBanned,
-    rawBannedItems,
-    rawZoneBannedCount,
-    rawTotalStudents,
-    rawZones,
-    rawStudentCache,
-    rawHistoryItems,
-    rawTopStudents,
-    timeUnit,
-  ]);
+
+  }, [filterType, rawStatsRes, rawStrangerStats, rawTotalBanned, rawBannedItems, rawZoneBannedCount, rawTotalStudents, rawZones, rawStudentCache, rawHistoryItems, rawTopStudents, timeUnit, intrusionFilterType]);
+
+  // 3. Dynamic Date filter effect for Intrusion Alerts Chart (Ngày/Tháng)
+  useEffect(() => {
+    let active = true;
+
+    async function loadIntrusionDataByDate() {
+      if (intrusionFilterType !== "time" || !intrusionAlertsDate) {
+        return;
+      }
+      try {
+        const dateStr = dayjs(intrusionAlertsDate).format("MM/DD/YYYY");
+        const statsRes = await fetchThongKeSvBiCamNoPhi({
+          tuNgay: dateStr,
+          denNgay: dateStr,
+        });
+
+        if (!active) return;
+
+        const zoneCounts: { [key: string]: number } = {};
+        if (statsRes && Array.isArray(statsRes.payload)) {
+          statsRes.payload.forEach((studentItem: any) => {
+            // Count if they are banned or have debt
+            const isBanned = studentItem.tongSoLanCamRaVao > 0 || studentItem.daCam || studentItem.tongSoLanBiCam > 0;
+            const isDebt = studentItem.tongSoLanNoPhi > 0 || (studentItem.danhSachNoPhi && studentItem.danhSachNoPhi.length > 0);
+
+            if (isBanned || isDebt) {
+              const code = studentItem.maSinhVien || studentItem.maSo || studentItem.maso;
+              if (code) {
+                const cached = rawStudentCache[code] || {};
+                const rawKhu = cached.tenKhu || studentItem.tenKhu || (studentItem.maKhu ? `Khu ${studentItem.maKhu}` : null) || "Khu A";
+                zoneCounts[rawKhu] = (zoneCounts[rawKhu] || 0) + 1;
+              }
+            }
+          });
+        }
+
+        const colorsAlerts = ['#e03131', '#f03e3e', '#fa5252', '#ff6b6b', '#ff8787'];
+        const mappedIntrusions = Object.keys(zoneCounts).map((name, idx) => ({
+          ktx: name,
+          count: zoneCounts[name],
+          color: colorsAlerts[idx % colorsAlerts.length],
+        }));
+
+        setIntrusionData(mappedIntrusions);
+      } catch (e) {
+        console.error("Failed to load intrusion data by date", e);
+        if (active) setIntrusionData([]);
+      }
+    }
+
+    loadIntrusionDataByDate();
+
+    return () => {
+      active = false;
+    };
+  }, [intrusionFilterType, intrusionAlertsDate, rawStudentCache]);
+
+
 
   // Helper parser for Time In/Out
   const mapTimeInOut = (apiData: any): TimeChartData[] => {
@@ -906,15 +825,8 @@ export default function DashboardPage() {
 
       // Parse direction: Vào / Ra
       const rawType = String(
-        item.type ||
-          item.action ||
-          item.checkType ||
-          item.trangThai ||
-          item.cameraName ||
-          "",
-      )
-        .toLowerCase()
-        .trim();
+        item.type || item.action || item.checkType || item.trangThai || item.cameraName || "",
+      ).toLowerCase().trim();
       const isVao =
         rawType.includes("vào") ||
         rawType === "in" ||
@@ -939,12 +851,7 @@ export default function DashboardPage() {
           timeStr = "Vừa xong";
         }
       } else {
-        const rawTimeStr =
-          item.time ||
-          item.checkTime ||
-          item.thoiGian ||
-          item.createdDate ||
-          "";
+        const rawTimeStr = item.time || item.checkTime || item.thoiGian || item.createdDate || "";
         if (rawTimeStr) {
           try {
             const d = new Date(rawTimeStr);
@@ -974,12 +881,7 @@ export default function DashboardPage() {
         student.khu ||
         "KTX";
       const roomVal =
-        item.room ||
-        item.phong ||
-        item.tenPhong ||
-        item.maPhong ||
-        student.phong ||
-        "Chưa rõ";
+        item.room || item.phong || item.tenPhong || item.maPhong || student.phong || "Chưa rõ";
 
       // Parse avatar or generate custom DiceBear avatar based on name
       const avatarVal =
@@ -1008,24 +910,23 @@ export default function DashboardPage() {
       p="sm"
       style={{ backgroundColor: "#fafbfd", minHeight: "100vh" }}
     >
-      <PageSectionHeader
-        title={t("title")}
-        description="Theo dõi nhanh tình hình ra vào, cảnh báo và phân bố sinh viên trong ký túc xá."
-        icon={<IconHome2 size={20} />}
-        rightSection={
-          <Select
-            value={filterType}
-            onChange={(val) => setFilterType(val || "all")}
-            data={[
-              { value: "all", label: "Tất cả" },
-              { value: "week", label: "Theo tuần" },
-              { value: "month", label: "Theo tháng" },
-            ]}
-            style={{ width: 160 }}
-            radius="md"
-          />
-        }
-      />
+      {/* Title with Select Filter on the right */}
+      <Group justify="space-between" align="center">
+        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
+          {t("title")}
+        </Title>
+        <Select
+          value={filterType}
+          onChange={(val) => setFilterType(val || "all")}
+          data={[
+            { value: "all", label: "Tất cả" },
+            { value: "week", label: "Theo tuần" },
+            { value: "month", label: "Theo tháng" }
+          ]}
+          style={{ width: 160 }}
+          radius="md"
+        />
+      </Group>
 
       {/* Quick Stats Grid */}
       <QuickStatsCards stats={stats} />
@@ -1039,13 +940,7 @@ export default function DashboardPage() {
           order={3}
           fw={700}
           c="#1f5ca9"
-          style={{
-            letterSpacing: "0.5px",
-            textTransform: "uppercase",
-            fontFamily: "var(--font-readex-pro), sans-serif",
-            fontSize: "12px",
-            marginTop: "10px",
-          }}
+          style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif", fontSize: "12px", marginTop: "10px" }}
         >
           {t("chartsTitle")}
         </Title>
@@ -1078,7 +973,13 @@ export default function DashboardPage() {
             <StrangerDetectionChart data={strangerData} />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 6 }}>
-            <IntrusionAlertsChart data={intrusionData} />
+            <IntrusionAlertsChart
+              data={intrusionData}
+              filterType={intrusionFilterType}
+              setFilterType={setIntrusionFilterType}
+              selectedDate={intrusionAlertsDate}
+              setSelectedDate={setIntrusionAlertsDate}
+            />
           </Grid.Col>
         </Grid>
       </Stack>

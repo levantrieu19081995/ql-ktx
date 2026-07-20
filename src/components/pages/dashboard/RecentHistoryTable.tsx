@@ -35,16 +35,6 @@ export default function RecentHistoryTable({
         <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
           {t("historyTitle")}
         </Text>
-        <Anchor
-          component="button"
-          size="sm"
-          fw={600}
-          c="#1A73E8"
-          onClick={onViewAll}
-          style={{ textDecoration: 'none' }}
-        >
-          {t("viewAll")}
-        </Anchor>
       </Group>
 
       <ScrollArea>
