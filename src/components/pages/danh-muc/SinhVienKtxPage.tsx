@@ -44,6 +44,7 @@ type SelectOption = {
   value: string;
   label: string;
   khuId?: number;
+  uiisKhuId?: number;
 };
 
 type SyncStatus = "SAME" | "CHANGED" | "NEW";
@@ -69,17 +70,31 @@ type SyncPreviewRow = {
 type UiisSinhVienItem = {
   ma_sinh_vien?: string;
   maSinhVien?: string;
+  sv_tu_dien_sinh_vien_ma?: string;
   ho_ten?: string;
   hoTen?: string;
+  sv_tu_dien_sinh_vien_ten?: string;
   lop?: string;
+  f_tenlop?: string;
   ma_phong?: string;
   maPhong?: string;
+  ktx_td_phong_ma?: string;
   ma_khu?: string;
   maKhu?: string;
+  ktx_td_khu_ma?: string;
 };
 
 const normalizeString = (value?: string | null) => (value ?? "").trim();
 const displayText = (value?: string | null) => normalizeString(value) || "-";
+const getUiisMaSinhVien = (item: UiisSinhVienItem) =>
+  item.sv_tu_dien_sinh_vien_ma || item.ma_sinh_vien || item.maSinhVien;
+const getUiisHoTen = (item: UiisSinhVienItem) =>
+  item.sv_tu_dien_sinh_vien_ten || item.ho_ten || item.hoTen;
+const getUiisLop = (item: UiisSinhVienItem) => item.f_tenlop || item.lop;
+const getUiisMaPhong = (item: UiisSinhVienItem) =>
+  item.ktx_td_phong_ma || item.ma_phong || item.maPhong;
+const getUiisMaKhu = (item: UiisSinhVienItem) =>
+  item.ktx_td_khu_ma || item.ma_khu || item.maKhu;
 
 export default function SinhVienKtxPage() {
   const [items, setItems] = useState<SinhVienKtx[]>([]);
@@ -133,6 +148,7 @@ export default function SinhVienKtxPage() {
           value: item.khuMa || item.maKhu || "",
           label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
           khuId: Number(item.khuId ?? item.uiisKhuId ?? 0),
+          uiisKhuId: Number(item.uiisKhuId ?? 0),
         })),
       ]);
     } catch (error) {
@@ -304,12 +320,13 @@ export default function SinhVienKtxPage() {
     const matchedKhu = dsKhu.find((item) => item.value === syncMaKhu);
 
     return {
-      checksum: "",
       nam_hoc: Number(namHoc) || 0,
       hoc_ky: Number(hocKy) || 0,
       ma_phong: syncMaPhong && syncMaPhong !== "-1" ? syncMaPhong : "",
       khu_id:
-        syncMaKhu && syncMaKhu !== "-1" ? Number(matchedKhu?.khuId ?? 0) : 0,
+        syncMaKhu && syncMaKhu !== "-1"
+          ? Number(matchedKhu?.uiisKhuId ?? matchedKhu?.khuId ?? 0)
+          : 0,
     };
   };
 
@@ -365,13 +382,11 @@ export default function SinhVienKtxPage() {
 
   const previewRows = useMemo<SyncPreviewRow[]>(() => {
     return uiisItems.map((uiisItem, index) => {
-      const maSinhVienUiis = normalizeString(
-        uiisItem.ma_sinh_vien || uiisItem.maSinhVien,
-      );
-      const hoTenUiis = displayText(uiisItem.ho_ten || uiisItem.hoTen);
-      const lopUiis = displayText(uiisItem.lop);
-      const maPhongUiis = displayText(uiisItem.ma_phong || uiisItem.maPhong);
-      const maKhuUiis = displayText(uiisItem.ma_khu || uiisItem.maKhu);
+      const maSinhVienUiis = normalizeString(getUiisMaSinhVien(uiisItem));
+      const hoTenUiis = displayText(getUiisHoTen(uiisItem));
+      const lopUiis = displayText(getUiisLop(uiisItem));
+      const maPhongUiis = displayText(getUiisMaPhong(uiisItem));
+      const maKhuUiis = displayText(getUiisMaKhu(uiisItem));
 
       const currentItem =
         currentItems.find(
@@ -383,12 +398,13 @@ export default function SinhVienKtxPage() {
       const isChanged =
         !!currentItem &&
         (normalizeString(currentItem.hoTen || currentItem.hoten) !==
-          normalizeString(uiisItem.ho_ten || uiisItem.hoTen) ||
-          normalizeString(currentItem.lop) !== normalizeString(uiisItem.lop) ||
+          normalizeString(getUiisHoTen(uiisItem)) ||
+          normalizeString(currentItem.lop) !==
+            normalizeString(getUiisLop(uiisItem)) ||
           normalizeString(currentItem.maPhong) !==
-            normalizeString(uiisItem.ma_phong || uiisItem.maPhong) ||
+            normalizeString(getUiisMaPhong(uiisItem)) ||
           normalizeString(currentItem.maKhu) !==
-            normalizeString(uiisItem.ma_khu || uiisItem.maKhu));
+            normalizeString(getUiisMaKhu(uiisItem)));
 
       return {
         stt: index + 1,
@@ -551,7 +567,7 @@ export default function SinhVienKtxPage() {
     <>
       <DanhMucFeaturePage
         type="sinhVienKtx"
-        title="Lấy danh sách sinh viên ký túc xá"
+        title="Danh sách sinh viên ký túc xá"
         description="Quản lý và tra cứu danh sách sinh viên đang ở ký túc xá."
         items={mappedItems}
         icon={<IconUsers size={20} />}
@@ -785,11 +801,17 @@ export default function SinhVienKtxPage() {
                                 : undefined,
                         }}
                       >
-                        <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                        <Table.Td
+                          ta="center"
+                          style={{ verticalAlign: "middle" }}
+                        >
                           {row.stt}
                         </Table.Td>
 
-                        <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                        <Table.Td
+                          ta="center"
+                          style={{ verticalAlign: "middle" }}
+                        >
                           <Text fw={700}>{row.maSinhVien}</Text>
                         </Table.Td>
 
@@ -815,7 +837,10 @@ export default function SinhVienKtxPage() {
                           )}
                         </Table.Td>
 
-                        <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                        <Table.Td
+                          ta="center"
+                          style={{ verticalAlign: "middle" }}
+                        >
                           {renderStatusBadge(row.status)}
                         </Table.Td>
                       </Table.Tr>

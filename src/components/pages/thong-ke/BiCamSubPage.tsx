@@ -56,6 +56,7 @@ import {
   fetchSinhVienCamPaginate,
   createOrUpdateSinhVienCam,
   fetchSinhVienPaginate,
+  fetchThongKeSvBiCamNoPhi,
 } from "@/services/dashboard/dashboardService";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
 import CustomPagination from "@/components/common/CustomPagination";
@@ -69,6 +70,26 @@ interface BannedItem {
   loaiSuKienId: number;
   maSinhVien: string;
   hoTen?: string;
+  tenLoaiSuKien?: string | null;
+}
+
+interface ThongKeBannedDetail {
+  lyDo?: string | null;
+  tenLoaiSuKien?: string | null;
+  loaiSuKienId?: number | null;
+  ngayBatDau?: string | null;
+  ngayKetThuc?: string | null;
+}
+
+interface ThongKeBannedStudent {
+  maSinhVien?: string | null;
+  hoTen?: string | null;
+  maLop?: string | null;
+  maPhong?: string | null;
+  tongSoLanBiCam?: number;
+  tongSoLanNoPhi?: number;
+  danhSachCam?: ThongKeBannedDetail[];
+  danhSachNoPhi?: ThongKeBannedDetail[];
 }
 
 interface SinhVienSuggestion {
@@ -113,6 +134,13 @@ function formatTimestamp(ts: number | null): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
+}
+
+function formatDateRangeApi(date: Date): string {
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${mm}/${dd}/${yyyy}`;
 }
 
 const defaultForm: FormState = {
@@ -319,6 +347,85 @@ export default function BiCamSubPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const loadBannedThongKeData = useCallback(
+    async (page = 1) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const today = new Date();
+        const fromDate = new Date(today.getFullYear(), 0, 1);
+
+        const res = await fetchThongKeSvBiCamNoPhi({
+          tuNgay: formatDateRangeApi(fromDate),
+          denNgay: formatDateRangeApi(today),
+          keyword: mssvFilter.trim() || "",
+          maKhu: "-1",
+          maPhong: "-1",
+        } as any);
+
+        const payload: ThongKeBannedStudent[] = Array.isArray(res?.payload)
+          ? res.payload
+          : [];
+
+        const flattened: BannedItem[] = payload.flatMap((student, studentIndex) =>
+          (student.danhSachCam || []).map((item, itemIndex) => ({
+            camId: studentIndex * 1000 + itemIndex + 1,
+            sinhVienId: 0,
+            lyDo: item.lyDo || "",
+            ngayBatDau: item.ngayBatDau
+              ? new Date(item.ngayBatDau).getTime()
+              : null,
+            ngayKetThuc: item.ngayKetThuc
+              ? new Date(item.ngayKetThuc).getTime()
+              : null,
+            loaiSuKienId: Number(item.loaiSuKienId ?? 0),
+            maSinhVien: student.maSinhVien || "",
+            hoTen: student.hoTen || undefined,
+            tenLoaiSuKien: item.tenLoaiSuKien || null,
+          })),
+        );
+
+        const filtered = flattened.filter((item) => {
+          const mssvMatch =
+            !mssvFilter ||
+            (item.maSinhVien || "")
+              .toLowerCase()
+              .includes(mssvFilter.toLowerCase());
+          const nameMatch =
+            !hoTenFilter ||
+            (item.hoTen || "").toLowerCase().includes(hoTenFilter.toLowerCase());
+          return mssvMatch && nameMatch;
+        });
+
+        const total = filtered.length;
+        const start = (page - 1) * PAGE_SIZE;
+        const pagedItems = filtered.slice(start, start + PAGE_SIZE);
+
+        setBannedList(pagedItems);
+        setSvNameMap(
+          filtered.reduce<Record<string, string>>((acc, item) => {
+            if (item.maSinhVien && item.hoTen) {
+              acc[item.maSinhVien] = item.hoTen;
+            }
+            return acc;
+          }, {}),
+        );
+        setTotalElements(total);
+        setTotalPages(Math.max(1, Math.ceil(total / PAGE_SIZE)));
+      } catch (err: any) {
+        setError(
+          err?.message || "Lỗi khi tải dữ liệu sinh viên bị cấm từ thống kê",
+        );
+        setBannedList([]);
+        setTotalElements(0);
+        setTotalPages(1);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [hoTenFilter, mssvFilter],
+  );
+
   const loadBannedData = useCallback(
     async (page = 1) => {
       setLoading(true);
@@ -372,8 +479,8 @@ export default function BiCamSubPage() {
   );
 
   useEffect(() => {
-    loadBannedData(currentPage);
-  }, [currentPage, loadBannedData]);
+    loadBannedThongKeData(currentPage);
+  }, [currentPage, loadBannedThongKeData]);
 
   // Close suggestions on outside click
   useEffect(() => {
@@ -448,7 +555,7 @@ export default function BiCamSubPage() {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    loadBannedData(1);
+    loadBannedThongKeData(1);
   };
 
   // ---- Modal helpers ----
@@ -540,7 +647,7 @@ export default function BiCamSubPage() {
         "success",
         isEditing ? t("toastUpdateSuccess") : t("toastAddSuccess"),
       );
-      loadBannedData(currentPage);
+      loadBannedThongKeData(currentPage);
     } catch (err: any) {
       console.error("[BiCam] Save error:", err);
       showToast("error", err?.message || t("toastSaveError"));
@@ -1040,9 +1147,9 @@ export default function BiCamSubPage() {
                         )}
                       </Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
-                        <Badge color="orange" variant="light" size="sm">
-                          ID: {row.loaiSuKienId}
-                        </Badge>
+                         <Badge color="orange" variant="light" size="sm">
+                           {row.tenLoaiSuKien || `ID: ${row.loaiSuKienId}`}
+                         </Badge>
                       </Table.Td>
                       {/* <Table.Td style={{ textAlign: "center" }}>
                         <Tooltip label={t("save")} withArrow>

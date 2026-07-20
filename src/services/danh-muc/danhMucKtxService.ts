@@ -19,6 +19,7 @@ import type {
   SinhVienBiCamRequest, 
   SinhVienKtx,
   UiisKhuPayload,
+  UiisPhongPayload,
   UiisSinhVienPayload,
 } from "@/types/type-danh-muc-ktx";
 
@@ -53,6 +54,16 @@ export const fetchDanhSachSinhVienKtx = async (
   return res.payload;
 };
 
+export const fetchSinhVienTheoMaPhong = async (
+  maPhong: string
+): Promise<SinhVienKtx[]> => {
+  const res = await get<ApiResponse<SinhVienKtx[]>>(
+    `${API_URLS.danhMucKtx.sinhVien.findByMaPhong}/${encodeURIComponent(maPhong)}`
+  );
+
+  return res?.payload || [];
+};
+
 export interface DanhSachPhongKtxRequest {
   page?: number;
   pageSize?: number;
@@ -78,6 +89,14 @@ export const fetchDanhSachPhongKtx = async (
     console.error("Error fetching dormitory room list:", error);
     throw error;
   }
+};
+
+export const fetchDanhSachPhongUiis = async (data: UiisPhongPayload) => {
+  return await post(API_URLS.danhMucKtx.phong.uiisDanhSach, data);
+};
+
+export const syncDanhSachPhongUiis = async (data: UiisPhongPayload) => {
+  return await post(API_URLS.danhMucKtx.phong.uiisSync, data);
 };
 
 export const fetchDanhSachKhuKtx = async (

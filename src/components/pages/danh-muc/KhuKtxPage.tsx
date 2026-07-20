@@ -353,7 +353,7 @@ export default function KhuKtxPage() {
     <>
       <DanhMucFeaturePage
         type="khu"
-        title="Lấy danh sách khu ký túc xá"
+        title="Danh sách khu ký túc xá"
         description="Quản lý danh mục khu, dãy nhà trong ký túc xá."
         items={items}
         icon={<IconCategory size={20} />}

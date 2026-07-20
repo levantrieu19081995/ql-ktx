@@ -1,10 +1,31 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useEffect, useState } from "react";
-import { Autocomplete, Button, Group, Stack } from "@mantine/core";
+import { useEffect, useMemo, useState } from "react";
 import {
+  Autocomplete,
+  Badge,
+  Box,
+  Button,
+  Divider,
+  Drawer,
+  Group,
+  Loader,
+  Modal,
+  Paper,
+  ScrollArea,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
+  TextInput,
+} from "@mantine/core";
+import {
+  IconArrowsShuffle,
   IconBuildingTunnel,
+  IconCloudDownload,
+  IconEye,
   IconRefresh,
   IconSearch,
 } from "@tabler/icons-react";
@@ -12,14 +33,82 @@ import {
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import CustomPagination from "@/components/common/CustomPagination";
 import {
-  fetchDanhSachPhongKtx,
   fetchDanhMucKhuKtx,
+  fetchDanhSachPhongKtx,
+  fetchDanhSachPhongUiis,
+  fetchSinhVienTheoMaPhong,
+  syncDanhSachPhongUiis,
 } from "@/services/danh-muc/danhMucKtxService";
-import type { PhongKtx } from "@/types/type-danh-muc-ktx";
+import type { PhongKtx, SinhVienKtx } from "@/types/type-danh-muc-ktx";
+
+type SyncStatus = "SAME" | "CHANGED" | "NEW";
+
+type SyncPreviewRow = {
+  stt: number;
+  maPhong: string;
+  uiis: {
+    maKhu: string;
+    tenPhong: string;
+    sucChua: string;
+  };
+  current: {
+    maKhu: string;
+    tenPhong: string;
+    sucChua: string;
+  } | null;
+  status: SyncStatus;
+};
+
+type UiisPhongItem = {
+  phong_id?: string | number;
+  uiis_phong_id?: string | number;
+  ktx_td_phong_id?: string | number;
+  ma_phong?: string;
+  phong_ma?: string;
+  ktx_td_phong_ma?: string;
+  ten_phong?: string;
+  phong_ten?: string;
+  ktx_td_phong_ten?: string;
+  suc_chua?: string | number;
+  so_luong_cho?: string | number;
+  ktx_td_phong_suc_chua?: string | number;
+  khu_id?: string | number;
+  ma_khu?: string;
+  khu_ma?: string;
+};
+
+type KhuOption = {
+  value: string;
+  label: string;
+  khuId: number;
+  uiisKhuId?: number;
+};
+
+const normalizeString = (value?: string | number | null) =>
+  String(value ?? "").trim();
+
+const displayText = (value?: string | number | null) =>
+  normalizeString(value) || "-";
+
+const getUiisPhongId = (item: UiisPhongItem) =>
+  item.ktx_td_phong_id ?? item.phong_id ?? item.uiis_phong_id;
+
+const getUiisMaPhong = (item: UiisPhongItem) =>
+  item.ktx_td_phong_ma || item.ma_phong || item.phong_ma;
+
+const getUiisTenPhong = (item: UiisPhongItem) =>
+  item.ktx_td_phong_ten ||
+  item.ten_phong ||
+  item.phong_ten ||
+  item.ktx_td_phong_ma ||
+  item.ma_phong;
+
+const getUiisSucChua = (item: UiisPhongItem) =>
+  item.ktx_td_phong_suc_chua || item.suc_chua || item.so_luong_cho;
 
 export default function PhongKtxPage() {
   const [items, setItems] = useState<PhongKtx[]>([]);
-  const [dsKhu, setDsKhu] = useState<{ value: string; label: string }[]>([]);
+  const [dsKhu, setDsKhu] = useState<KhuOption[]>([]);
   const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>(
     [],
   );
@@ -36,19 +125,83 @@ export default function PhongKtxPage() {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
+  const [openedSync, setOpenedSync] = useState(false);
+  const [namHoc, setNamHoc] = useState("2026");
+  const [hocKy, setHocKy] = useState("1");
+  const [syncMaKhu, setSyncMaKhu] = useState("-1");
+  const [currentItems, setCurrentItems] = useState<PhongKtx[]>([]);
+  const [uiisItems, setUiisItems] = useState<UiisPhongItem[]>([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [confirmSyncLoading, setConfirmSyncLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<PhongKtx | null>(null);
+  const [roomDrawerOpened, setRoomDrawerOpened] = useState(false);
+  const [roomStudents, setRoomStudents] = useState<SinhVienKtx[]>([]);
+  const [roomStudentsLoading, setRoomStudentsLoading] = useState(false);
+
+  const handleOpenSync = () => {
+    setSyncMaKhu(appliedFilters.maKhu || "-1");
+    setOpenedSync(true);
+    setShowPreview(false);
+    setUiisItems([]);
+    setCurrentItems([]);
+  };
+
+  const handleCloseSync = () => {
+    setOpenedSync(false);
+    setShowPreview(false);
+    setUiisItems([]);
+    setCurrentItems([]);
+  };
+
+  const handleOpenRoomDrawer = async (room: PhongKtx) => {
+    const roomCode = room.phongMa || room.maPhong || "";
+    if (!roomCode) return;
+
+    setSelectedRoom(room);
+    setRoomDrawerOpened(true);
+    setRoomStudents([]);
+
+    try {
+      setRoomStudentsLoading(true);
+      const students = await fetchSinhVienTheoMaPhong(roomCode);
+      setRoomStudents(Array.isArray(students) ? students : []);
+    } catch (error) {
+      console.error("Lỗi lấy danh sách sinh viên theo mã phòng:", error);
+      setRoomStudents([]);
+    } finally {
+      setRoomStudentsLoading(false);
+    }
+  };
+
+  const buildSyncPayload = () => {
+    const matchedKhu = dsKhu.find((item) => item.value === syncMaKhu);
+
+    return {
+      nam_hoc: Number(namHoc) || 0,
+      hoc_ky: Number(hocKy) || 0,
+      khu_id:
+        syncMaKhu && syncMaKhu !== "-1"
+          ? Number(matchedKhu?.uiisKhuId ?? matchedKhu?.khuId ?? 0)
+          : 0,
+    };
+  };
+
   const loadDanhMucKhu = async () => {
     try {
       const res = await fetchDanhMucKhuKtx();
       setDsKhu([
-        { value: "-1", label: "Tất cả" },
+        { value: "-1", label: "Tất cả", khuId: 0 },
         ...res.map((item) => ({
           value: item.khuMa || item.maKhu || "",
           label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
+          khuId: Number(item.khuId ?? item.uiisKhuId ?? 0),
+          uiisKhuId: Number(item.uiisKhuId ?? 0),
         })),
       ]);
     } catch (error) {
       console.error("Lỗi lấy danh mục khu KTX:", error);
-      setDsKhu([{ value: "-1", label: "Tất cả" }]);
+      setDsKhu([{ value: "-1", label: "Tất cả", khuId: 0 }]);
     }
   };
 
@@ -60,6 +213,7 @@ export default function PhongKtxPage() {
         maKhu: khuValue || "-1",
         maPhong: "-1",
       });
+
       setDsPhong([
         { value: "-1", label: "Tất cả" },
         ...(res?.items || []).map((item: PhongKtx) => ({
@@ -140,6 +294,188 @@ export default function PhongKtxPage() {
     }
   };
 
+  const handlePreviewPhongUiis = async () => {
+    try {
+      setPreviewLoading(true);
+
+      const [uiisRes, currentRes] = await Promise.all([
+        fetchDanhSachPhongUiis(buildSyncPayload()),
+        fetchDanhSachPhongKtx({
+          page: 1,
+          pageSize: 9999,
+          maKhu: syncMaKhu || "-1",
+          maPhong: "-1",
+        }),
+      ]);
+
+      const uiisPayload = uiisRes?.payload || {};
+      const uiisData = uiisPayload?.data || [];
+
+      setUiisItems(Array.isArray(uiisData) ? uiisData : []);
+      setCurrentItems(currentRes?.items || []);
+      setShowPreview(true);
+    } catch (error) {
+      console.error("Lỗi xem trước sync phòng UIIS:", error);
+      setShowPreview(false);
+      setUiisItems([]);
+      setCurrentItems([]);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleConfirmSyncPhongUiis = async () => {
+    try {
+      setConfirmSyncLoading(true);
+
+      await syncDanhSachPhongUiis(buildSyncPayload());
+
+      handleCloseSync();
+      await loadDanhMucPhongOptions(appliedFilters.maKhu);
+      await loadData(1, pageSize);
+      setPage(1);
+    } catch (error) {
+      console.error("Lỗi đồng bộ phòng từ UIIS:", error);
+    } finally {
+      setConfirmSyncLoading(false);
+    }
+  };
+
+  const previewRows = useMemo<SyncPreviewRow[]>(() => {
+    return uiisItems.map((uiisItem, index) => {
+      const uiisPhongId = getUiisPhongId(uiisItem);
+      const uiisMaPhong = displayText(getUiisMaPhong(uiisItem));
+      const uiisTenPhong = displayText(getUiisTenPhong(uiisItem));
+      const uiisSucChua = displayText(getUiisSucChua(uiisItem));
+      const uiisMaKhu = displayText(uiisItem.ma_khu || uiisItem.khu_ma);
+
+      const currentItem =
+        currentItems.find((item) => {
+          if (uiisPhongId && item.uiisPhongId) {
+            return String(item.uiisPhongId) === String(uiisPhongId);
+          }
+
+          return normalizeString(item.phongMa || item.maPhong) === uiisMaPhong;
+        }) || null;
+
+      const isChanged =
+        !!currentItem &&
+        (normalizeString(currentItem.phongMa || currentItem.maPhong) !==
+          uiisMaPhong ||
+          normalizeString(currentItem.tenPhong || currentItem.maPhong) !==
+            uiisTenPhong ||
+          normalizeString(currentItem.sucChua) !== uiisSucChua ||
+          normalizeString(currentItem.khuMa || currentItem.maKhu) !==
+            uiisMaKhu);
+
+      return {
+        stt: index + 1,
+        maPhong: uiisMaPhong,
+        uiis: {
+          maKhu: uiisMaKhu,
+          tenPhong: uiisTenPhong,
+          sucChua: uiisSucChua,
+        },
+        current: currentItem
+          ? {
+              maKhu: displayText(currentItem.khuMa || currentItem.maKhu),
+              tenPhong: displayText(
+                currentItem.tenPhong || currentItem.maPhong,
+              ),
+              sucChua: displayText(currentItem.sucChua),
+            }
+          : null,
+        status: !currentItem ? "NEW" : isChanged ? "CHANGED" : "SAME",
+      };
+    });
+  }, [currentItems, uiisItems]);
+
+  const previewSummary = useMemo(() => {
+    const totalUiis = previewRows.length;
+    const totalNew = previewRows.filter((row) => row.status === "NEW").length;
+    const totalChanged = previewRows.filter(
+      (row) => row.status === "CHANGED",
+    ).length;
+    const totalSame = previewRows.filter((row) => row.status === "SAME").length;
+
+    return {
+      totalUiis,
+      totalNew,
+      totalChanged,
+      totalSame,
+    };
+  }, [previewRows]);
+
+  const previewMessage = useMemo(() => {
+    if (!showPreview) return null;
+    if (previewSummary.totalUiis === 0) {
+      return {
+        color: "#64748b",
+        text: "Không có dữ liệu phòng từ UIIS.",
+      };
+    }
+    if (previewSummary.totalChanged > 0) {
+      return {
+        color: "#d97706",
+        text: `Có ${previewSummary.totalChanged} phòng bị thay đổi so với dữ liệu hiện tại.`,
+      };
+    }
+    if (previewSummary.totalNew > 0) {
+      return {
+        color: "#16a34a",
+        text: `Có ${previewSummary.totalNew} phòng mới hoàn toàn chưa có trong dữ liệu hiện tại.`,
+      };
+    }
+    return {
+      color: "#16a34a",
+      text: "UIIS và dữ liệu hiện tại giống nhau, không có thay đổi.",
+    };
+  }, [previewSummary, showPreview]);
+
+  const canConfirmSync =
+    showPreview &&
+    previewSummary.totalUiis > 0 &&
+    (previewSummary.totalNew > 0 || previewSummary.totalChanged > 0);
+
+  const renderStatusBadge = (status: SyncStatus) => {
+    if (status === "NEW") {
+      return (
+        <Badge
+          radius="xl"
+          variant="light"
+          color="green"
+          styles={{ root: { textTransform: "none", fontWeight: 700 } }}
+        >
+          Hoàn toàn mới
+        </Badge>
+      );
+    }
+
+    if (status === "CHANGED") {
+      return (
+        <Badge
+          radius="xl"
+          variant="light"
+          color="orange"
+          styles={{ root: { textTransform: "none", fontWeight: 700 } }}
+        >
+          Có thay đổi
+        </Badge>
+      );
+    }
+
+    return (
+      <Badge
+        radius="xl"
+        variant="light"
+        color="gray"
+        styles={{ root: { textTransform: "none", fontWeight: 700 } }}
+      >
+        Không đổi
+      </Badge>
+    );
+  };
+
   useEffect(() => {
     loadDanhMucKhu();
   }, []);
@@ -154,65 +490,379 @@ export default function PhongKtxPage() {
   }, []);
 
   return (
-    <DanhMucFeaturePage
-      type="phongKtx"
-      title="Lấy danh sách phòng ký túc xá"
-      description="Quản lý danh mục phòng theo khu ký túc xá."
-      items={items}
-      icon={<IconBuildingTunnel size={20} />}
-      searchControls={
-        <Stack gap="md" w="100%">
-          <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
-            <Autocomplete
-              label="Khu ký túc xá"
-              placeholder="Chọn khu..."
-              data={dsKhu
-                .map((item) => item.value)
-                .filter((value) => value && value !== "-1")}
-              value={maKhu}
-              onChange={setMaKhu}
-              style={{ minWidth: 180, flex: 1 }}
-            />
-            <Autocomplete
-              label="Phòng"
-              placeholder="Chọn phòng..."
-              data={dsPhong
-                .map((item) => item.value)
-                .filter((value) => value && value !== "-1")}
-              value={maPhong}
-              onChange={setMaPhong}
-              style={{ minWidth: 180, flex: 1 }}
-            />{" "}
+    <>
+      <DanhMucFeaturePage
+        type="phongKtx"
+        title="Danh sách phòng ký túc xá"
+        description="Quản lý danh mục phòng theo khu ký túc xá."
+        items={items}
+        onSelectRoom={handleOpenRoomDrawer}
+        icon={<IconBuildingTunnel size={20} />}
+        searchControls={
+          <Stack gap="md" w="100%">
+            <Group align="end" style={{ flexGrow: 1, gap: "16px" }}>
+              <Autocomplete
+                label="Khu ký túc xá"
+                placeholder="Chọn khu..."
+                data={dsKhu
+                  .map((item) => item.value)
+                  .filter((value) => value && value !== "-1")}
+                value={maKhu}
+                onChange={setMaKhu}
+                style={{ minWidth: 180, flex: 1 }}
+              />
+              <Autocomplete
+                label="Phòng"
+                placeholder="Chọn phòng..."
+                data={dsPhong
+                  .map((item) => item.value)
+                  .filter((value) => value && value !== "-1")}
+                value={maPhong}
+                onChange={setMaPhong}
+                style={{ minWidth: 180, flex: 1 }}
+              />
+              <Button
+                leftSection={<IconSearch size={18} />}
+                color="blue"
+                radius="md"
+                onClick={handleSearch}
+              >
+                Tìm kiếm
+              </Button>
+              <Button
+                leftSection={<IconRefresh size={18} />}
+                variant="default"
+                radius="md"
+                onClick={handleReset}
+              >
+                Làm mới
+              </Button>
+              <Button
+                leftSection={<IconCloudDownload size={18} />}
+                color="green"
+                radius="md"
+                onClick={handleOpenSync}
+              >
+                Đồng bộ từ UIIS
+              </Button>
+            </Group>
+          </Stack>
+        }
+        pagination={
+          <CustomPagination
+            totalItems={totalItems}
+            totalPages={totalPages}
+            page={page}
+            pageSize={pageSize}
+            setPage={setPage}
+            setPageSize={setPageSize}
+            fetchData={loadData}
+          />
+        }
+      />
+
+      <Modal
+        opened={openedSync}
+        onClose={handleCloseSync}
+        title="Đồng bộ danh sách phòng từ UIIS"
+        centered
+        size="80%"
+        radius="lg"
+      >
+        <Group align="end" grow mb="md">
+          <TextInput
+            label="Năm học"
+            placeholder="Nhập năm học"
+            value={namHoc}
+            onChange={(e) => setNamHoc(e.currentTarget.value)}
+          />
+
+          <TextInput
+            label="Học kỳ"
+            placeholder="Nhập học kỳ"
+            value={hocKy}
+            onChange={(e) => setHocKy(e.currentTarget.value)}
+          />
+
+          <Select
+            label="Khu ký túc xá"
+            placeholder="Chọn khu"
+            data={dsKhu.map((item) => ({
+              value: item.value,
+              label: item.label,
+            }))}
+            value={syncMaKhu}
+            onChange={(value) => setSyncMaKhu(value || "-1")}
+          />
+
+          <Button
+            color="blue"
+            leftSection={<IconEye size={18} />}
+            loading={previewLoading}
+            onClick={handlePreviewPhongUiis}
+          >
+            Xem dữ liệu
+          </Button>
+        </Group>
+
+        {showPreview && (
+          <>
+            <SimpleGrid cols={{ base: 1, md: 4 }} spacing="md" mb="md">
+              <Paper
+                withBorder
+                radius="md"
+                p="md"
+                style={{ borderColor: "#bfdbfe", background: "#f8fbff" }}
+              >
+                <Text size="sm" c="blue.6" fw={700}>
+                  Trong UIIS
+                </Text>
+                <Text size="xl" fw={800} c="blue.7">
+                  {previewSummary.totalUiis}
+                </Text>
+              </Paper>
+
+              <Paper
+                withBorder
+                radius="md"
+                p="md"
+                style={{ borderColor: "#cce8d1", background: "#f3fbf4" }}
+              >
+                <Text size="sm" c="green.6" fw={700}>
+                  Hoàn toàn mới
+                </Text>
+                <Text size="xl" fw={800} c="green.7">
+                  {previewSummary.totalNew}
+                </Text>
+              </Paper>
+
+              <Paper
+                withBorder
+                radius="md"
+                p="md"
+                style={{ borderColor: "#fde0b5", background: "#fffaf1" }}
+              >
+                <Text size="sm" c="orange.6" fw={700}>
+                  Có thay đổi
+                </Text>
+                <Text size="xl" fw={800} c="orange.7">
+                  {previewSummary.totalChanged}
+                </Text>
+              </Paper>
+
+              <Paper
+                withBorder
+                radius="md"
+                p="md"
+                style={{ borderColor: "#e5e7eb", background: "#fafafa" }}
+              >
+                <Text size="sm" c="gray.6" fw={700}>
+                  Không đổi
+                </Text>
+                <Text size="xl" fw={800} c="gray.7">
+                  {previewSummary.totalSame}
+                </Text>
+              </Paper>
+            </SimpleGrid>
+
+            <ScrollArea h={420}>
+              <Table withColumnBorders highlightOnHover>
+                <Table.Thead>
+                  <Table.Tr>
+                    <Table.Th w={60} ta="center">
+                      STT
+                    </Table.Th>
+                    <Table.Th w={120} ta="center">
+                      Mã phòng
+                    </Table.Th>
+                    <Table.Th ta="center">Dữ liệu UIIS</Table.Th>
+                    <Table.Th ta="center">Dữ liệu hiện tại</Table.Th>
+                    <Table.Th w={150} ta="center">
+                      Trạng thái
+                    </Table.Th>
+                  </Table.Tr>
+                </Table.Thead>
+
+                <Table.Tbody>
+                  {previewRows.map((row) => (
+                    <Table.Tr
+                      key={`${row.maPhong}-${row.stt}`}
+                      style={{
+                        background:
+                          row.status === "NEW"
+                            ? "rgba(34, 197, 94, 0.06)"
+                            : row.status === "CHANGED"
+                              ? "rgba(245, 158, 11, 0.08)"
+                              : undefined,
+                      }}
+                    >
+                      <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                        {row.stt}
+                      </Table.Td>
+
+                      <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                        <Text fw={700}>{row.maPhong}</Text>
+                      </Table.Td>
+
+                      <Table.Td>
+                        <Text fw={700}>Khu: {row.uiis.maKhu}</Text>
+                        <Text>Tên phòng: {row.uiis.tenPhong}</Text>
+                        <Text>Sức chứa: {row.uiis.sucChua}</Text>
+                      </Table.Td>
+
+                      <Table.Td>
+                        {row.current ? (
+                          <>
+                            <Text fw={700}>Khu: {row.current.maKhu}</Text>
+                            <Text>Tên phòng: {row.current.tenPhong}</Text>
+                            <Text>Sức chứa: {row.current.sucChua}</Text>
+                          </>
+                        ) : (
+                          <Text c="green.7" fw={700}>
+                            Chưa có trong KTX
+                          </Text>
+                        )}
+                      </Table.Td>
+
+                      <Table.Td ta="center" style={{ verticalAlign: "middle" }}>
+                        {renderStatusBadge(row.status)}
+                      </Table.Td>
+                    </Table.Tr>
+                  ))}
+                </Table.Tbody>
+              </Table>
+            </ScrollArea>
+
+            <Divider my="md" />
+
+            {previewMessage && (
+              <Box mb="md">
+                <Text fw={600} c={previewMessage.color}>
+                  {previewMessage.text}
+                </Text>
+              </Box>
+            )}
+          </>
+        )}
+
+        <Group justify="flex-end" mt="lg">
+          <Button variant="default" onClick={handleCloseSync}>
+            Hủy
+          </Button>
+
+          {canConfirmSync && (
             <Button
-              leftSection={<IconSearch size={18} />}
-              color="blue"
-              radius="md"
-              onClick={handleSearch}
+              color="green"
+              leftSection={<IconArrowsShuffle size={18} />}
+              loading={confirmSyncLoading}
+              onClick={handleConfirmSyncPhongUiis}
             >
-              Tìm kiếm
+              Xác nhận đồng bộ
             </Button>
-            <Button
-              leftSection={<IconRefresh size={18} />}
-              variant="default"
-              radius="md"
-              onClick={handleReset}
-            >
-              Làm mới
-            </Button>
-          </Group>
+          )}
+        </Group>
+      </Modal>
+
+      <Drawer
+        opened={roomDrawerOpened}
+        onClose={() => setRoomDrawerOpened(false)}
+        position="right"
+        size="lg"
+        title={`Thông tin phòng ${selectedRoom?.phongMa || selectedRoom?.maPhong || ""}`}
+      >
+        <Stack gap="md">
+          <Paper withBorder radius="md" p="md">
+            <SimpleGrid cols={2} spacing="md">
+              <Box>
+                <Text size="sm" c="dimmed">
+                  Mã phòng
+                </Text>
+                <Text fw={700}>
+                  {selectedRoom?.phongMa || selectedRoom?.maPhong || "-"}
+                </Text>
+              </Box>
+              <Box>
+                <Text size="sm" c="dimmed">
+                  Khu
+                </Text>
+                <Text fw={700}>
+                  {selectedRoom?.tenKhu || selectedRoom?.khuTen || selectedRoom?.maKhu || "-"}
+                </Text>
+              </Box>
+              <Box>
+                <Text size="sm" c="dimmed">
+                  Sức chứa
+                </Text>
+                <Text fw={700}>{selectedRoom?.sucChua ?? "-"}</Text>
+              </Box>
+              <Box>
+                <Text size="sm" c="dimmed">
+                  Số người hiện tại
+                </Text>
+                <Text fw={700}>
+                  {roomStudentsLoading ? "Dang tai..." : roomStudents.length}
+                </Text>
+              </Box>
+            </SimpleGrid>
+          </Paper>
+
+          <Box>
+            <Text fw={700} mb="sm">
+              Danh sách sinh viên trong phòng
+            </Text>
+
+            {roomStudentsLoading ? (
+              <Group justify="center" py="xl">
+                <Loader size="sm" />
+              </Group>
+            ) : (
+              <ScrollArea h={420}>
+                <Table withColumnBorders highlightOnHover>
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th w={60} ta="center">
+                        STT
+                      </Table.Th>
+                      <Table.Th>Mã sinh viên</Table.Th>
+                      <Table.Th>Họ tên</Table.Th>
+                      <Table.Th>Lớp</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {roomStudents.length > 0 ? (
+                      roomStudents.map((student, index) => (
+                        <Table.Tr
+                          key={
+                            student.sinhVienId ||
+                            student.id ||
+                            student.maSinhVien ||
+                            index
+                          }
+                        >
+                          <Table.Td ta="center">{index + 1}</Table.Td>
+                          <Table.Td>
+                            {student.maSinhVien || student.mssv || student.maso || "-"}
+                          </Table.Td>
+                          <Table.Td>
+                            {student.hoTen || student.hoten || "-"}
+                          </Table.Td>
+                          <Table.Td>{student.lop || "-"}</Table.Td>
+                        </Table.Tr>
+                      ))
+                    ) : (
+                      <Table.Tr>
+                        <Table.Td colSpan={4} ta="center">
+                          Chưa có sinh viên trong phòng.
+                        </Table.Td>
+                      </Table.Tr>
+                    )}
+                  </Table.Tbody>
+                </Table>
+              </ScrollArea>
+            )}
+          </Box>
         </Stack>
-      }
-      pagination={
-        <CustomPagination
-          totalItems={totalItems}
-          totalPages={totalPages}
-          page={page}
-          pageSize={pageSize}
-          setPage={setPage}
-          setPageSize={setPageSize}
-          fetchData={loadData}
-        />
-      }
-    />
+      </Drawer>
+    </>
   );
 }

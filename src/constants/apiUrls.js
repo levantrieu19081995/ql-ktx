@@ -150,11 +150,14 @@ const API_URLS = {
   danhMucKtx: {
     sinhVien: {
       paginate: `${KTX_SERVICE}/ktx-dm-sinh-vien/paginate`,
+      findByMaPhong: `${KTX_SERVICE}/ktx-dm-sinh-vien/find-by-ma-phong`,
       uiisDanhSach: `${KTX_SERVICE}/uiis/dm-sinh-vien/danh-sach`,
       uiisSync: `${KTX_SERVICE}/uiis/dm-sinh-vien/sync`,
     },
     phong: {
       paginate: `${KTX_SERVICE}/ktx-dm-phong/paginate`,
+      uiisDanhSach: `${KTX_SERVICE}/uiis/dm-phong/danh-sach`,
+      uiisSync: `${KTX_SERVICE}/uiis/dm-phong/sync`,
     },
     khu: {
       paginate: `${KTX_SERVICE}/ktx-dm-khu/paginate`,

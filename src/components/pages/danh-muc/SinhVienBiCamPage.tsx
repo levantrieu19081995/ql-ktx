@@ -263,7 +263,7 @@ export default function SinhVienBiCamPage() {
     <>
       <DanhMucFeaturePage
         type="sinhVienBiCam"
-        title="Lấy danh sách sinh viên bị cấm"
+        title="Danh sách sinh viên bị cấm"
         description="Theo dõi danh sách sinh viên bị cấm ra vào ký túc xá."
         items={items}
         onEdit={handleEdit}

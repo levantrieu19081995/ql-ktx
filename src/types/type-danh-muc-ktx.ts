@@ -131,6 +131,7 @@ export interface PhongKtx {
   ghiChu?: string;
 
   phongId?: number;
+  uiisPhongId?: number;
   khuId?: number;
   phongMa?: string;
   soChoDangCo?: string | number;
@@ -172,10 +173,15 @@ export type UiisKhuPayload = {
 };
 
 export type UiisSinhVienPayload = {
-  checksum?: string;
   nam_hoc: number;
   hoc_ky: number;
   ma_phong?: string;
   khu_id?: number;
+};
+
+export type UiisPhongPayload = {
+  nam_hoc: number;
+  hoc_ky: number;
+  khu_id: number;
 };
  

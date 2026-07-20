@@ -24,6 +24,7 @@ type DanhMucFeaturePageProps = {
   searchControls?: ReactNode;
   pagination?: ReactNode;
   onEdit?: (item: any) => void;
+  onSelectRoom?: (item: PhongKtx) => void;
   icon?: ReactNode;
 };
 
@@ -35,6 +36,7 @@ export default function DanhMucFeaturePage({
   searchControls,
   pagination,
   onEdit,
+  onSelectRoom,
   icon,
 }: DanhMucFeaturePageProps) {
   const renderTable = () => {
@@ -46,7 +48,12 @@ export default function DanhMucFeaturePage({
       case "sinhVienKtx":
         return <SinhVienKtxTable items={items} />;
       case "phongKtx":
-        return <PhongKtxTable items={items as PhongKtx[]} />;
+        return (
+          <PhongKtxTable
+            items={items as PhongKtx[]}
+            onSelectRoom={onSelectRoom}
+          />
+        );
       default:
         return null;
     }
