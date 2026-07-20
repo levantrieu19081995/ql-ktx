@@ -25,7 +25,6 @@ import {
   Textarea,
   Loader,
   Center,
-  Pagination,
   SimpleGrid,
   Divider,
   ActionIcon,
@@ -52,6 +51,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import CustomPagination from "@/components/common/CustomPagination";
 import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
 import { fetchSinhVienCamPaginate, fetchThongKeSvBiCamNoPhi } from "@/services/dashboard/dashboardService";
 
@@ -162,7 +162,7 @@ export default function LuotRaVaoSubPage() {
   // Pagination states
   const [overviewPage, setOverviewPage] = useState(1);
   const [historyPage, setHistoryPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const [modalOpened, setModalOpened] = useState(false);
   const [formMssv, setFormMssv] = useState("");
@@ -1065,16 +1065,14 @@ export default function LuotRaVaoSubPage() {
             </ScrollArea>
 
             {totalOverviewPages > 1 && (
-              <Group justify="center" mt="md">
-                <Pagination
-                  value={overviewPage}
-                  onChange={setOverviewPage}
-                  total={totalOverviewPages}
-                  color="blue"
-                  radius="md"
-                  withEdges
-                />
-              </Group>
+              <CustomPagination
+                totalItems={filteredOverview.length}
+                totalPages={totalOverviewPages}
+                page={overviewPage}
+                pageSize={pageSize}
+                setPage={setOverviewPage}
+                setPageSize={setPageSize}
+              />
             )}
           </Card>
 
@@ -1143,16 +1141,14 @@ export default function LuotRaVaoSubPage() {
               </ScrollArea>
 
               {totalHistoryPages > 1 && (
-                <Group justify="center" mt="md">
-                  <Pagination
-                    value={historyPage}
-                    onChange={setHistoryPage}
-                    total={totalHistoryPages}
-                    color="blue"
-                    radius="md"
-                    withEdges
-                  />
-                </Group>
+                <CustomPagination
+                  totalItems={filteredHistoryList.length}
+                  totalPages={totalHistoryPages}
+                  page={historyPage}
+                  pageSize={pageSize}
+                  setPage={setHistoryPage}
+                  setPageSize={setPageSize}
+                />
               )}
             </Card>
           )}

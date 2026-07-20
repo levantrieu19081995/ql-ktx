@@ -19,7 +19,6 @@ import {
   ThemeIcon,
   Loader,
   Center,
-  Pagination,
   SimpleGrid,
   Divider,
   ActionIcon,
@@ -41,6 +40,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import CustomPagination from "@/components/common/CustomPagination";
 import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
 
 const resolveKhu = (item: any): string => {
@@ -100,7 +100,7 @@ export default function VangMatSubPage() {
   const [error, setError] = useState<string | null>(null);
   const [absentList, setAbsentList] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const loadAbsentData = useCallback(async (overrides?: { tuNgay?: Date | null; denNgay?: Date | null }) => {
     setLoading(true);
@@ -608,24 +608,14 @@ export default function VangMatSubPage() {
             </ScrollArea>
 
             {totalPages > 1 && (
-              <Group justify="center" mt="lg">
-                <Pagination
-                  value={currentPage}
-                  onChange={(p) => setCurrentPage(p)}
-                  total={totalPages}
-                  size="sm"
-                  radius="md"
-                  color="#1f5ca9"
-                  styles={{
-                    control: {
-                      fontFamily: "var(--font-readex-pro), sans-serif",
-                      "&[data-active]": {
-                        backgroundColor: "#1f5ca9",
-                      },
-                    },
-                  }}
-                />
-              </Group>
+              <CustomPagination
+                totalItems={filteredAbsent.length}
+                totalPages={totalPages}
+                page={currentPage}
+                pageSize={pageSize}
+                setPage={setCurrentPage}
+                setPageSize={setPageSize}
+              />
             )}
           </Card>
         </>

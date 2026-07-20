@@ -19,7 +19,6 @@ import {
   Center,
   Modal,
   Textarea,
-  Pagination,
   ActionIcon,
   Tooltip,
   Divider,
@@ -54,20 +53,21 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import {
-  fetchSinhVienCamPaginate,
   createOrUpdateSinhVienCam,
   fetchSinhVienPaginate,
+  fetchThongKeSvBiCamNoPhi,
 } from "@/services/dashboard/dashboardService";
 
 interface BannedItem {
-  camId: number;
-  sinhVienId: number;
+  camId?: number;
+  sinhVienId?: number | string;
   lyDo: string;
   ngayBatDau: number | null;
   ngayKetThuc: number | null;
-  loaiSuKienId: number;
+  loaiSuKienId: number | string;
   maSinhVien: string;
   hoTen?: string;
+  trangThai?: string;
 }
 
 interface SinhVienSuggestion {
@@ -95,8 +95,6 @@ interface FormErrors {
   ngayBatDau?: string;
 }
 
-const PAGE_SIZE = 10;
-
 function formatDateApi(d: Date | null): string {
   if (!d || isNaN(d.getTime())) return "";
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -107,11 +105,23 @@ function formatDateApi(d: Date | null): string {
 
 function formatTimestamp(ts: number | null): string {
   if (!ts) return "—";
-  const d = new Date(ts);
+  const normalized = ts < 10000000000 ? ts * 1000 : ts;
+  const d = new Date(normalized);
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${dd}/${mm}/${yyyy}`;
+}
+
+function parseTimestamp(value: any): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "number" && !Number.isNaN(value)) return value;
+
+  const numeric = Number(value);
+  if (!Number.isNaN(numeric) && numeric > 0) return numeric;
+
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 const defaultForm: FormState = {
@@ -172,9 +182,7 @@ export default function BiCamSubPage() {
   const [error, setError] = useState<string | null>(null);
   const [bannedList, setBannedList] = useState<BannedItem[]>([]);
   const [svNameMap, setSvNameMap] = useState<Record<string, string>>({});
-  const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Toast notifications
   const [toast, setToast] = useState<{ type: "success" | "error"; msg: string } | null>(null);
@@ -199,21 +207,61 @@ export default function BiCamSubPage() {
   };
 
   const loadBannedData = useCallback(
-    async (page = 1) => {
+    async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetchSinhVienCamPaginate({
-          page: String(page),
-          pageSize: String(PAGE_SIZE),
-          maSinhVien: mssvFilter.trim() || "-1",
+        const res = await fetchThongKeSvBiCamNoPhi({
+          keyWord: mssvFilter.trim() || hoTenFilter.trim() || "",
         });
         const payload = res?.payload;
-        const items: BannedItem[] = payload?.items ?? [];
+        const rawItems: any[] =
+          payload?.content ??
+          payload?.items ??
+          (Array.isArray(payload) ? payload : []);
+        const items: BannedItem[] = rawItems.map((item: any, index: number) => {
+          const maSinhVien =
+            item.maSinhVien ||
+            item.maSo ||
+            item.maso ||
+            item.studentId ||
+            "";
+          const lyDo =
+            item.reason ||
+            item.lyDo ||
+            item.danhSachNoPhi?.[0]?.tenLoaiSuKien ||
+            item.tenLoaiSuKien ||
+            "KhÃ´ng rÃµ lÃ½ do";
+          const ngayBatDau =
+            parseTimestamp(item.ngayBatDau) ||
+            parseTimestamp(item.startDate) ||
+            parseTimestamp(item.createdDate);
+          const ngayKetThuc =
+            parseTimestamp(item.ngayKetThuc) ||
+            parseTimestamp(item.endDate);
+
+          return {
+            camId: item.camId ?? index + 1,
+            sinhVienId: item.sinhVienId ?? item.studentId ?? item.id ?? "",
+            maSinhVien,
+            hoTen: item.hoTen || item.fullName || item.ten || "",
+            lyDo,
+            ngayBatDau,
+            ngayKetThuc,
+            loaiSuKienId:
+              item.loaiSuKienId ??
+              item.violationCount ??
+              item.tongSoLanNoPhi ??
+              0,
+            trangThai:
+              item.status ||
+              (ngayKetThuc && ngayKetThuc < Date.now()
+                ? "Háº¿t háº¡n"
+                : "Äang cáº¥m"),
+          };
+        });
         setBannedList(items);
-        const calculatedPages = Math.ceil((payload?.totalElements ?? 0) / PAGE_SIZE) || 1;
-        setTotalPages(calculatedPages);
-        setTotalElements(payload?.totalElements ?? 0);
+        setTotalElements(items.length);
 
         // Resolve student names
         const uniqueMaSv = [...new Set(items.map((i) => i.maSinhVien).filter(Boolean))];
@@ -242,12 +290,12 @@ export default function BiCamSubPage() {
         setLoading(false);
       }
     },
-    [mssvFilter]
+    [hoTenFilter, mssvFilter]
   );
 
   useEffect(() => {
-    loadBannedData(currentPage);
-  }, [currentPage, loadBannedData]);
+    loadBannedData();
+  }, [loadBannedData]);
 
   // Close suggestions on outside click
   useEffect(() => {
@@ -314,12 +362,10 @@ export default function BiCamSubPage() {
   const handleReset = () => {
     setHoTenFilter("");
     setMssvFilter("");
-    setCurrentPage(1);
   };
 
   const handleSearch = () => {
-    setCurrentPage(1);
-    loadBannedData(1);
+    loadBannedData();
   };
 
   // ---- Modal helpers ----
@@ -404,7 +450,7 @@ export default function BiCamSubPage() {
 
       setModalOpen(false);
       showToast("success", isEditing ? t("toastUpdateSuccess") : t("toastAddSuccess"));
-      loadBannedData(currentPage);
+      loadBannedData();
     } catch (err: any) {
       console.error("[BiCam] Save error:", err);
       showToast("error", err?.message || t("toastSaveError"));
@@ -602,7 +648,7 @@ export default function BiCamSubPage() {
                   {filteredBanned.map((row, index) => (
                     <Table.Tr key={row.camId || index} style={{ borderBottom: "1px solid #f1f5f9" }}>
                       <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
-                        {(currentPage - 1) * PAGE_SIZE + index + 1}
+                        {index + 1}
                       </Table.Td>
                       <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace", fontWeight: 600 }}>
                         {row.maSinhVien}
@@ -652,19 +698,6 @@ export default function BiCamSubPage() {
                 </Table.Tbody>
               </Table>
             </ScrollArea>
-
-            {totalPages > 1 && (
-              <Group justify="center" mt="lg">
-                <Pagination
-                  value={currentPage}
-                  onChange={(p) => setCurrentPage(p)}
-                  total={totalPages}
-                  size="sm"
-                  radius="md"
-                  color="#1f5ca9"
-                />
-              </Group>
-            )}
           </Card>
         </>
       )}

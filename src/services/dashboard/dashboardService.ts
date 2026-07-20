@@ -210,10 +210,13 @@ export const createOrUpdateSinhVienCam = async (data: any, isUpdate = false): Pr
 };
 
 // 9. Thống kê lượt ra vào sinh viên nợ học phí / bị cấm
-export const fetchThongKeSvBiCamNoPhi = async (params: { 
-  tuNgay: string; 
-  denNgay: string; 
+export const fetchThongKeSvBiCamNoPhi = async (params: {
+  tuNgay?: string;
+  denNgay?: string;
   groupBy?: string;
+  page?: number | string;
+  pageSize?: number | string;
+  keyWord?: string;
   " tuNgay"?: string;
   " denNgay"?: string;
   " groupBy"?: string;
