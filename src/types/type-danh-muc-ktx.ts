@@ -177,6 +177,8 @@ export type UiisSinhVienPayload = {
   hoc_ky: number;
   ma_phong?: string;
   khu_id?: number;
+  page?: number;
+  pageSize?: number;
 };
 
 export type UiisPhongPayload = {

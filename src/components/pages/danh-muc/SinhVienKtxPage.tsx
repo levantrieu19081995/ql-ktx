@@ -7,10 +7,13 @@ import {
   Badge,
   Box,
   Button,
+  Center,
   Divider,
   Group,
+  Loader,
   Modal,
   Paper,
+  Progress,
   ScrollArea,
   Select,
   SimpleGrid,
@@ -32,10 +35,12 @@ import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import CustomPagination from "@/components/common/CustomPagination";
 import { showNoti } from "@/components/common/showNoti";
 import {
+  type PagedFetchProgress,
+  fetchAllDanhSachSinhVienKtx,
+  fetchAllDanhSachSinhVienUiis,
   fetchDanhSachPhongKtx,
   fetchDanhSachSinhVienKtx,
   fetchDanhMucKhuKtx,
-  fetchDanhSachSinhVienUiis,
   syncDanhSachSinhVienUiis,
 } from "@/services/danh-muc/danhMucKtxService";
 import type { PhongKtx, SinhVienKtx } from "@/types/type-danh-muc-ktx";
@@ -48,6 +53,7 @@ type SelectOption = {
 };
 
 type SyncStatus = "SAME" | "CHANGED" | "NEW";
+type PreviewFilter = "ALL" | SyncStatus;
 
 type SyncPreviewRow = {
   stt: number;
@@ -82,6 +88,11 @@ type UiisSinhVienItem = {
   ma_khu?: string;
   maKhu?: string;
   ktx_td_khu_ma?: string;
+};
+
+type PreviewFetchProgressState = {
+  uiis: PagedFetchProgress | null;
+  current: PagedFetchProgress | null;
 };
 
 const normalizeString = (value?: string | null) => (value ?? "").trim();
@@ -130,6 +141,14 @@ export default function SinhVienKtxPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [confirmSyncLoading, setConfirmSyncLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [activePreviewFilter, setActivePreviewFilter] =
+    useState<PreviewFilter>("ALL");
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+  const [previewFetchProgress, setPreviewFetchProgress] =
+    useState<PreviewFetchProgressState>({
+      uiis: null,
+      current: null,
+    });
 
   const mapPhongOptions = (rooms: PhongKtx[]): SelectOption[] => [
     { value: "-1", label: "Tất cả" },
@@ -300,6 +319,11 @@ export default function SinhVienKtxPage() {
   const handleOpenSync = () => {
     setOpenedSync(true);
     setShowPreview(false);
+    setActivePreviewFilter("ALL");
+    setPreviewFetchProgress({
+      uiis: null,
+      current: null,
+    });
     setUiisItems([]);
     setCurrentItems([]);
     setSyncMaKhu(appliedFilters.maKhu || "-1");
@@ -309,6 +333,11 @@ export default function SinhVienKtxPage() {
   const handleCloseSync = () => {
     setOpenedSync(false);
     setShowPreview(false);
+    setActivePreviewFilter("ALL");
+    setPreviewFetchProgress({
+      uiis: null,
+      current: null,
+    });
     setUiisItems([]);
     setCurrentItems([]);
     setSyncMaKhu("-1");
@@ -333,23 +362,35 @@ export default function SinhVienKtxPage() {
   const handlePreviewSinhVienUiis = async () => {
     try {
       setPreviewLoading(true);
+      setPreviewFetchProgress({
+        uiis: null,
+        current: null,
+      });
 
       const payload = buildSyncPayload();
       const [uiisRes, currentRes] = await Promise.all([
-        fetchDanhSachSinhVienUiis(payload),
-        fetchDanhSachSinhVienKtx({
-          page: 1,
-          pageSize: 9999,
+        fetchAllDanhSachSinhVienUiis(payload, undefined, (progress) => {
+          setPreviewFetchProgress((prev) => ({
+            ...prev,
+            uiis: progress,
+          }));
+        }),
+        fetchAllDanhSachSinhVienKtx({
           maKhu: syncMaKhu || "-1",
           maPhong: syncMaPhong || "-1",
           maSinhVien: undefined,
           hoTen: undefined,
+        }, undefined, (progress) => {
+          setPreviewFetchProgress((prev) => ({
+            ...prev,
+            current: progress,
+          }));
         }),
       ]);
 
-      const uiisData = uiisRes?.payload?.data || uiisRes?.payload || [];
-      setUiisItems(Array.isArray(uiisData) ? uiisData : []);
-      setCurrentItems(currentRes?.items || []);
+      setUiisItems(Array.isArray(uiisRes) ? uiisRes : []);
+      setCurrentItems(currentRes || []);
+      setActivePreviewFilter("ALL");
       setShowPreview(true);
     } catch (error) {
       console.error("Lỗi xem trước sync sinh viên UIIS:", error);
@@ -357,6 +398,10 @@ export default function SinhVienKtxPage() {
       setShowPreview(false);
       setUiisItems([]);
       setCurrentItems([]);
+      setPreviewFetchProgress({
+        uiis: null,
+        current: null,
+      });
     } finally {
       setPreviewLoading(false);
     }
@@ -444,6 +489,24 @@ export default function SinhVienKtxPage() {
     };
   }, [previewRows]);
 
+  const filteredPreviewRows = useMemo(() => {
+    if (activePreviewFilter === "ALL") {
+      return previewRows;
+    }
+
+    return previewRows.filter((row) => row.status === activePreviewFilter);
+  }, [activePreviewFilter, previewRows]);
+
+  useEffect(() => {
+    if (!isFilterLoading) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      setIsFilterLoading(false);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [filteredPreviewRows, isFilterLoading]);
+
   const previewMessage = useMemo(() => {
     if (!showPreview) return null;
     if (previewSummary.totalUiis === 0) {
@@ -469,6 +532,26 @@ export default function SinhVienKtxPage() {
       text: "UIIS và dữ liệu hiện tại giống nhau, không có thay đổi.",
     };
   }, [previewSummary, showPreview]);
+
+  const previewFilterStatusText = useMemo(() => {
+    if (isFilterLoading) {
+      return "Đang lọc danh sách sinh viên...";
+    }
+
+    if (activePreviewFilter === "ALL") {
+      return `Đang hiển thị toàn bộ ${filteredPreviewRows.length} sinh viên.`;
+    }
+
+    return `Đang lọc ${filteredPreviewRows.length} sinh viên theo trạng thái ${activePreviewFilter}.`;
+  }, [activePreviewFilter, filteredPreviewRows.length, isFilterLoading]);
+
+  const getProgressPercent = (progress: PagedFetchProgress | null) => {
+    if (!progress?.totalPages || progress.totalPages <= 0) {
+      return progress ? 100 : 0;
+    }
+
+    return Math.min(100, Math.round((progress.currentPage / progress.totalPages) * 100));
+  };
 
   const canConfirmSync =
     showPreview &&
@@ -511,6 +594,55 @@ export default function SinhVienKtxPage() {
       >
         Không đổi
       </Badge>
+    );
+  };
+
+  const handlePreviewFilterChange = (filter: PreviewFilter) => {
+    setIsFilterLoading(true);
+    setActivePreviewFilter((current) =>
+      current === filter ? "ALL" : filter,
+    );
+  };
+
+  const renderSummaryCard = ({
+    label,
+    value,
+    color,
+    borderColor,
+    background,
+    filter,
+  }: {
+    label: string;
+    value: number;
+    color: string;
+    borderColor: string;
+    background: string;
+    filter: PreviewFilter;
+  }) => {
+    const isActive = activePreviewFilter === filter;
+
+    return (
+      <Paper
+        withBorder
+        radius="md"
+        p="md"
+        onClick={() => handlePreviewFilterChange(filter)}
+        style={{
+          borderColor,
+          background,
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          boxShadow: isActive ? `0 0 0 2px ${borderColor} inset` : undefined,
+          transform: isActive ? "translateY(-1px)" : undefined,
+        }}
+      >
+        <Text size="sm" c={color} fw={700}>
+          {label}
+        </Text>
+        <Text size="xl" fw={800} c={color}>
+          {value}
+        </Text>
+      </Paper>
     );
   };
 
@@ -710,6 +842,62 @@ export default function SinhVienKtxPage() {
             </Button>
           </Group>
 
+          {previewLoading && (
+            <Paper withBorder radius="md" p="md" style={{ background: "#f8fbff" }}>
+              <Stack gap="sm">
+                <Text fw={700} c="blue.7">
+                  Đang tải dữ liệu đối chiếu...
+                </Text>
+
+                <Box>
+                  <Group justify="space-between" mb={6}>
+                    <Text size="sm" fw={600}>
+                      UIIS
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {previewFetchProgress.uiis
+                        ? `${previewFetchProgress.uiis.currentPage}/${previewFetchProgress.uiis.totalPages || previewFetchProgress.uiis.currentPage} trang`
+                        : "Chưa bắt đầu"}
+                    </Text>
+                  </Group>
+                  <Progress
+                    value={getProgressPercent(previewFetchProgress.uiis)}
+                    color="blue"
+                    radius="xl"
+                  />
+                  {previewFetchProgress.uiis && (
+                    <Text size="xs" c="dimmed" mt={4}>
+                      Đã tải {previewFetchProgress.uiis.loadedItems} bản ghi
+                    </Text>
+                  )}
+                </Box>
+
+                <Box>
+                  <Group justify="space-between" mb={6}>
+                    <Text size="sm" fw={600}>
+                      Dữ liệu KTX hiện tại
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      {previewFetchProgress.current
+                        ? `${previewFetchProgress.current.currentPage}/${previewFetchProgress.current.totalPages || previewFetchProgress.current.currentPage} trang`
+                        : "Chưa bắt đầu"}
+                    </Text>
+                  </Group>
+                  <Progress
+                    value={getProgressPercent(previewFetchProgress.current)}
+                    color="green"
+                    radius="xl"
+                  />
+                  {previewFetchProgress.current && (
+                    <Text size="xs" c="dimmed" mt={4}>
+                      Đã tải {previewFetchProgress.current.loadedItems} bản ghi
+                    </Text>
+                  )}
+                </Box>
+              </Stack>
+            </Paper>
+          )}
+
           {showPreview && (
             <>
               <SimpleGrid cols={{ base: 1, md: 4 }} spacing="md">
@@ -731,7 +919,18 @@ export default function SinhVienKtxPage() {
                   withBorder
                   radius="md"
                   p="md"
-                  style={{ borderColor: "#cce8d1", background: "#f3fbf4" }}
+                  style={{
+                    borderColor: "#cce8d1",
+                    background: "#f3fbf4",
+                    cursor: "pointer",
+                    boxShadow:
+                      activePreviewFilter === "NEW"
+                        ? "0 0 0 2px #86efac inset"
+                        : undefined,
+                  }}
+                  onClick={() =>
+                    handlePreviewFilterChange("NEW")
+                  }
                 >
                   <Text size="sm" c="green.6" fw={700}>
                     Hoàn toàn mới
@@ -745,7 +944,18 @@ export default function SinhVienKtxPage() {
                   withBorder
                   radius="md"
                   p="md"
-                  style={{ borderColor: "#fde0b5", background: "#fffaf1" }}
+                  style={{
+                    borderColor: "#fde0b5",
+                    background: "#fffaf1",
+                    cursor: "pointer",
+                    boxShadow:
+                      activePreviewFilter === "CHANGED"
+                        ? "0 0 0 2px #fdba74 inset"
+                        : undefined,
+                  }}
+                  onClick={() =>
+                    handlePreviewFilterChange("CHANGED")
+                  }
                 >
                   <Text size="sm" c="orange.6" fw={700}>
                     Có thay đổi
@@ -759,7 +969,18 @@ export default function SinhVienKtxPage() {
                   withBorder
                   radius="md"
                   p="md"
-                  style={{ borderColor: "#e5e7eb", background: "#fafafa" }}
+                  style={{
+                    borderColor: "#e5e7eb",
+                    background: "#fafafa",
+                    cursor: "pointer",
+                    boxShadow:
+                      activePreviewFilter === "SAME"
+                        ? "0 0 0 2px #d1d5db inset"
+                        : undefined,
+                  }}
+                  onClick={() =>
+                    handlePreviewFilterChange("SAME")
+                  }
                 >
                   <Text size="sm" c="gray.6" fw={700}>
                     Không đổi
@@ -769,6 +990,32 @@ export default function SinhVienKtxPage() {
                   </Text>
                 </Paper>
               </SimpleGrid>
+
+              <Text size="sm" c="dimmed">
+                {previewFilterStatusText}
+              </Text>
+
+              <Text size="sm" c="dimmed" style={{ display: "none" }}>
+                {isFilterLoading
+                  ? "Đang lọc danh sách sinh viên..."
+                  : activePreviewFilter === "ALL"
+                  ? `Äang hiá»ƒn thá»‹ toĂ n bá»™ ${filteredPreviewRows.length} sinh viĂªn.`
+                  : `Äang lá»c ${filteredPreviewRows.length} sinh viĂªn theo tráº¡ng thĂ¡i ${activePreviewFilter}.`}
+              </Text>
+
+              {isFilterLoading && (
+                <Center py="xs">
+                  <Group gap="xs">
+                    <Loader size="sm" color="blue" />
+                    <Text size="sm" c="dimmed">
+                      Đang cập nhật danh sách...
+                    </Text>
+                    <Text size="sm" c="dimmed">
+                      Đang cập nhật danh sách...
+                    </Text>
+                  </Group>
+                </Center>
+              )}
 
               <ScrollArea h={420}>
                 <Table withColumnBorders highlightOnHover>
@@ -789,7 +1036,7 @@ export default function SinhVienKtxPage() {
                   </Table.Thead>
 
                   <Table.Tbody>
-                    {previewRows.map((row) => (
+                    {filteredPreviewRows.map((row) => (
                       <Table.Tr
                         key={`${row.maSinhVien}-${row.stt}`}
                         style={{

@@ -367,22 +367,23 @@ export default function BiCamSubPage() {
           ? res.payload
           : [];
 
-        const flattened: BannedItem[] = payload.flatMap((student, studentIndex) =>
-          (student.danhSachCam || []).map((item, itemIndex) => ({
-            camId: studentIndex * 1000 + itemIndex + 1,
-            sinhVienId: 0,
-            lyDo: item.lyDo || "",
-            ngayBatDau: item.ngayBatDau
-              ? new Date(item.ngayBatDau).getTime()
-              : null,
-            ngayKetThuc: item.ngayKetThuc
-              ? new Date(item.ngayKetThuc).getTime()
-              : null,
-            loaiSuKienId: Number(item.loaiSuKienId ?? 0),
-            maSinhVien: student.maSinhVien || "",
-            hoTen: student.hoTen || undefined,
-            tenLoaiSuKien: item.tenLoaiSuKien || null,
-          })),
+        const flattened: BannedItem[] = payload.flatMap(
+          (student, studentIndex) =>
+            (student.danhSachCam || []).map((item, itemIndex) => ({
+              camId: studentIndex * 1000 + itemIndex + 1,
+              sinhVienId: 0,
+              lyDo: item.lyDo || "",
+              ngayBatDau: item.ngayBatDau
+                ? new Date(item.ngayBatDau).getTime()
+                : null,
+              ngayKetThuc: item.ngayKetThuc
+                ? new Date(item.ngayKetThuc).getTime()
+                : null,
+              loaiSuKienId: Number(item.loaiSuKienId ?? 0),
+              maSinhVien: student.maSinhVien || "",
+              hoTen: student.hoTen || undefined,
+              tenLoaiSuKien: item.tenLoaiSuKien || null,
+            })),
         );
 
         const filtered = flattened.filter((item) => {
@@ -393,7 +394,9 @@ export default function BiCamSubPage() {
               .includes(mssvFilter.toLowerCase());
           const nameMatch =
             !hoTenFilter ||
-            (item.hoTen || "").toLowerCase().includes(hoTenFilter.toLowerCase());
+            (item.hoTen || "")
+              .toLowerCase()
+              .includes(hoTenFilter.toLowerCase());
           return mssvMatch && nameMatch;
         });
 
@@ -424,58 +427,6 @@ export default function BiCamSubPage() {
       }
     },
     [hoTenFilter, mssvFilter],
-  );
-
-  const loadBannedData = useCallback(
-    async (page = 1) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetchSinhVienCamPaginate({
-          page: String(page),
-          pageSize: String(PAGE_SIZE),
-          maSinhVien: mssvFilter.trim() || "-1",
-        });
-        const payload = res?.payload;
-        const items: BannedItem[] = payload?.items ?? [];
-        setBannedList(items);
-        const calculatedPages =
-          Math.ceil((payload?.totalElements ?? 0) / PAGE_SIZE) || 1;
-        setTotalPages(calculatedPages);
-        setTotalElements(payload?.totalElements ?? 0);
-
-        // Resolve student names
-        const uniqueMaSv = [
-          ...new Set(items.map((i) => i.maSinhVien).filter(Boolean)),
-        ];
-        if (uniqueMaSv.length > 0) {
-          try {
-            const svRes = await fetchSinhVienPaginate({
-              page: 1,
-              pageSize: 200,
-              maKhu: "-1",
-              maPhong: "-1",
-            });
-            const svItems: any[] = svRes?.payload?.items ?? [];
-            const nameMap: Record<string, string> = {};
-            svItems.forEach((sv: any) => {
-              if (sv.maSinhVien)
-                nameMap[sv.maSinhVien] =
-                  sv.hoTen || sv.ten || sv.hoVaTen || sv.maSinhVien;
-            });
-            setSvNameMap(nameMap);
-          } catch {
-            // ignore
-          }
-        }
-      } catch (err: any) {
-        setError(err?.message || "Lỗi khi tải dữ liệu sinh viên bị cấm");
-        setBannedList([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [mssvFilter],
   );
 
   useEffect(() => {
@@ -556,34 +507,6 @@ export default function BiCamSubPage() {
   const handleSearch = () => {
     setCurrentPage(1);
     loadBannedThongKeData(1);
-  };
-
-  // ---- Modal helpers ----
-  const openAddModal = () => {
-    setIsEditing(false);
-    setForm(makeDefaultForm());
-    setSvSearch("");
-    setSvSuggestions([]);
-    setFormErrors({});
-    setModalOpen(true);
-  };
-
-  const openEditModal = (item: BannedItem) => {
-    setIsEditing(true);
-    const hoTenResolved = svNameMap[item.maSinhVien] || item.hoTen || "";
-    setForm({
-      camId: item.camId,
-      sinhVienId: String(item.sinhVienId),
-      maSinhVien: item.maSinhVien,
-      hoTen: hoTenResolved,
-      lyDo: item.lyDo,
-      ngayBatDau: item.ngayBatDau ? new Date(item.ngayBatDau) : null,
-      ngayKetThuc: item.ngayKetThuc ? new Date(item.ngayKetThuc) : null,
-      loaiSuKienId: String(item.loaiSuKienId),
-    });
-    setSvSearch(item.maSinhVien);
-    setFormErrors({});
-    setModalOpen(true);
   };
 
   const validateForm = (): boolean => {
@@ -1147,9 +1070,9 @@ export default function BiCamSubPage() {
                         )}
                       </Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
-                         <Badge color="orange" variant="light" size="sm">
-                           {row.tenLoaiSuKien || `ID: ${row.loaiSuKienId}`}
-                         </Badge>
+                        <Badge color="orange" variant="light" size="sm">
+                          {row.tenLoaiSuKien || `ID: ${row.loaiSuKienId}`}
+                        </Badge>
                       </Table.Td>
                       {/* <Table.Td style={{ textAlign: "center" }}>
                         <Tooltip label={t("save")} withArrow>

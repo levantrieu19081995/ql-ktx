@@ -225,6 +225,116 @@ export const fetchDanhSachSinhVienUiis = async (data: UiisSinhVienPayload) => {
   return await post(API_URLS.danhMucKtx.sinhVien.uiisDanhSach, data);
 };
 
+const DEFAULT_UIIS_PAGE_SIZE = 200;
+const DEFAULT_KTX_PAGE_SIZE = 200;
+
+export type PagedFetchProgress = {
+  currentPage: number;
+  totalPages?: number;
+  loadedItems: number;
+  pageSize: number;
+};
+
+const extractPagedItems = <T>(payload: any): T[] => {
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload)) return payload;
+  return [];
+};
+
+const extractTotalPages = (payload: any, pageSize: number, itemCount: number) => {
+  const rawTotalPages = Number(payload?.totalPages ?? payload?.pageCount);
+  if (Number.isFinite(rawTotalPages) && rawTotalPages > 0) {
+    return rawTotalPages;
+  }
+
+  const rawTotalElements = Number(
+    payload?.totalElements ?? payload?.totalItems ?? payload?.count
+  );
+  if (Number.isFinite(rawTotalElements) && rawTotalElements >= 0 && pageSize > 0) {
+    return Math.max(1, Math.ceil(rawTotalElements / pageSize));
+  }
+
+  if (itemCount < pageSize) {
+    return 1;
+  }
+
+  return undefined;
+};
+
+export const fetchAllDanhSachSinhVienUiis = async (
+  data: UiisSinhVienPayload,
+  pageSize = DEFAULT_UIIS_PAGE_SIZE,
+  onProgress?: (progress: PagedFetchProgress) => void
+) => {
+  const allItems: any[] = [];
+  let page = 1;
+  let totalPages: number | undefined;
+
+  while (true) {
+    const res = await fetchDanhSachSinhVienUiis({
+      ...data,
+      page,
+      pageSize,
+    });
+
+    const payload = res?.payload ?? res;
+    const items = extractPagedItems(payload);
+    const isLastPage = Boolean(payload?.last);
+
+    allItems.push(...items);
+
+    totalPages =
+      totalPages ?? extractTotalPages(payload, pageSize, items.length);
+
+    onProgress?.({
+      currentPage: page,
+      totalPages,
+      loadedItems: allItems.length,
+      pageSize,
+    });
+
+    if (isLastPage) break;
+    if (totalPages && page >= totalPages) break;
+    if (items.length === 0) break;
+    if (!totalPages && items.length < pageSize) break;
+
+    page += 1;
+  }
+
+  return allItems;
+};
+
+export const fetchAllDanhSachSinhVienKtx = async (
+  params?: DanhSachSinhVienKtxRequest,
+  pageSize = DEFAULT_KTX_PAGE_SIZE,
+  onProgress?: (progress: PagedFetchProgress) => void
+): Promise<SinhVienKtx[]> => {
+  const allItems: SinhVienKtx[] = [];
+  let page = 1;
+  let totalPages = 1;
+
+  do {
+    const res = await fetchDanhSachSinhVienKtx({
+      ...params,
+      page,
+      pageSize,
+    });
+
+    allItems.push(...(res?.items || []));
+    totalPages = Math.max(res?.totalPages || 1, 1);
+    onProgress?.({
+      currentPage: page,
+      totalPages,
+      loadedItems: allItems.length,
+      pageSize,
+    });
+    page += 1;
+  } while (page <= totalPages);
+
+  return allItems;
+};
+
 export const syncDanhSachSinhVienUiis = async (data: UiisSinhVienPayload) => {
   return await post(API_URLS.danhMucKtx.sinhVien.uiisSync, data);
 };
