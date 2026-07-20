@@ -18,6 +18,10 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
       }}
       padding={0}
       styles={(theme) => ({
+        root: {
+          height: "100dvh",
+          overflow: "hidden",
+        },
         header: {
           background: "white",
           borderBottom: "1px solid #edf1f7",
@@ -28,7 +32,9 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
           borderRight: "1px solid #edf1f7",
         },
         main: {
-          minHeight: "100dvh",
+          height: "100dvh",
+          overflowY: "auto",
+          overflowX: "hidden",
           background:
             "linear-gradient(rgba(37, 99, 235, 0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(37, 99, 235, 0.018) 1px, transparent 1px), #fbfcff",
           backgroundSize: "32px 32px",
