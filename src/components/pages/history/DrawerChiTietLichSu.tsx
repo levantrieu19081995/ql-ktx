@@ -80,39 +80,39 @@ export const DrawerChiTietLichSu: React.FC<ThuocTinhDrawerChiTietLichSu> = ({
             {isStranger ? (
               <>
                 <div className="details-item">
-                  <span className="details-label">MÃ SỐ</span>
+                  <span className="details-label">Mã số</span>
                   <span className="details-val td-mono-val">---</span>
                 </div>
                 <div className="details-item">
-                  <span className="details-label">LOẠI ĐỐI TƯỢNG</span>
+                  <span className="details-label">Loại đổi tượng</span>
                   <span className="details-val td-bold-val">---</span>
                 </div>
                 <div className="details-item">
-                  <span className="details-label">THỜI GIAN KIỂM TRA</span>
+                  <span className="details-label">Thời gian kiểm tra</span>
                   <span className="details-val">
                     {lichSuDuocChon.thoiGian || "N/A"}
                   </span>
                 </div>
                 <div className="details-item">
-                  <span className="details-label">NGÀY PHÁT HIỆN</span>
+                  <span className="details-label">Ngày phát hiện</span>
                   <span className="details-val">
                     {lichSuDuocChon.ngayNguoiLa || "N/A"}
                   </span>
                 </div>
                 <div className="details-item">
-                  <span className="details-label">GIỜ PHÁT HIỆN</span>
+                  <span className="details-label">Giờ phát hiện</span>
                   <span className="details-val">
                     {lichSuDuocChon.gioNguoiLa || "N/A"}
                   </span>
                 </div>
                 <div className="details-item">
-                  <span className="details-label">KHU KTX PHÁT HIỆN</span>
+                  <span className="details-label">Khu KTX phát hiện</span>
                   <span className="details-val">
                     {lichSuDuocChon.tenKtx || "N/A"}
                   </span>
                 </div>
                 <div className="details-item">
-                  <span className="details-label">THIẾT BỊ / CAMERA</span>
+                  <span className="details-label">Thiết bị/Camera</span>
                   <span className="details-val">
                     {lichSuDuocChon.thietBi || "N/A"}
                   </span>
@@ -122,7 +122,7 @@ export const DrawerChiTietLichSu: React.FC<ThuocTinhDrawerChiTietLichSu> = ({
               <>
                 <div className="details-item">
                   <span className="details-label">{t("filter.studentId")}</span>
-                  <span className="details-val td-mono-val">
+                  <span className="details-val">
                     {lichSuDuocChon.mssv || "N/A"}
                   </span>
                 </div>
@@ -183,13 +183,13 @@ export const DrawerChiTietLichSu: React.FC<ThuocTinhDrawerChiTietLichSu> = ({
         <Box
           style={{
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            justifyContent: "flex-end",
+            alignItems: "flex-end",
             marginTop: "25px",
             width: "100%",
           }}
         >
-          {!isStranger && khiPhanHoi ? (
+          {/* {!isStranger && khiPhanHoi ? (
             <Button
               variant="light"
               color="red"
@@ -202,7 +202,7 @@ export const DrawerChiTietLichSu: React.FC<ThuocTinhDrawerChiTietLichSu> = ({
             </Button>
           ) : (
             <div />
-          )}
+          )} */}
           <Button
             variant="outline"
             color="gray"
@@ -223,14 +223,14 @@ const drawerDetailStyles = `
 .drawer-title {
     font-weight: bold;
     color: #27272a;
-    font-family: sans-serif;
+    font-family: inherit;
 }
 
 .drawer-body {
     display: flex;
     flex-direction: column;
     gap: 0.625rem;
-    font-family: sans-serif;
+    font-family: inherit;
     max-height: calc(100vh - 90px);
     overflow-y: auto;
     padding-right: 6px;
@@ -281,31 +281,39 @@ const drawerDetailStyles = `
 
 .details-item {
     display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
 }
 
 .details-label {
-    font-size: 9px;
+    font-size: 0.7rem;
     font-weight: bold;
     color: #71717a;
-    text-transform: uppercase;
+    // text-transform: uppercase;
     letter-spacing: 0.025em;
+    flex: 0 0 92px;
+    line-height: 1.35;
 }
 
 .details-val {
     font-size: 0.825rem;
     color: #18181b;
+    font-weight: 700;
+    line-height: 1.4;
+    flex: 1 1 auto;
+    min-width: 0;
+    word-break: break-word;
 }
 
 .td-mono-val {
     font-family: monospace;
-    font-weight: bold;
+    font-weight: 700;
     color: #3f3f46;
 }
 
 .td-bold-val {
-    font-weight: bold;
+    font-weight: 700;
     color: #27272a;
 }
 

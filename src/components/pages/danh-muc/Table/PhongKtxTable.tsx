@@ -6,11 +6,15 @@ import type { PhongKtx } from "@/types/type-danh-muc-ktx";
 type PhongKtxTableProps = {
   items: PhongKtx[];
   onSelectRoom?: (item: PhongKtx) => void;
+  page?: number;
+  pageSize?: number;
 };
 
 export default function PhongKtxTable({
   items,
   onSelectRoom,
+  page = 1,
+  pageSize = 10,
 }: PhongKtxTableProps) {
   return (
     <Card withBorder radius="md" p={0}>
@@ -40,7 +44,9 @@ export default function PhongKtxTable({
                   cursor: onSelectRoom ? "pointer" : "default",
                 }}
               >
-                <Table.Td style={{ textAlign: "center" }}>{index + 1}</Table.Td>
+                <Table.Td style={{ textAlign: "center" }}>
+                  {(page - 1) * pageSize + index + 1}
+                </Table.Td>
                 <Table.Td>
                   <Text fw={600} c={onSelectRoom ? "blue.7" : undefined}>
                     {item.phongMa || item.maPhong || "-"}

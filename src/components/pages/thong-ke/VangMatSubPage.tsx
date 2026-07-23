@@ -22,6 +22,7 @@ import {
   SimpleGrid,
   Divider,
   ActionIcon,
+  Box,
 } from "@mantine/core";
 import {
   IconSearch,
@@ -40,25 +41,46 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import CustomPagination from "@/components/common/CustomPagination";
 import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
+import PageSectionHeader from "@/components/common/PageSectionHeader";
+import CustomPagination from "@/components/common/CustomPagination";
+import ExcelExportForm from "@/components/common/excel/excelHelper";
+import PdfExportForm from "@/components/common/pdf/pdfHelper";
+
+type DuLieuXuat = {
+  title: string;
+  fileName: string;
+  columnLabels: string[];
+  data: Record<string, string | number | boolean | null | undefined>[];
+  sheetName?: string;
+};
 
 const resolveKhu = (item: any): string => {
   if (!item) return "Khu A";
-  let rawKhu = item.tenKhu || item.maKhu || item.danhSachVao?.[0]?.tenKhu || item.danhSachRa?.[0]?.tenKhu || "";
-  
+  let rawKhu =
+    item.tenKhu ||
+    item.maKhu ||
+    item.danhSachVao?.[0]?.tenKhu ||
+    item.danhSachRa?.[0]?.tenKhu ||
+    "";
+
   if (rawKhu === "A" || rawKhu === "B") {
     rawKhu = `Khu ${rawKhu}`;
   }
-  
-  const phong = item.maPhong || item.tenPhong || item.danhSachVao?.[0]?.maPhong || item.danhSachRa?.[0]?.maPhong || "";
+
+  const phong =
+    item.maPhong ||
+    item.tenPhong ||
+    item.danhSachVao?.[0]?.maPhong ||
+    item.danhSachRa?.[0]?.maPhong ||
+    "";
   if (!rawKhu && phong) {
     const firstChar = String(phong).charAt(0).toUpperCase();
     if (["A", "B", "C", "D"].includes(firstChar)) {
       rawKhu = `Khu ${firstChar}`;
     }
   }
-  
+
   return rawKhu || "Khu A";
 };
 
@@ -67,6 +89,106 @@ const getDefaultDates = () => {
   const tu = new Date();
   tu.setDate(tu.getDate() - 60); // 60 ngày trước (tầm 2 tháng)
   return { tu, den };
+};
+
+const AbsentChartLegend = () => {
+  return (
+    <Group justify="center" align="flex-end" gap="md" mt={8} wrap="wrap">
+      {/* Minh họa trục biểu đồ */}
+      <Box
+        style={{
+          position: "relative",
+          width: 116,
+          height: 40,
+          flexShrink: 0,
+        }}
+      >
+        {/* Tên trục Y */}
+        <Text
+          size="10px"
+          fw={600}
+          c="#64748b"
+          style={{
+            position: "absolute",
+            top: -2,
+            left: 0,
+            whiteSpace: "nowrap",
+          }}
+        >
+          Số sinh viên
+        </Text>
+
+        {/* Trục Y */}
+        <Box
+          style={{
+            position: "absolute",
+            left: 5,
+            bottom: 4,
+            width: 1,
+            height: 21,
+            backgroundColor: "#64748b",
+          }}
+        />
+
+        {/* Trục X */}
+        <Box
+          style={{
+            position: "absolute",
+            left: 5,
+            bottom: 4,
+            width: 42,
+            height: 1,
+            backgroundColor: "#64748b",
+          }}
+        />
+
+        {/* Cột minh họa */}
+        <Box
+          style={{
+            position: "absolute",
+            left: 17,
+            bottom: 5,
+            width: 10,
+            height: 13,
+            borderRadius: "2px 2px 0 0",
+            backgroundColor: "#1f5ca9",
+          }}
+        />
+
+        {/* Tên trục X */}
+        <Text
+          size="10px"
+          fw={600}
+          c="#64748b"
+          style={{
+            position: "absolute",
+            left: 52,
+            bottom: 0,
+            whiteSpace: "nowrap",
+            right: -4,
+          }}
+        >
+          Số ngày vắng
+        </Text>
+      </Box>
+
+      {/* Chú thích series */}
+      <Group gap={5} wrap="nowrap">
+        <Box
+          style={{
+            width: 11,
+            height: 11,
+            borderRadius: 2,
+            backgroundColor: "#1f5ca9",
+          }}
+        />
+
+        <Text size="12px" c="#64748b">
+          Số lượng
+        </Text>
+      </Group>
+    </Group>
+  );
 };
 
 export default function VangMatSubPage() {
@@ -89,9 +211,11 @@ export default function VangMatSubPage() {
 
   const [hoTen, setHoTen] = useState("");
   const [mssv, setMssv] = useState("");
-  
+
   const [tuNgay, setTuNgay] = useState<Date | null>(() => getDefaultDates().tu);
-  const [denNgay, setDenNgay] = useState<Date | null>(() => getDefaultDates().den);
+  const [denNgay, setDenNgay] = useState<Date | null>(
+    () => getDefaultDates().den,
+  );
   const [khuKtx, setKhuKtx] = useState("Tất cả");
   const [trangThai, setTrangThai] = useState("Tất cả");
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
@@ -100,102 +224,134 @@ export default function VangMatSubPage() {
   const [error, setError] = useState<string | null>(null);
   const [absentList, setAbsentList] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const pageSize = 10;
+  const [duLieuXuatExcel, setDuLieuXuatExcel] = useState<DuLieuXuat | null>(
+    null,
+  );
+  const [duLieuXuatPdf, setDuLieuXuatPdf] = useState<DuLieuXuat | null>(null);
 
-  const loadAbsentData = useCallback(async (overrides?: { tuNgay?: Date | null; denNgay?: Date | null }) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const activeTu = (overrides && overrides.tuNgay !== undefined) ? overrides.tuNgay : tuNgay;
-      const activeDen = (overrides && overrides.denNgay !== undefined) ? overrides.denNgay : denNgay;
+  const loadAbsentData = useCallback(
+    async (overrides?: { tuNgay?: Date | null; denNgay?: Date | null }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const activeTu =
+          overrides && overrides.tuNgay !== undefined
+            ? overrides.tuNgay
+            : tuNgay;
+        const activeDen =
+          overrides && overrides.denNgay !== undefined
+            ? overrides.denNgay
+            : denNgay;
 
-      const formatDate = (dateVal: Date | null, defaultToToday: boolean): string => {
-        if (dateVal && !isNaN(dateVal.getTime())) {
-          const mm = String(dateVal.getMonth() + 1).padStart(2, "0");
-          const dd = String(dateVal.getDate()).padStart(2, "0");
-          const yyyy = dateVal.getFullYear();
+        const formatDate = (
+          dateVal: Date | null,
+          defaultToToday: boolean,
+        ): string => {
+          if (dateVal && !isNaN(dateVal.getTime())) {
+            const mm = String(dateVal.getMonth() + 1).padStart(2, "0");
+            const dd = String(dateVal.getDate()).padStart(2, "0");
+            const yyyy = dateVal.getFullYear();
+            return `${mm}/${dd}/${yyyy}`;
+          }
+          const fallbackDate = defaultToToday
+            ? getDefaultDates().den
+            : getDefaultDates().tu;
+          const mm = String(fallbackDate.getMonth() + 1).padStart(2, "0");
+          const dd = String(fallbackDate.getDate()).padStart(2, "0");
+          const yyyy = fallbackDate.getFullYear();
           return `${mm}/${dd}/${yyyy}`;
-        }
-        const fallbackDate = defaultToToday ? getDefaultDates().den : getDefaultDates().tu;
-        const mm = String(fallbackDate.getMonth() + 1).padStart(2, "0");
-        const dd = String(fallbackDate.getDate()).padStart(2, "0");
-        const yyyy = fallbackDate.getFullYear();
-        return `${mm}/${dd}/${yyyy}`;
-      };
-
-      const res = await fetchThongKeRaVao({
-        tuNgay: formatDate(activeTu, false),
-        denNgay: formatDate(activeDen, true),
-      });
-
-      const list = res?.payload || [];
-      const endTs = activeDen && !isNaN(activeDen.getTime()) ? activeDen.getTime() : Date.now();
-      
-      const mappedAbsent = list.map((item: any, index: number) => {
-        let lastActiveTs = 0;
-        
-        // Tìm timestamp của lần quét thẻ gần nhất trong danh sách vào và ra
-        if (Array.isArray(item.danhSachVao)) {
-          item.danhSachVao.forEach((s: any) => {
-            const tc = Number(s.timecheck);
-            if (!isNaN(tc) && tc > 0) {
-              const ms = tc < 10000000000 ? tc * 1000 : tc;
-              if (ms > lastActiveTs) lastActiveTs = ms;
-            }
-          });
-        }
-        
-        if (Array.isArray(item.danhSachRa)) {
-          item.danhSachRa.forEach((s: any) => {
-            const tc = Number(s.timecheck);
-            if (!isNaN(tc) && tc > 0) {
-              const ms = tc < 10000000000 ? tc * 1000 : tc;
-              if (ms > lastActiveTs) lastActiveTs = ms;
-            }
-          });
-        }
-
-        // Tính số ngày vắng mặt
-        let absentDays = 0;
-        let lastScanStr = "Chưa quét";
-        
-        if (lastActiveTs > 0) {
-          const diffMs = endTs - lastActiveTs;
-          absentDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-          
-          const d = new Date(lastActiveTs);
-          const dd = String(d.getDate()).padStart(2, "0");
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const yyyy = d.getFullYear();
-          lastScanStr = `${dd}/${mm}/${yyyy}`;
-        } else {
-          // Nếu chưa bao giờ quét thẻ trong kỳ, tính vắng từ ngày bắt đầu truy vấn
-          const start = activeTu || getDefaultDates().tu;
-          const diffMs = endTs - start.getTime();
-          absentDays = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-        }
-
-        return {
-          stt: index + 1,
-          studentId: item.maSinhVien || item.maSo || `SV${index}`,
-          hoTen: item.hoTen || "Chưa rõ",
-          ktx: resolveKhu(item),
-          room: item.maPhong || "--",
-          absentDays,
-          lastScan: lastScanStr,
-          status: absentDays > 15 ? "Cảnh báo" : absentDays > 7 ? "Nghi vấn" : "Hợp lệ",
         };
-      });
 
-      setAbsentList(mappedAbsent);
-      console.log("[VangMat] fetchThongKeRaVao payload sample:", list[0]);
-    } catch (err: any) {
-      setError(err?.message || "Lỗi khi tải dữ liệu sinh viên vắng mặt");
-      setAbsentList([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [tuNgay, denNgay]);
+        const res = await fetchThongKeRaVao({
+          tuNgay: formatDate(activeTu, false),
+          denNgay: formatDate(activeDen, true),
+        });
+
+        const list = res?.payload || [];
+        const endTs =
+          activeDen && !isNaN(activeDen.getTime())
+            ? activeDen.getTime()
+            : Date.now();
+
+        const mappedAbsent = list.map((item: any, index: number) => {
+          let lastActiveTs = 0;
+
+          // Tìm timestamp của lần quét thẻ gần nhất trong danh sách vào và ra
+          if (Array.isArray(item.danhSachVao)) {
+            item.danhSachVao.forEach((s: any) => {
+              const tc = Number(s.timecheck);
+              if (!isNaN(tc) && tc > 0) {
+                const ms = tc < 10000000000 ? tc * 1000 : tc;
+                if (ms > lastActiveTs) lastActiveTs = ms;
+              }
+            });
+          }
+
+          if (Array.isArray(item.danhSachRa)) {
+            item.danhSachRa.forEach((s: any) => {
+              const tc = Number(s.timecheck);
+              if (!isNaN(tc) && tc > 0) {
+                const ms = tc < 10000000000 ? tc * 1000 : tc;
+                if (ms > lastActiveTs) lastActiveTs = ms;
+              }
+            });
+          }
+
+          // Tính số ngày vắng mặt
+          let absentDays = 0;
+          let lastScanStr = "Chưa quét";
+
+          if (lastActiveTs > 0) {
+            const diffMs = endTs - lastActiveTs;
+            absentDays = Math.max(
+              0,
+              Math.floor(diffMs / (1000 * 60 * 60 * 24)),
+            );
+
+            const d = new Date(lastActiveTs);
+            const dd = String(d.getDate()).padStart(2, "0");
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const yyyy = d.getFullYear();
+            lastScanStr = `${dd}/${mm}/${yyyy}`;
+          } else {
+            // Nếu chưa bao giờ quét thẻ trong kỳ, tính vắng từ ngày bắt đầu truy vấn
+            const start = activeTu || getDefaultDates().tu;
+            const diffMs = endTs - start.getTime();
+            absentDays = Math.max(
+              1,
+              Math.floor(diffMs / (1000 * 60 * 60 * 24)),
+            );
+          }
+
+          return {
+            stt: index + 1,
+            studentId: item.maSinhVien || item.maSo || `SV${index}`,
+            hoTen: item.hoTen || "Chưa rõ",
+            ktx: resolveKhu(item),
+            room: item.maPhong || "--",
+            absentDays,
+            lastScan: lastScanStr,
+            status:
+              absentDays > 15
+                ? "Cảnh báo"
+                : absentDays > 7
+                  ? "Nghi vấn"
+                  : "Hợp lệ",
+          };
+        });
+
+        setAbsentList(mappedAbsent);
+        console.log("[VangMat] fetchThongKeRaVao payload sample:", list[0]);
+      } catch (err: any) {
+        setError(err?.message || "Lỗi khi tải dữ liệu sinh viên vắng mặt");
+        setAbsentList([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [tuNgay, denNgay],
+  );
 
   useEffect(() => {
     loadAbsentData();
@@ -215,7 +371,9 @@ export default function VangMatSubPage() {
 
   const normalizeKhu = (val: string | undefined | null): string => {
     if (!val) return "";
-    const s = String(val).toLowerCase().replace(/[_\-\s]+/g, "");
+    const s = String(val)
+      .toLowerCase()
+      .replace(/[_\-\s]+/g, "");
     if (s.includes("a")) return "Khu A";
     if (s.includes("b")) return "Khu B";
     return val;
@@ -232,286 +390,595 @@ export default function VangMatSubPage() {
     const ktxStr = item.ktx || "";
     const statusStr = item.status || "";
 
-    const matchName = hoTen.trim() === "" || name.toLowerCase().includes(hoTen.toLowerCase());
-    const matchMssv = mssv.trim() === "" || id.toLowerCase().includes(mssv.toLowerCase());
+    const matchName =
+      hoTen.trim() === "" || name.toLowerCase().includes(hoTen.toLowerCase());
+    const matchMssv =
+      mssv.trim() === "" || id.toLowerCase().includes(mssv.toLowerCase());
     const matchKhu = khuKtx === "Tất cả" || normalizeKhu(ktxStr) === khuKtx;
     const matchTrangThai = trangThai === "Tất cả" || statusStr === trangThai;
     return matchName && matchMssv && matchKhu && matchTrangThai;
   });
 
+  const taoDuLieuXuatVangMat = () => {
+    return filteredAbsent.map((item, index) => ({
+      [t("no")]: index + 1,
+      [t("studentId")]: item.studentId,
+      [t("fullName")]: item.hoTen,
+      [t("dormZone")]: getTranslatedKhu(item.ktx),
+      [t("room")]: item.room,
+      [t("daysAbsent")]: item.absentDays,
+      [t("lastActive")]: item.lastScan,
+      [t("status")]: getTranslatedStatus(item.status),
+    }));
+  };
+
+  const xuLyXuatExcel = () => {
+    const columnLabels = [
+      t("no"),
+      t("studentId"),
+      t("fullName"),
+      t("dormZone"),
+      t("room"),
+      t("daysAbsent"),
+      t("lastActive"),
+      t("status"),
+    ];
+
+    setDuLieuXuatExcel({
+      title: "Danh sách sinh viên vắng mặt",
+      fileName: `Danh_Sach_Sinh_Vien_Vang_Mat_${new Date().toISOString().split("T")[0]}`,
+      sheetName: "Sinh viên vắng mặt",
+      columnLabels,
+      data: taoDuLieuXuatVangMat(),
+    });
+  };
+
+  const xuLyXuatPdf = () => {
+    const columnLabels = [
+      t("no"),
+      t("studentId"),
+      t("fullName"),
+      t("dormZone"),
+      t("room"),
+      t("daysAbsent"),
+      t("lastActive"),
+      t("status"),
+    ];
+
+    setDuLieuXuatPdf({
+      title: "Danh sách sinh viên vắng mặt",
+      fileName: `Danh_Sach_Sinh_Vien_Vang_Mat_${new Date().toISOString().split("T")[0]}`,
+      columnLabels,
+      data: taoDuLieuXuatVangMat(),
+    });
+  };
+
   const totalPages = Math.ceil(filteredAbsent.length / pageSize);
-  const paginatedAbsent = filteredAbsent.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedAbsent = filteredAbsent.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
 
   // Calculate dynamic bar chart from data — phân nhóm vắng mặt
   const chartData = [
     {
-      name: t("range5to10") || "5–10 ngày",
-      value: filteredAbsent.filter(s => s.absentDays >= 5 && s.absentDays <= 10).length
+      name: t("range5to10") || "5–10",
+      value: filteredAbsent.filter(
+        (s) => s.absentDays >= 5 && s.absentDays <= 10,
+      ).length,
     },
     {
-      name: t("range11to15") || "11–15 ngày",
-      value: filteredAbsent.filter(s => s.absentDays > 10 && s.absentDays <= 15).length
+      name: t("range11to15") || "11–15",
+      value: filteredAbsent.filter(
+        (s) => s.absentDays > 10 && s.absentDays <= 15,
+      ).length,
     },
     {
-      name: t("rangeOver15") || "Trên 15 ngày",
-      value: filteredAbsent.filter(s => s.absentDays > 15).length
-    }
+      name: t("rangeOver15") || "Trên 15",
+      value: filteredAbsent.filter((s) => s.absentDays > 15).length,
+    },
   ];
 
   return (
-    <Stack gap="xl" p="sm" style={{ backgroundColor: "#fafbfd", minHeight: "100vh", fontFamily: "var(--font-readex-pro), sans-serif" }}>
-      <Group gap="md">
-        <ThemeIcon size={38} variant="light" color="blue" style={{ backgroundColor: "#e0f2fe" }}>
-          <IconReportAnalytics size={20} color="#1f5ca9" />
-        </ThemeIcon>
-        <Title order={2} fw={800} c="#1f5ca9" style={{ letterSpacing: "-0.5px", fontFamily: "var(--font-k2d), sans-serif" }}>
-          {t("absentTitle")}
-        </Title>
-      </Group>
+    <Stack
+      gap="xl"
+      p="sm"
+      style={{
+        backgroundColor: "#fafbfd",
+        minHeight: "100vh",
+        fontFamily: "var(--font-readex-pro), sans-serif",
+      }}
+    >
+      <PageSectionHeader
+        title={t("absentTitle")}
+        description="Theo dõi thống kê sinh viên vắng mặt kéo dài theo thời gian, khu vực và mức độ cảnh báo."
+        icon={<IconReportAnalytics size={20} color="#1f5ca9" />}
+      />
 
-      <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)", borderColor: "#e2e8f0" }}>
-        <Stack gap="md">
-          {!showAdvancedFilter ? (
-            /* Collapsed State: Responsive filter layouts using flex/grid */
-            <div className="flex flex-col gap-4 w-full lg:flex-row lg:items-end">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
-                <div>
-                  <DateInput
-                    label={t("fromDate")}
-                    placeholder="MM/DD/YYYY"
-                    value={tuNgay}
-                    onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                    valueFormat="DD/MM/YYYY"
-                    clearable
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-                <div>
-                  <DateInput
-                    label={t("toDate")}
-                    placeholder="MM/DD/YYYY"
-                    value={denNgay}
-                    onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                    valueFormat="DD/MM/YYYY"
-                    clearable
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Select
-                    label={t("dormZone")}
-                    value={khuKtx}
-                    onChange={(val) => setKhuKtx(val || "Tất cả")}
-                    data={[
-                      { value: "Tất cả", label: t("all") },
-                      { value: "Khu A", label: t("dormA") },
-                      { value: "Khu B", label: t("dormB") }
-                    ]}
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Select
-                    label={t("status")}
-                    value={trangThai}
-                    onChange={(val) => setTrangThai(val || "Tất cả")}
-                    data={[
-                      { value: "Tất cả", label: t("all") },
-                      { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
-                      { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
-                      { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
-                    ]}
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2 justify-end w-full lg:w-auto">
+      <Card
+        withBorder
+        radius="lg"
+        p="md"
+        style={{
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.02)",
+          borderColor: "#e2e8f0",
+        }}
+      >
+        {!showAdvancedFilter ? (
+          // ==================== THU GỌN ====================
+          <Box
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr)) auto",
+              gap: "16px",
+              alignItems: "end",
+            }}
+          >
+            <DateInput
+              label={t("fromDate")}
+              placeholder="MM/DD/YYYY"
+              value={tuNgay}
+              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: {
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#475569",
+                  marginBottom: "6px",
+                  letterSpacing: "0.3px",
+                },
+                input: {
+                  borderRadius: "8px",
+                  height: "40px",
+                },
+              }}
+            />
+
+            <DateInput
+              label={t("toDate")}
+              placeholder="MM/DD/YYYY"
+              value={denNgay}
+              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+              valueFormat="DD/MM/YYYY"
+              clearable
+              styles={{
+                label: {
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#475569",
+                  marginBottom: "6px",
+                  letterSpacing: "0.3px",
+                },
+                input: {
+                  borderRadius: "8px",
+                  height: "40px",
+                },
+              }}
+            />
+
+            <Select
+              label={t("dormZone")}
+              value={khuKtx}
+              onChange={(val) => setKhuKtx(val || "Tất cả")}
+              data={[
+                { value: "Tất cả", label: t("all") },
+                { value: "Khu A", label: t("dormA") },
+                { value: "Khu B", label: t("dormB") },
+              ]}
+              styles={{
+                label: {
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#475569",
+                  marginBottom: "6px",
+                  letterSpacing: "0.3px",
+                },
+                input: {
+                  borderRadius: "8px",
+                  height: "40px",
+                },
+              }}
+            />
+
+            <Select
+              label={t("status")}
+              value={trangThai}
+              onChange={(val) => setTrangThai(val || "Tất cả")}
+              data={[
+                { value: "Tất cả", label: t("all") },
+                {
+                  value: "Cảnh báo",
+                  label: t("statusWarning") || "Cảnh báo",
+                },
+                {
+                  value: "Nghi vấn",
+                  label: t("statusSuspicious") || "Nghi vấn",
+                },
+                {
+                  value: "Hợp lệ",
+                  label: t("statusValid") || "Hợp lệ",
+                },
+              ]}
+              styles={{
+                label: {
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#475569",
+                  marginBottom: "6px",
+                  letterSpacing: "0.3px",
+                },
+                input: {
+                  borderRadius: "8px",
+                  height: "40px",
+                },
+              }}
+            />
+
+            <Box
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "end",
+              }}
+            >
+              <Group gap={10} wrap="nowrap">
                 <Button
-                  leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                  style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  leftSection={
+                    loading ? (
+                      <Loader size={16} color="white" />
+                    ) : (
+                      <IconSearch size={17} />
+                    )
+                  }
                   onClick={() => loadAbsentData()}
                   disabled={loading}
+                  style={{
+                    backgroundColor: "#1f5ca9",
+                    borderRadius: "10px",
+                    height: "40px",
+                    minWidth: "128px",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {t("search")}
                 </Button>
+
+                <Button
+                  leftSection={<IconRefresh size={17} />}
+                  variant="outline"
+                  color="gray"
+                  onClick={handleReset}
+                  style={{
+                    borderColor: "#cbd5e1",
+                    color: "#64748b",
+                    borderRadius: "10px",
+                    height: "40px",
+                    minWidth: "118px",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("reset")}
+                </Button>
+
+                <Button
+                  leftSection={<IconDownload size={17} />}
+                  variant="outline"
+                  onClick={xuLyXuatExcel}
+                  style={{
+                    borderColor: "#1f5ca9",
+                    color: "#1f5ca9",
+                    borderRadius: "10px",
+                    height: "40px",
+                    minWidth: "136px",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("exportExcel")}
+                </Button>
+
+                <Button
+                  leftSection={<IconDownload size={17} />}
+                  variant="outline"
+                  onClick={xuLyXuatPdf}
+                  style={{
+                    borderColor: "#60a5fa",
+                    color: "#3b82f6",
+                    borderRadius: "10px",
+                    height: "40px",
+                    minWidth: "128px",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("exportPdf")}
+                </Button>
+
+                <ActionIcon
+                  variant="outline"
+                  color="gray"
+                  size="lg"
+                  aria-label="Thu gọn bộ lọc"
+                  onClick={() => setShowAdvancedFilter(true)}
+                  style={{
+                    borderColor: "#cbd5e1",
+                    borderRadius: "10px",
+                    height: "40px",
+                    width: "40px",
+                    minWidth: "40px",
+                  }}
+                >
+                  <IconChevronDown size={18} color="#64748b" />
+                </ActionIcon>
+              </Group>
+            </Box>
+          </Box>
+        ) : (
+          // ==================== MỞ RỘNG ====================
+          <Stack gap={12}>
+            {/* Hàng 1 */}
+            <SimpleGrid
+              cols={{ base: 1, sm: 2, md: 4 }}
+              spacing="md"
+              verticalSpacing="md"
+            >
+              <DateInput
+                label={t("fromDate")}
+                placeholder="MM/DD/YYYY"
+                value={tuNgay}
+                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
+                valueFormat="DD/MM/YYYY"
+                clearable
+                styles={{
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.3px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    height: "40px",
+                  },
+                }}
+              />
+
+              <DateInput
+                label={t("toDate")}
+                placeholder="MM/DD/YYYY"
+                value={denNgay}
+                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
+                valueFormat="DD/MM/YYYY"
+                clearable
+                styles={{
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.3px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    height: "40px",
+                  },
+                }}
+              />
+
+              <Select
+                label={t("dormZone")}
+                value={khuKtx}
+                onChange={(val) => setKhuKtx(val || "Tất cả")}
+                data={[
+                  { value: "Tất cả", label: t("all") },
+                  { value: "Khu A", label: t("dormA") },
+                  { value: "Khu B", label: t("dormB") },
+                ]}
+                styles={{
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.3px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    height: "40px",
+                  },
+                }}
+              />
+
+              <Select
+                label={t("status")}
+                value={trangThai}
+                onChange={(val) => setTrangThai(val || "Tất cả")}
+                data={[
+                  { value: "Tất cả", label: t("all") },
+                  {
+                    value: "Cảnh báo",
+                    label: t("statusWarning") || "Cảnh báo",
+                  },
+                  {
+                    value: "Nghi vấn",
+                    label: t("statusSuspicious") || "Nghi vấn",
+                  },
+                  {
+                    value: "Hợp lệ",
+                    label: t("statusValid") || "Hợp lệ",
+                  },
+                ]}
+                styles={{
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.3px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    height: "40px",
+                  },
+                }}
+              />
+            </SimpleGrid>
+
+            {/* Hàng 2 */}
+            <Box
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "minmax(220px, 1fr) minmax(220px, 1fr) auto",
+                gap: "16px",
+                alignItems: "end",
+              }}
+            >
+              <TextInput
+                label={t("fullName")}
+                placeholder={`${t("enterFullName")}...`}
+                value={hoTen}
+                onChange={(e) => setHoTen(e.currentTarget.value)}
+                styles={{
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.3px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    height: "40px",
+                  },
+                }}
+              />
+
+              <TextInput
+                label={t("studentId")}
+                placeholder={`${t("enterMssv")}...`}
+                value={mssv}
+                onChange={(e) => setMssv(e.currentTarget.value)}
+                styles={{
+                  label: {
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.3px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    height: "40px",
+                  },
+                }}
+              />
+
+              <Group gap="sm" wrap="nowrap">
+                <Button
+                  leftSection={
+                    loading ? (
+                      <Loader size={16} color="white" />
+                    ) : (
+                      <IconSearch size={16} />
+                    )
+                  }
+                  onClick={() => loadAbsentData()}
+                  disabled={loading}
+                  style={{
+                    backgroundColor: "#1f5ca9",
+                    borderRadius: "8px",
+                    height: "40px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("search")}
+                </Button>
+
                 <Button
                   leftSection={<IconRefresh size={16} />}
                   variant="outline"
                   color="gray"
                   onClick={handleReset}
-                  style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
+                  style={{
+                    borderColor: "#cbd5e1",
+                    color: "#64748b",
+                    borderRadius: "8px",
+                    height: "40px",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {t("reset")}
                 </Button>
+
+                <Button
+                  leftSection={<IconDownload size={16} />}
+                  variant="outline"
+                  onClick={xuLyXuatExcel}
+                  style={{
+                    borderColor: "#1f5ca9",
+                    color: "#1f5ca9",
+                    borderRadius: "8px",
+                    height: "40px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("exportExcel")}
+                </Button>
+
+                <Button
+                  leftSection={<IconDownload size={16} />}
+                  variant="outline"
+                  onClick={xuLyXuatPdf}
+                  style={{
+                    borderColor: "#0ea5e9",
+                    color: "#0ea5e9",
+                    borderRadius: "8px",
+                    height: "40px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t("exportPdf")}
+                </Button>
+
                 <ActionIcon
                   variant="outline"
                   color="gray"
                   size="lg"
-                  onClick={() => setShowAdvancedFilter(true)}
-                  style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
+                  aria-label="Thu gọn bộ lọc"
+                  onClick={() => setShowAdvancedFilter(false)}
+                  style={{
+                    borderColor: "#cbd5e1",
+                    borderRadius: "8px",
+                    height: "40px",
+                    width: "40px",
+                    minWidth: "40px",
+                  }}
                 >
-                  <IconChevronDown size={18} color="#64748b" />
+                  <IconChevronUp size={18} color="#64748b" />
                 </ActionIcon>
-              </div>
-            </div>
-          ) : (
-            /* Expanded State: 2 rows of responsive filters */
-            <div className="flex flex-col gap-4 w-full">
-              {/* Row 1: The 4 inputs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <DateInput
-                    label={t("fromDate")}
-                    placeholder="MM/DD/YYYY"
-                    value={tuNgay}
-                    onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                    valueFormat="DD/MM/YYYY"
-                    clearable
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-                <div>
-                  <DateInput
-                    label={t("toDate")}
-                    placeholder="MM/DD/YYYY"
-                    value={denNgay}
-                    onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                    valueFormat="DD/MM/YYYY"
-                    clearable
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Select
-                    label={t("dormZone")}
-                    value={khuKtx}
-                    onChange={(val) => setKhuKtx(val || "Tất cả")}
-                    data={[
-                      { value: "Tất cả", label: t("all") },
-                      { value: "Khu A", label: t("dormA") },
-                      { value: "Khu B", label: t("dormB") }
-                    ]}
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-                <div>
-                  <Select
-                    label={t("status")}
-                    value={trangThai}
-                    onChange={(val) => setTrangThai(val || "Tất cả")}
-                    data={[
-                      { value: "Tất cả", label: t("all") },
-                      { value: "Cảnh báo", label: t("statusWarning") || "Cảnh báo" },
-                      { value: "Nghi vấn", label: t("statusSuspicious") || "Nghi vấn" },
-                      { value: "Hợp lệ", label: t("statusValid") || "Hợp lệ" }
-                    ]}
-                    styles={{
-                      label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                      input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Row 2: Advanced inputs + buttons */}
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-end mt-2 w-full">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 lg:max-w-[50%]">
-                  <div>
-                    <TextInput
-                      label={t("fullName")}
-                      placeholder={t("enterFullName") + "..."}
-                      value={hoTen}
-                      onChange={(e) => setHoTen(e.currentTarget.value)}
-                      styles={{
-                        label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                        input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <TextInput
-                      label={t("studentId")}
-                      placeholder={t("enterMssv") + "..."}
-                      value={mssv}
-                      onChange={(e) => setMssv(e.currentTarget.value)}
-                      styles={{
-                        label: { fontSize: "12px", fontWeight: 700, color: "#475569", marginBottom: "6px", letterSpacing: "0.5px" },
-                        input: { borderRadius: "8px", fontFamily: "var(--font-readex-pro), sans-serif", height: "40px" }
-                      }}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 justify-end w-full lg:w-auto ml-auto">
-                  <Button
-                    leftSection={loading ? <Loader size={16} color="white" /> : <IconSearch size={16} />}
-                    style={{ backgroundColor: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                    onClick={() => loadAbsentData()}
-                    disabled={loading}
-                  >
-                    {t("search")}
-                  </Button>
-                  <Button
-                    leftSection={<IconRefresh size={16} />}
-                    variant="outline"
-                    color="gray"
-                    onClick={handleReset}
-                    style={{ borderColor: "#cbd5e1", color: "#64748b", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    {t("reset")}
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    variant="outline"
-                    style={{ borderColor: "#1f5ca9", color: "#1f5ca9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    {t("exportExcel")}
-                  </Button>
-                  <Button
-                    leftSection={<IconDownload size={16} />}
-                    variant="outline"
-                    style={{ borderColor: "#0ea5e9", color: "#0ea5e9", fontFamily: "var(--font-readex-pro), sans-serif", borderRadius: "8px", height: "40px" }}
-                  >
-                    {t("exportPdf")}
-                  </Button>
-                  <ActionIcon
-                    variant="outline"
-                    color="gray"
-                    size="lg"
-                    onClick={() => setShowAdvancedFilter(false)}
-                    style={{ borderColor: "#cbd5e1", borderRadius: "8px", height: "40px", width: "40px" }}
-                  >
-                    <IconChevronUp size={18} color="#64748b" />
-                  </ActionIcon>
-                </div>
-              </div>
-            </div>
-          )}
-        </Stack>
+              </Group>
+            </Box>
+          </Stack>
+        )}
       </Card>
 
       {error && (
-        <Badge color="red" variant="light" size="lg" style={{ width: "100%", padding: "12px", borderRadius: "8px" }}>
+        <Badge
+          color="red"
+          variant="light"
+          size="lg"
+          style={{ width: "100%", padding: "12px", borderRadius: "8px" }}
+        >
           {error}
         </Badge>
       )}
@@ -520,73 +987,276 @@ export default function VangMatSubPage() {
         <Center py="xl">
           <Stack align="center" gap="sm">
             <Loader size="md" color="blue" />
-            <Text size="sm" c="dimmed">{t("loading")}</Text>
+            <Text size="sm" c="dimmed">
+              {t("loading")}
+            </Text>
           </Stack>
         </Center>
       ) : (
         <>
           <Grid gutter="md">
             <Grid.Col span={12}>
-              <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
-                <Text fw={700} size="xs" c="#1f5ca9" mb="md" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+              <Card
+                withBorder
+                radius="lg"
+                p="lg"
+                style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+              >
+                <Text
+                  fw={700}
+                  size="xs"
+                  c="#1f5ca9"
+                  mb="md"
+                  style={{
+                    letterSpacing: "0.5px",
+                    textTransform: "uppercase",
+                    fontFamily: "var(--font-readex-pro), sans-serif",
+                  }}
+                >
                   {t("absentChartTitle")}
                 </Text>
                 <div style={{ height: 260 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#1f5ca9" radius={[4, 4, 0, 0]} label={{ position: "top" }} />
+                    <BarChart
+                      data={chartData}
+                      margin={{
+                        top: 18,
+                        right: 16,
+                        left: 0,
+                        bottom: 4,
+                      }}
+                      barCategoryGap="32%"
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#d1d5db"
+                      />
+
+                      <XAxis
+                        dataKey="name"
+                        interval={0}
+                        tick={{
+                          fontSize: 12,
+                          fill: "#475569",
+                        }}
+                        tickLine={false}
+                        axisLine={{
+                          stroke: "#94a3b8",
+                        }}
+                      />
+
+                      <YAxis
+                        allowDecimals={false}
+                        width={40}
+                        tick={{
+                          fontSize: 12,
+                          fill: "#475569",
+                        }}
+                        tickLine={false}
+                        axisLine={{
+                          stroke: "#94a3b8",
+                        }}
+                      />
+
+                      <Tooltip
+                        cursor={{
+                          fill: "rgba(148, 163, 184, 0.08)",
+                        }}
+                        contentStyle={{
+                          borderRadius: "8px",
+                          border: "1px solid #e2e8f0",
+                          boxShadow: "0 4px 14px rgba(15, 23, 42, 0.08)",
+                          fontSize: "12px",
+                        }}
+                        formatter={(value) => [
+                          `${value} sinh viên`,
+                          "Số lượng",
+                        ]}
+                        labelFormatter={(label) => `Thời gian vắng: ${label}`}
+                      />
+
+                      <Bar
+                        dataKey="value"
+                        name="Số lượng"
+                        fill="#1f5ca9"
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={76}
+                        label={{
+                          position: "top",
+                          fill: "#475569",
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
+
+                <AbsentChartLegend />
               </Card>
             </Grid.Col>
           </Grid>
 
-          <Card withBorder radius="lg" p="lg" style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}>
+          <Card
+            withBorder
+            radius="lg"
+            p="lg"
+            style={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)" }}
+          >
             <Group justify="space-between" mb="md">
-              <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: "0.5px", textTransform: "uppercase", fontFamily: "var(--font-readex-pro), sans-serif" }}>
+              <Text
+                fw={700}
+                size="xs"
+                c="#1f5ca9"
+                style={{
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  fontFamily: "var(--font-readex-pro), sans-serif",
+                }}
+              >
                 {t("absentTableTitle")}
               </Text>
             </Group>
 
             <ScrollArea>
-              <Table verticalSpacing="sm" highlightOnHover style={{ minWidth: 800 }}>
+              <Table
+                verticalSpacing="sm"
+                highlightOnHover
+                style={{ minWidth: 800 }}
+              >
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("no")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("studentId")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("fullName")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("dormZone")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("room")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("daysAbsent")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px" }}>{t("lastActive")}</Table.Th>
-                    <Table.Th style={{ color: "#475569", fontWeight: 600, fontSize: "12px", textAlign: "center" }}>{t("status")}</Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("no")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("studentId")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("fullName")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("dormZone")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("room")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {t("daysAbsent")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                      }}
+                    >
+                      {t("lastActive")}
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      {t("status")}
+                    </Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
                   {paginatedAbsent.map((row, index) => (
-                    <Table.Tr key={row.studentId || index} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <Table.Tr
+                      key={row.studentId || index}
+                      style={{ borderBottom: "1px solid #f1f5f9" }}
+                    >
                       <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
                         {(currentPage - 1) * pageSize + index + 1}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>{row.studentId}</Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#1e293b", fontWeight: 600 }}>{row.hoTen}</Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{getTranslatedKhu(row.ktx)}</Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.room}</Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#e03131", fontWeight: 700, textAlign: "center" }}>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#64748b",
+                          fontFamily: "monospace",
+                        }}
+                      >
+                        {row.studentId}
+                      </Table.Td>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#1e293b",
+                          fontWeight: 600,
+                        }}
+                      >
+                        {row.hoTen}
+                      </Table.Td>
+                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                        {getTranslatedKhu(row.ktx)}
+                      </Table.Td>
+                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                        {row.room}
+                      </Table.Td>
+                      <Table.Td
+                        style={{
+                          fontSize: "13px",
+                          color: "#e03131",
+                          fontWeight: 700,
+                          textAlign: "center",
+                        }}
+                      >
                         {t("daysCount", { days: row.absentDays })}
                       </Table.Td>
-                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>{row.lastScan}</Table.Td>
+                      <Table.Td style={{ fontSize: "13px", color: "#475569" }}>
+                        {row.lastScan}
+                      </Table.Td>
                       <Table.Td style={{ textAlign: "center" }}>
                         <Badge
                           color={
-                            row.status === "Cảnh báo" ? "red"
-                            : row.status === "Nghi vấn" ? "orange"
-                            : "green"
+                            row.status === "Cảnh báo"
+                              ? "red"
+                              : row.status === "Nghi vấn"
+                                ? "orange"
+                                : "green"
                           }
                           variant="light"
                           size="sm"
@@ -599,7 +1269,9 @@ export default function VangMatSubPage() {
                   {paginatedAbsent.length === 0 && (
                     <Table.Tr>
                       <Table.Td colSpan={8}>
-                        <Text ta="center" c="dimmed" py="xl">{t("noData")}</Text>
+                        <Text ta="center" c="dimmed" py="xl">
+                          {t("noData")}
+                        </Text>
                       </Table.Td>
                     </Table.Tr>
                   )}
@@ -607,18 +1279,45 @@ export default function VangMatSubPage() {
               </Table>
             </ScrollArea>
 
-            {totalPages > 1 && (
-              <CustomPagination
-                totalItems={filteredAbsent.length}
-                totalPages={totalPages}
-                page={currentPage}
-                pageSize={pageSize}
-                setPage={setCurrentPage}
-                setPageSize={setPageSize}
-              />
-            )}
+            <CustomPagination
+              totalItems={filteredAbsent.length}
+              totalPages={totalPages}
+              page={currentPage}
+              pageSize={pageSize}
+              setPage={setCurrentPage}
+              setPageSize={() => {}}
+            />
           </Card>
         </>
+      )}
+
+      {duLieuXuatExcel && (
+        <ExcelExportForm
+          hidden
+          autoExport
+          title={duLieuXuatExcel.title}
+          fileName={duLieuXuatExcel.fileName}
+          sheetName={duLieuXuatExcel.sheetName}
+          columnLabels={duLieuXuatExcel.columnLabels}
+          data={duLieuXuatExcel.data}
+          onExported={() => {
+            setDuLieuXuatExcel(null);
+          }}
+        />
+      )}
+
+      {duLieuXuatPdf && (
+        <PdfExportForm
+          hidden
+          autoExport
+          title={duLieuXuatPdf.title}
+          fileName={duLieuXuatPdf.fileName}
+          columnLabels={duLieuXuatPdf.columnLabels}
+          data={duLieuXuatPdf.data}
+          onExported={() => {
+            setDuLieuXuatPdf(null);
+          }}
+        />
       )}
     </Stack>
   );

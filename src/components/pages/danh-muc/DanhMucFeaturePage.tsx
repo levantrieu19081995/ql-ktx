@@ -21,6 +21,8 @@ type DanhMucFeaturePageProps = {
   title: string;
   description: string;
   items: Record<string, any>[];
+  page?: number;
+  pageSize?: number;
   searchControls?: ReactNode;
   pagination?: ReactNode;
   onEdit?: (item: any) => void;
@@ -33,6 +35,8 @@ export default function DanhMucFeaturePage({
   title,
   description,
   items,
+  page = 1,
+  pageSize = 10,
   searchControls,
   pagination,
   onEdit,
@@ -42,16 +46,25 @@ export default function DanhMucFeaturePage({
   const renderTable = () => {
     switch (type) {
       case "khu":
-        return <KhuKtxTable items={items} />;
+        return <KhuKtxTable items={items} page={page} pageSize={pageSize} />;
       case "sinhVienBiCam":
-        return <SinhVienBiCamTable items={items} onEdit={onEdit} />;
+        return (
+          <SinhVienBiCamTable
+            items={items}
+            onEdit={onEdit}
+            page={page}
+            pageSize={pageSize}
+          />
+        );
       case "sinhVienKtx":
-        return <SinhVienKtxTable items={items} />;
+        return <SinhVienKtxTable items={items} page={page} pageSize={pageSize} />;
       case "phongKtx":
         return (
           <PhongKtxTable
             items={items as PhongKtx[]}
             onSelectRoom={onSelectRoom}
+            page={page}
+            pageSize={pageSize}
           />
         );
       default:

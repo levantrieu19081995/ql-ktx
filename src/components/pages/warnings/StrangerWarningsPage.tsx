@@ -21,9 +21,18 @@ import { HistoryItem } from "../../../types/type-history";
 import { dichVuNguoiLa } from "./strangerService";
 import BoLocNguoiLa from "./BoLocNguoiLa";
 import DrawerChiTietLichSu from "../history/DrawerChiTietLichSu";
-import { xuatRaFileExcel } from "../history/excelHelper";
+import ExcelExportForm from "../../common/excel/excelHelper";
+import PdfExportForm from "../../common/pdf/pdfHelper";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
 import CustomPagination from "@/components/common/CustomPagination";
+
+type DuLieuXuatFile = {
+  title: string;
+  fileName: string;
+  sheetName?: string;
+  columnLabels: string[];
+  data: Record<string, string | number | boolean | null | undefined>[];
+};
 
 export default function StrangerWarningsPage() {
   const t = useTranslations("History");
@@ -48,6 +57,11 @@ export default function StrangerWarningsPage() {
   const [strangerDuocChon, setStrangerDuocChon] = useState<HistoryItem | null>(
     null,
   );
+  const [duLieuXuatExcel, setDuLieuXuatExcel] =
+    useState<DuLieuXuatFile | null>(null);
+  const [duLieuXuatPdf, setDuLieuXuatPdf] = useState<DuLieuXuatFile | null>(
+    null,
+  );
   const [thongBao, setThongBao] = useState<{
     tinNhan: string;
     kieu: "success" | "error";
@@ -67,26 +81,95 @@ export default function StrangerWarningsPage() {
     }
   }, [thongBao]);
 
-  const xuLyXuatExcel = () => {
-    const duLieuXuat = danhSachCanhBao.map((h, i) => ({
+  const taoDuLieuXuat = (items: HistoryItem[]) =>
+    items.map((h, i) => ({
       [t("table.no")]: i + 1,
-      "Thời gian": h.thoiGian,
-      "Đối tượng": h.loaiDoiTuong || "Người lạ",
-      "Khu KTX": h.tenKtx || "N/A",
-      "Thiết bị/Camera": h.thietBi || "N/A",
+      [t("table.time")]: dayjs(h.thoiGian).format("DD/MM/YYYY HH:mm:ss"),
+      [t("filter.objectType")]: h.loaiDoiTuong || "Người lạ",
+      [t("warnings.dorm")]: h.tenKtx || "N/A",
+      [t("warnings.camera")]: h.thietBi || "N/A",
       "Ngày phát hiện": h.ngayNguoiLa || "",
       "Giờ phát hiện": h.gioNguoiLa || "",
     }));
-    xuatRaFileExcel(
-      duLieuXuat,
-      `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
-      "Cảnh báo người lạ",
-    );
+
+  const layTatCaDuLieuTheoBoLoc = async () => {
+    const response = await dichVuNguoiLa.layDanhSachNguoiLa({
+      ngay: boLocDaApDung.ngay,
+      maKtx: boLocDaApDung.maKtx,
+      page: 1,
+      pageSize: tongSoPhanTu > 0 ? tongSoPhanTu : 10000,
+    });
+
+    return response.items || [];
+  };
+
+  const xuLyXuatExcel = async () => {
+    try {
+      const items = await layTatCaDuLieuTheoBoLoc();
+      const columnLabels = [
+        t("table.no"),
+        t("table.time"),
+        t("filter.objectType"),
+        t("warnings.dorm"),
+        t("warnings.camera"),
+        "Ngày phát hiện",
+        "Giờ phát hiện",
+      ];
+
+      setDuLieuXuatExcel({
+        title: "Danh sách cảnh báo người lạ",
+        fileName: `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
+        sheetName: "Cảnh báo người lạ",
+        columnLabels,
+        data: taoDuLieuXuat(items),
+      });
+      return;
+    } catch {
+      hienThongBao(t("messages.loadError"), "error");
+      return;
+    }
+
+    // const duLieuXuat = danhSachCanhBao.map((h, i) => ({
+    //   [t("table.no")]: i + 1,
+    //   "Thời gian": h.thoiGian,
+    //   "Đối tượng": h.loaiDoiTuong || "Người lạ",
+    //   "Khu KTX": h.tenKtx || "N/A",
+    //   "Thiết bị/Camera": h.thietBi || "N/A",
+    //   "Ngày phát hiện": h.ngayNguoiLa || "",
+    //   "Giờ phát hiện": h.gioNguoiLa || "",
+    // }));
+    // xuatRaFileExcel(
+    //   duLieuXuat,
+    //   `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
+    //   "Cảnh báo người lạ",
+    // );
     hienThongBao(t("messages.exportExcelSuccess"), "success");
   };
 
-  const xuLyXuatPdf = () => {
-    hienThongBao(t("messages.exportPdfSuccess"), "success");
+  const xuLyXuatPdf = async () => {
+    try {
+      const items = await layTatCaDuLieuTheoBoLoc();
+      const columnLabels = [
+        t("table.no"),
+        t("table.time"),
+        t("filter.objectType"),
+        t("warnings.dorm"),
+        t("warnings.camera"),
+        "Ngày phát hiện",
+        "Giờ phát hiện",
+      ];
+
+      setDuLieuXuatPdf({
+        title: "Danh sách cảnh báo người lạ",
+        fileName: `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
+        columnLabels,
+        data: taoDuLieuXuat(items),
+      });
+      return;
+    } catch {
+      hienThongBao(t("messages.loadError"), "error");
+      return;
+    }
   };
 
   const taiDuLieu = useCallback(
@@ -282,6 +365,39 @@ export default function StrangerWarningsPage() {
             </Notification>
           </div>
         </Portal>
+      )}
+
+      {duLieuXuatExcel && (
+        <ExcelExportForm
+          hidden
+          autoExport
+          title={duLieuXuatExcel.title}
+          columnLabels={duLieuXuatExcel.columnLabels}
+          columnCount={duLieuXuatExcel.columnLabels.length}
+          data={duLieuXuatExcel.data}
+          fileName={duLieuXuatExcel.fileName}
+          sheetName={duLieuXuatExcel.sheetName}
+          onExported={() => {
+            hienThongBao(t("messages.exportExcelSuccess"), "success");
+            setDuLieuXuatExcel(null);
+          }}
+        />
+      )}
+
+      {duLieuXuatPdf && (
+        <PdfExportForm
+          hidden
+          autoExport
+          title={duLieuXuatPdf.title}
+          columnLabels={duLieuXuatPdf.columnLabels}
+          columnCount={duLieuXuatPdf.columnLabels.length}
+          data={duLieuXuatPdf.data}
+          fileName={duLieuXuatPdf.fileName}
+          onExported={() => {
+            hienThongBao(t("messages.exportPdfSuccess"), "success");
+            setDuLieuXuatPdf(null);
+          }}
+        />
       )}
 
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />

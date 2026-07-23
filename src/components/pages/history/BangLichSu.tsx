@@ -22,6 +22,8 @@ interface ThuocTinhBangLichSu {
   lichSuDuocChon: HistoryItem | null;
   datLichSuDuocChon: (lichSu: HistoryItem | null) => void;
   tabActive?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export const layNhanTrangThai = (
@@ -44,6 +46,8 @@ export default function BangLichSu({
   lichSuDuocChon,
   datLichSuDuocChon,
   tabActive = 'LICH_SU',
+  page = 1,
+  pageSize = 10,
 }: ThuocTinhBangLichSu) {
   const t = useTranslations('History');
 
@@ -95,7 +99,7 @@ export default function BangLichSu({
                     className={`table-row ${laDuocChon ? 'table-row-selected' : ''}`}
                   >
                     <Table.Td style={{ textAlign: 'center' }} className="cell-stt">
-                      {index + 1}
+                      {(page - 1) * pageSize + index + 1}
                     </Table.Td>
                     <Table.Td className="cell-time">
                       {dayjs(banGhi.thoiGian).format('DD/MM/YYYY HH:mm:ss')}

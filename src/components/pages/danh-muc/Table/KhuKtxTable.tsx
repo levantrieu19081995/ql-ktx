@@ -4,9 +4,15 @@ import { Card, Table } from "@mantine/core";
 
 type KhuKtxTableProps = {
   items: any[];
+  page?: number;
+  pageSize?: number;
 };
 
-export default function KhuKtxTable({ items }: KhuKtxTableProps) {
+export default function KhuKtxTable({
+  items,
+  page = 1,
+  pageSize = 10,
+}: KhuKtxTableProps) {
   return (
     <Card withBorder radius="md" p={0}>
       <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
@@ -24,7 +30,9 @@ export default function KhuKtxTable({ items }: KhuKtxTableProps) {
           {items.length > 0 ? (
             items.map((item, index) => (
               <Table.Tr key={item.guid || item.khuId || index}>
-                <Table.Td style={{ textAlign: "center" }}>{index + 1}</Table.Td>
+                <Table.Td style={{ textAlign: "center" }}>
+                  {(page - 1) * pageSize + index + 1}
+                </Table.Td>
                 <Table.Td>{item.khuMa || item.maKhu || "-"}</Table.Td>
                 <Table.Td>{item.khuTen || item.tenKhu || "-"}</Table.Td>
                 <Table.Td>{item.soLuongPhong ?? "-"}</Table.Td>

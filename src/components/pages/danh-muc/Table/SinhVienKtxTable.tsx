@@ -4,9 +4,15 @@ import { Card, Table } from "@mantine/core";
 
 type SinhVienKtxTableProps = {
   items: any[];
+  page?: number;
+  pageSize?: number;
 };
 
-export default function SinhVienKtxTable({ items }: SinhVienKtxTableProps) {
+export default function SinhVienKtxTable({
+  items,
+  page = 1,
+  pageSize = 10,
+}: SinhVienKtxTableProps) {
   return (
     <Card withBorder radius="md" p={0}>
       <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
@@ -26,7 +32,9 @@ export default function SinhVienKtxTable({ items }: SinhVienKtxTableProps) {
           {items.length > 0 ? (
             items.map((item, index) => (
               <Table.Tr key={item.sinhVienId || index}>
-                <Table.Td style={{ textAlign: "center" }}>{index + 1}</Table.Td>
+                <Table.Td style={{ textAlign: "center" }}>
+                  {(page - 1) * pageSize + index + 1}
+                </Table.Td>
                 <Table.Td>{item.maSinhVien ?? "-"}</Table.Td>
                 <Table.Td>{item.hoTen ?? "-"}</Table.Td>
                 <Table.Td>{item.lop ?? "-"}</Table.Td>

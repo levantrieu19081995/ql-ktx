@@ -356,6 +356,8 @@ export default function KhuKtxPage() {
         title="Danh sách khu ký túc xá"
         description="Quản lý danh mục khu, dãy nhà trong ký túc xá."
         items={items}
+        page={page}
+        pageSize={pageSize}
         icon={<IconCategory size={20} />}
         searchControls={
           <Stack gap="md" w="100%">

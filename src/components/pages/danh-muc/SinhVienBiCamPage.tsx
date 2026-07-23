@@ -266,6 +266,8 @@ export default function SinhVienBiCamPage() {
         title="Danh sách sinh viên bị cấm"
         description="Theo dõi danh sách sinh viên bị cấm ra vào ký túc xá."
         items={items}
+        page={page}
+        pageSize={pageSize}
         onEdit={handleEdit}
         icon={<IconLockFilled size={20} />}
         searchControls={

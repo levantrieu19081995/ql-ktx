@@ -60,6 +60,8 @@ import { IconPencil } from "@tabler/icons-react";
 type Props = {
   items: any[];
   onEdit?: (item: any) => void;
+  page?: number;
+  pageSize?: number;
 };
 
 const formatDate = (value?: number | null) => {
@@ -67,7 +69,12 @@ const formatDate = (value?: number | null) => {
   return new Date(value).toLocaleDateString("vi-VN");
 };
 
-export default function SinhVienBiCamTable({ items, onEdit }: Props) {
+export default function SinhVienBiCamTable({
+  items,
+  onEdit,
+  page = 1,
+  pageSize = 10,
+}: Props) {
   return (
     <Card withBorder radius="md" p={0}>
       <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="md">
@@ -86,7 +93,9 @@ export default function SinhVienBiCamTable({ items, onEdit }: Props) {
           {items.length > 0 ? (
             items.map((item, index) => (
               <Table.Tr key={item.camId || index}>
-                <Table.Td style={{ textAlign: "center" }}>{index + 1}</Table.Td>
+                <Table.Td style={{ textAlign: "center" }}>
+                  {(page - 1) * pageSize + index + 1}
+                </Table.Td>
                 <Table.Td>{item.maSinhVien ?? "-"}</Table.Td>
                 <Table.Td>{item.lyDo ?? "-"}</Table.Td>
                 <Table.Td>{formatDate(item.ngayBatDau)}</Table.Td>

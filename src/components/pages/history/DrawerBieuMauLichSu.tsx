@@ -207,11 +207,11 @@ const drawerStyles = `
     font-weight: bold;
     font-size: 1rem;
     color: #27272a;
-    font-family: sans-serif;
+    font-family: inherit;
 }
 
 .drawer-body-container {
-    font-family: sans-serif;
+    font-family: inherit;
 }
 
 .drawer-form {

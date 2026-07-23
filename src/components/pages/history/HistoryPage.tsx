@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
@@ -36,7 +35,10 @@ import BangLichSu, { LoaiTabHienThi } from "./BangLichSu";
 import DrawerChiTietLichSu from "./DrawerChiTietLichSu";
 import DrawerBieuMauLichSu from "./DrawerBieuMauLichSu";
 import { dichVuLichSuRaVao } from "./historyService";
-import { xuatRaFileExcel } from "./excelHelper";
+import ExcelExportForm, {
+  xuatRaFileExcel,
+} from "../../common/excel/excelHelper";
+import PdfExportForm from "../../common/pdf/pdfHelper";
 import { HistoryItem } from "../../../types/type-history";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
 import CustomPagination from "@/components/common/CustomPagination";
@@ -81,6 +83,21 @@ const duLieuTopSinhVien = [
 
 type HistoryPageProps = {
   tab?: LoaiTabChinh;
+};
+
+type DuLieuXuatExcel = {
+  title: string;
+  fileName: string;
+  sheetName: string;
+  columnLabels: string[];
+  data: Record<string, string | number | boolean | null | undefined>[];
+};
+
+type DuLieuXuatPdf = {
+  title: string;
+  fileName: string;
+  columnLabels: string[];
+  data: Record<string, string | number | boolean | null | undefined>[];
 };
 
 export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
@@ -133,6 +150,11 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     null,
   );
   const [moDrawerBieuMau, datMoDrawerBieuMau] = useState<boolean>(false);
+  const [duLieuXuatExcel, setDuLieuXuatExcel] =
+    useState<DuLieuXuatExcel | null>(null);
+  const [duLieuXuatPdf, setDuLieuXuatPdf] = useState<DuLieuXuatPdf | null>(
+    null,
+  );
 
   useEffect(() => {
     datTabActive(tab);
@@ -219,7 +241,50 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     hienThongBao(t("messages.updated"), "success");
   };
 
-  const xuLyXuatExcel = () => {
+  const xuLyXuatExcel = async () => {
+    try {
+      const tatCaDuLieu = await dichVuLichSuRaVao.layDanhSachLichSu({
+        ...boLocDaApDung,
+        page: 1,
+        pageSize: totalItems > 0 ? totalItems : 10000,
+      });
+
+      const duLieuXuatTatCa = tatCaDuLieu.items.map((h, i) => ({
+        [t("table.no")]: i + 1,
+        [t("table.time")]: h.thoiGian,
+        [t("filter.studentId")]: h.mssv,
+        [t("table.name")]: h.hoVaTen,
+        [t("table.type")]: h.loai === "IN" ? t("filter.in") : t("filter.out"),
+        [t("filter.objectType")]:
+          h.loaiDoiTuong === "Người lạ"
+            ? t("filter.stranger")
+            : t("filter.student"),
+        [t("table.dormitory")]: h.tenKtx,
+        [t("table.room")]: h.tenPhong,
+      }));
+
+      setDuLieuXuatExcel({
+        title: "Danh sách lịch sử ra vào",
+        fileName: `Lich_Su_Ra_Vao_${new Date().toISOString().split("T")[0]}`,
+        sheetName: t("tabs.log"),
+        columnLabels: [
+          t("table.no"),
+          t("table.time"),
+          t("filter.studentId"),
+          t("table.name"),
+          t("table.type"),
+          t("filter.objectType"),
+          t("table.dormitory"),
+          t("table.room"),
+        ],
+        data: duLieuXuatTatCa,
+      });
+      return;
+    } catch {
+      hienThongBao(t("messages.loadError"), "error");
+      return;
+    }
+
     const duLieuXuat = danhSachLichSu.map((h, i) => ({
       [t("table.no")]: i + 1,
       [t("table.time")]: h.thoiGian,
@@ -241,8 +306,46 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     hienThongBao(t("messages.exportExcelSuccess"), "success");
   };
 
-  const xuLyXuatPdf = () => {
-    hienThongBao(t("messages.exportPdfSuccess"), "success");
+  const xuLyXuatPdf = async () => {
+    try {
+      const tatCaDuLieu = await dichVuLichSuRaVao.layDanhSachLichSu({
+        ...boLocDaApDung,
+        page: 1,
+        pageSize: totalItems > 0 ? totalItems : 10000,
+      });
+
+      const duLieuPdf = tatCaDuLieu.items.map((h, i) => ({
+        [t("table.no")]: i + 1,
+        [t("table.time")]: h.thoiGian,
+        [t("filter.studentId")]: h.mssv,
+        [t("table.name")]: h.hoVaTen,
+        [t("table.type")]: h.loai === "IN" ? t("filter.in") : t("filter.out"),
+        [t("filter.objectType")]:
+          h.loaiDoiTuong === "Người lạ"
+            ? t("filter.stranger")
+            : t("filter.student"),
+        [t("table.dormitory")]: h.tenKtx,
+        [t("table.room")]: h.tenPhong,
+      }));
+
+      setDuLieuXuatPdf({
+        title: "Danh sách lịch sử ra vào",
+        fileName: `Lich_Su_Ra_Vao_${new Date().toISOString().split("T")[0]}`,
+        columnLabels: [
+          t("table.no"),
+          t("table.time"),
+          t("filter.studentId"),
+          t("table.name"),
+          t("table.type"),
+          t("filter.objectType"),
+          t("table.dormitory"),
+          t("table.room"),
+        ],
+        data: duLieuPdf,
+      });
+    } catch {
+      hienThongBao(t("messages.loadError"), "error");
+    }
   };
 
   const xuLyDongChiTiet = () => {
@@ -313,6 +416,8 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
               tabActive={tabActive}
               lichSuDuocChon={lichSuDuocChon}
               datLichSuDuocChon={datLichSuDuocChon}
+              page={page}
+              pageSize={pageSize}
             />
             <CustomPagination
               totalItems={totalItems}
@@ -576,6 +681,39 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
             </Notification>
           </div>
         </Portal>
+      )}
+
+      {duLieuXuatExcel && (
+        <ExcelExportForm
+          hidden
+          autoExport
+          title={duLieuXuatExcel.title}
+          columnLabels={duLieuXuatExcel.columnLabels}
+          columnCount={duLieuXuatExcel.columnLabels.length}
+          data={duLieuXuatExcel.data}
+          fileName={duLieuXuatExcel.fileName}
+          sheetName={duLieuXuatExcel.sheetName}
+          onExported={() => {
+            hienThongBao(t("messages.exportExcelSuccess"), "success");
+            setDuLieuXuatExcel(null);
+          }}
+        />
+      )}
+
+      {duLieuXuatPdf && (
+        <PdfExportForm
+          hidden
+          autoExport
+          title={duLieuXuatPdf.title}
+          columnLabels={duLieuXuatPdf.columnLabels}
+          columnCount={duLieuXuatPdf.columnLabels.length}
+          data={duLieuXuatPdf.data}
+          fileName={duLieuXuatPdf.fileName}
+          onExported={() => {
+            hienThongBao(t("messages.exportPdfSuccess"), "success");
+            setDuLieuXuatPdf(null);
+          }}
+        />
       )}
 
       <style dangerouslySetInnerHTML={{ __html: pageStyles }} />

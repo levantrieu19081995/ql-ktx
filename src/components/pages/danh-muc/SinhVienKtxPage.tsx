@@ -375,17 +375,21 @@ export default function SinhVienKtxPage() {
             uiis: progress,
           }));
         }),
-        fetchAllDanhSachSinhVienKtx({
-          maKhu: syncMaKhu || "-1",
-          maPhong: syncMaPhong || "-1",
-          maSinhVien: undefined,
-          hoTen: undefined,
-        }, undefined, (progress) => {
-          setPreviewFetchProgress((prev) => ({
-            ...prev,
-            current: progress,
-          }));
-        }),
+        fetchAllDanhSachSinhVienKtx(
+          {
+            maKhu: syncMaKhu || "-1",
+            maPhong: syncMaPhong || "-1",
+            maSinhVien: undefined,
+            hoTen: undefined,
+          },
+          undefined,
+          (progress) => {
+            setPreviewFetchProgress((prev) => ({
+              ...prev,
+              current: progress,
+            }));
+          },
+        ),
       ]);
 
       setUiisItems(Array.isArray(uiisRes) ? uiisRes : []);
@@ -550,7 +554,10 @@ export default function SinhVienKtxPage() {
       return progress ? 100 : 0;
     }
 
-    return Math.min(100, Math.round((progress.currentPage / progress.totalPages) * 100));
+    return Math.min(
+      100,
+      Math.round((progress.currentPage / progress.totalPages) * 100),
+    );
   };
 
   const canConfirmSync =
@@ -599,51 +606,7 @@ export default function SinhVienKtxPage() {
 
   const handlePreviewFilterChange = (filter: PreviewFilter) => {
     setIsFilterLoading(true);
-    setActivePreviewFilter((current) =>
-      current === filter ? "ALL" : filter,
-    );
-  };
-
-  const renderSummaryCard = ({
-    label,
-    value,
-    color,
-    borderColor,
-    background,
-    filter,
-  }: {
-    label: string;
-    value: number;
-    color: string;
-    borderColor: string;
-    background: string;
-    filter: PreviewFilter;
-  }) => {
-    const isActive = activePreviewFilter === filter;
-
-    return (
-      <Paper
-        withBorder
-        radius="md"
-        p="md"
-        onClick={() => handlePreviewFilterChange(filter)}
-        style={{
-          borderColor,
-          background,
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-          boxShadow: isActive ? `0 0 0 2px ${borderColor} inset` : undefined,
-          transform: isActive ? "translateY(-1px)" : undefined,
-        }}
-      >
-        <Text size="sm" c={color} fw={700}>
-          {label}
-        </Text>
-        <Text size="xl" fw={800} c={color}>
-          {value}
-        </Text>
-      </Paper>
-    );
+    setActivePreviewFilter((current) => (current === filter ? "ALL" : filter));
   };
 
   useEffect(() => {
@@ -702,6 +665,8 @@ export default function SinhVienKtxPage() {
         title="Danh sách sinh viên ký túc xá"
         description="Quản lý và tra cứu danh sách sinh viên đang ở ký túc xá."
         items={mappedItems}
+        page={page}
+        pageSize={pageSize}
         icon={<IconUsers size={20} />}
         searchControls={
           <Stack gap="md" w="100%">
@@ -843,7 +808,12 @@ export default function SinhVienKtxPage() {
           </Group>
 
           {previewLoading && (
-            <Paper withBorder radius="md" p="md" style={{ background: "#f8fbff" }}>
+            <Paper
+              withBorder
+              radius="md"
+              p="md"
+              style={{ background: "#f8fbff" }}
+            >
               <Stack gap="sm">
                 <Text fw={700} c="blue.7">
                   Đang tải dữ liệu đối chiếu...
@@ -928,9 +898,7 @@ export default function SinhVienKtxPage() {
                         ? "0 0 0 2px #86efac inset"
                         : undefined,
                   }}
-                  onClick={() =>
-                    handlePreviewFilterChange("NEW")
-                  }
+                  onClick={() => handlePreviewFilterChange("NEW")}
                 >
                   <Text size="sm" c="green.6" fw={700}>
                     Hoàn toàn mới
@@ -953,9 +921,7 @@ export default function SinhVienKtxPage() {
                         ? "0 0 0 2px #fdba74 inset"
                         : undefined,
                   }}
-                  onClick={() =>
-                    handlePreviewFilterChange("CHANGED")
-                  }
+                  onClick={() => handlePreviewFilterChange("CHANGED")}
                 >
                   <Text size="sm" c="orange.6" fw={700}>
                     Có thay đổi
@@ -978,9 +944,7 @@ export default function SinhVienKtxPage() {
                         ? "0 0 0 2px #d1d5db inset"
                         : undefined,
                   }}
-                  onClick={() =>
-                    handlePreviewFilterChange("SAME")
-                  }
+                  onClick={() => handlePreviewFilterChange("SAME")}
                 >
                   <Text size="sm" c="gray.6" fw={700}>
                     Không đổi
@@ -999,8 +963,8 @@ export default function SinhVienKtxPage() {
                 {isFilterLoading
                   ? "Đang lọc danh sách sinh viên..."
                   : activePreviewFilter === "ALL"
-                  ? `Äang hiá»ƒn thá»‹ toĂ n bá»™ ${filteredPreviewRows.length} sinh viĂªn.`
-                  : `Äang lá»c ${filteredPreviewRows.length} sinh viĂªn theo tráº¡ng thĂ¡i ${activePreviewFilter}.`}
+                    ? `Äang hiá»ƒn thá»‹ toĂ n bá»™ ${filteredPreviewRows.length} sinh viĂªn.`
+                    : `Äang lá»c ${filteredPreviewRows.length} sinh viĂªn theo tráº¡ng thĂ¡i ${activePreviewFilter}.`}
               </Text>
 
               {isFilterLoading && (

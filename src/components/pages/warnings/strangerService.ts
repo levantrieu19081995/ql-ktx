@@ -1,5 +1,5 @@
-import { HistoryItem } from '../../../types/type-history';
-import dayjs from 'dayjs';
+import { HistoryItem } from "../../../types/type-history";
+import dayjs from "dayjs";
 import { get, post } from "@/utils/axios";
 
 export const dichVuNguoiLa = {
@@ -8,13 +8,17 @@ export const dichVuNguoiLa = {
     maKtx?: string;
     page?: number;
     pageSize?: number;
-  }): Promise<{ items: HistoryItem[]; totalPages: number; totalElements: number }> => {
+  }): Promise<{
+    items: HistoryItem[];
+    totalPages: number;
+    totalElements: number;
+  }> => {
     try {
       const page = boLoc?.page || 1;
       const pageSize = boLoc?.pageSize || 10;
       const ngayStr = boLoc?.ngay
-        ? dayjs(boLoc.ngay).format('MM/DD/YYYY')
-        : dayjs().format('MM/DD/YYYY');
+        ? dayjs(boLoc.ngay).format("MM/DD/YYYY")
+        : dayjs().format("MM/DD/YYYY");
       const maKhu =
         boLoc?.maKtx && boLoc.maKtx !== "-1" && boLoc.maKtx !== ""
           ? boLoc.maKtx
@@ -33,8 +37,8 @@ export const dichVuNguoiLa = {
         reqBody,
       );
 
-      if (res?.status !== 'OK') {
-        console.error(`layDanhSachNguoiLa status not OK:`, res);
+      if (res?.status !== "OK") {
+        console.error("layDanhSachNguoiLa status not OK:", res);
         return { items: [], totalPages: 0, totalElements: 0 };
       }
 
@@ -45,10 +49,10 @@ export const dichVuNguoiLa = {
           : `${dayjs(item.ngay, "DD/MM/YYYY").format("YYYY-MM-DD")} ${item.thoigian}`;
 
         return {
-          id: item.pathImage + '_' + item.timecheck + '_' + Math.random(),
+          id: `${item.pathImage}_${item.timecheck}_${Math.random()}`,
           thoiGian: timeStr,
-          mssv: "NgÆ°á»i láº¡",
-          hoVaTen: "NgÆ°á»i láº¡",
+          mssv: "Người lạ",
+          hoVaTen: "Người lạ",
           duongDanAnhChup: item.pathImage || "",
           duongDanAnhDaiDien: "",
           loai: "IN",
@@ -57,7 +61,7 @@ export const dichVuNguoiLa = {
           maPhong: "",
           tenPhong: "",
           thietBi: item.cameraName || "",
-          loaiDoiTuong: "NgÆ°á»i láº¡",
+          loaiDoiTuong: "Người lạ",
           trangThaiSinhVien: "BINH_THUONG",
           trangThaiHienDien: "CO_MAT",
           ngayNguoiLa: item.ngay || "",
@@ -72,10 +76,10 @@ export const dichVuNguoiLa = {
         totalElements: res?.payload?.totalElements || 0,
       };
     } catch (err) {
-      console.error(`layDanhSachNguoiLa error:`, err);
+      console.error("layDanhSachNguoiLa error:", err);
       return { items: [], totalPages: 0, totalElements: 0 };
     }
-  }
+  },
 };
 
 export interface KhuItem {
@@ -88,11 +92,11 @@ export const dichVuDanhMucKhu = {
   layDanhSach: async (): Promise<KhuItem[]> => {
     try {
       const res = await get<any>("/face-detect-service/face-web-ktx-khu/index");
-      if (res?.status && res.status !== 'OK') return [];
+      if (res?.status && res.status !== "OK") return [];
       const payload = res?.payload || res;
       return (Array.isArray(payload) ? payload : []) as KhuItem[];
     } catch {
       return [];
     }
-  }
+  },
 };

@@ -496,6 +496,8 @@ export default function PhongKtxPage() {
         title="Danh sách phòng ký túc xá"
         description="Quản lý danh mục phòng theo khu ký túc xá."
         items={items}
+        page={page}
+        pageSize={pageSize}
         onSelectRoom={handleOpenRoomDrawer}
         icon={<IconBuildingTunnel size={20} />}
         searchControls={

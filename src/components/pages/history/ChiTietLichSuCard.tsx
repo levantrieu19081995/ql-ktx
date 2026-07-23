@@ -52,14 +52,14 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
 
   // Định dạng mốc thời gian hiển thị
   const thoiGianDinhDang = dayjs(lichSuDuocChon.thoiGian).format(
-    "DD/MM/YYYY HH:mm:ss"
+    "DD/MM/YYYY HH:mm:ss",
   );
 
   // Lấy nhãn và màu sắc trạng thái theo tab
   const { nhan: nhanTrangThai, mauSac } = layNhanTrangThai(
     lichSuDuocChon,
     loaiTab,
-    t
+    t,
   );
 
   const laCanBo =
@@ -121,7 +121,7 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
       </div>
 
       {/* Nút thao tác */}
-      <div className="button-container">
+      {/* <div className="button-container">
         <Button
           fullWidth
           onClick={() => khiPhanHoi(lichSuDuocChon)}
@@ -129,7 +129,7 @@ export const ChiTietLichSuCard: React.FC<ThuocTinhChiTietLichSuCard> = ({
         >
           {t("card.feedbackBtn")}
         </Button>
-      </div>
+      </div> */}
       <style dangerouslySetInnerHTML={{ __html: styles }} />
     </div>
   );
@@ -154,7 +154,7 @@ const styles = `
     font-size: 0.75rem;
     font-weight: 500;
     text-align: center;
-    font-family: sans-serif;
+    font-family: inherit;
     margin: 0;
 }
 
@@ -167,7 +167,7 @@ const styles = `
     display: flex;
     flex-direction: column;
     height: 100%;
-    font-family: sans-serif;
+    font-family: inherit;
 }
 
 .detail-card-title {
