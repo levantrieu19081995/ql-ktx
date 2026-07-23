@@ -159,11 +159,11 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           href: "/thong-ke/luot-ra-vao",
           icon: <IconArrowsLeftRight size={16} />,
         },
-        {
-          label: t("statByCode"),
-          href: "/thong-ke/theo-ma-so",
-          icon: <IconId size={16} />,
-        },
+        // {
+        //   label: t("statByCode"),
+        //   href: "/thong-ke/theo-ma-so",
+        //   icon: <IconId size={16} />,
+        // },
         {
           label: t("statAbsent"),
           href: "/thong-ke/vang-mat",
