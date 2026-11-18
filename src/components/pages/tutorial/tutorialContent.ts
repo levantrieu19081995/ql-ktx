@@ -23,6 +23,16 @@ export type TutorialIcon =
   | "users"
   | "roles";
 
+/** Kích thước các ảnh chụp trong public/tutorial/. */
+export const IMAGE_SIZE = { width: 1440, height: 900 };
+
+export interface TutorialMark {
+  x: number;
+  y: number;
+  /** Nhãn ngắn, 2 đến 5 chữ. */
+  label: string;
+}
+
 export interface TutorialItem {
   id: string;
   title: string;
@@ -33,6 +43,13 @@ export interface TutorialItem {
   menu?: string;
   /** Ảnh chụp trang, nằm trong public/tutorial/. Có thì hiện nút "Xem hình ảnh". */
   image?: string;
+  /** Một câu rất ngắn nói chức năng để làm gì (hiện ngay dưới tiêu đề slide). */
+  tagline?: string;
+  /**
+   * Các chấm số đặt trên ảnh, toạ độ tính bằng điểm ảnh của ảnh gốc (IMAGE_SIZE).
+   * Thứ tự trong mảng là số thứ tự chấm.
+   */
+  marks?: TutorialMark[];
   summary: string;
   steps: string[];
   notes?: string[];
@@ -72,6 +89,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/dashboard",
         menu: "Tổng quan",
         image: "/tutorial/dashboard.png",
+        tagline: "Tình hình ra vào trong khoảng ngày đã chọn.",
+        marks: [
+          { x: 1160, y: 182, label: "Chọn khoảng ngày" },
+          { x: 850, y: 385, label: "Số liệu nhanh" },
+          { x: 850, y: 700, label: "Biểu đồ" },
+        ],
         summary:
           "Cho biết tình hình ra vào trong khoảng ngày đang chọn, gồm số liệu nhanh, biểu đồ và các lượt ra vào mới nhất.",
         steps: [
@@ -101,6 +124,13 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/history",
         menu: "Lịch sử/Cảnh báo > Lịch sử ra vào",
         image: "/tutorial/lich-su.png",
+        tagline: "Tra cứu từng lượt vào, ra trong một ngày.",
+        marks: [
+          { x: 470, y: 282, label: "Chọn ngày, khu" },
+          { x: 410, y: 335, label: "Tìm kiếm" },
+          { x: 725, y: 335, label: "Xuất Excel / PDF" },
+          { x: 1100, y: 498, label: "Bấm dòng xem chi tiết" },
+        ],
         summary: "Tra cứu từng lượt vào, ra của sinh viên và cán bộ trong một ngày.",
         steps: [
           "Chọn Ngày cần xem. Mỗi lần chỉ xem được một ngày.",
@@ -121,6 +151,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/warnings",
         menu: "Lịch sử/Cảnh báo > Cảnh báo người lạ",
         image: "/tutorial/nguoi-la.png",
+        tagline: "Những khuôn mặt camera chưa nhận ra.",
+        marks: [
+          { x: 600, y: 290, label: "Chọn ngày" },
+          { x: 418, y: 424, label: "Tìm kiếm" },
+          { x: 1185, y: 584, label: "Người giống nhất" },
+        ],
         summary:
           "Danh sách các khuôn mặt camera chưa nhận ra là ai, theo ngày và theo camera.",
         steps: [
@@ -141,6 +177,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/camera",
         menu: "Lịch sử/Cảnh báo > Giám sát Camera",
         image: "/tutorial/camera.png",
+        tagline: "Xem camera trực tiếp và nhận diện tại chỗ.",
+        marks: [
+          { x: 345, y: 249, label: "Chọn 1, 4 hoặc 9 màn hình" },
+          { x: 720, y: 204, label: "Nhật ký nhận diện" },
+          { x: 1260, y: 300, label: "Danh sách camera" },
+        ],
         summary: "Xem hình trực tiếp từ camera và các lượt nhận diện đang diễn ra.",
         steps: [
           "Dòng đầu cho biết số camera đang hoạt động (ví dụ 0/19). Chọn số khung hình mỗi giây (fps) và chất lượng hình. Chọn chất lượng thấp hơn nếu mạng chậm.",
@@ -162,6 +204,13 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/camera",
         menu: "Lịch sử/Cảnh báo > Giám sát Camera",
         image: "/tutorial/lay-mau.png",
+        tagline: "Thêm khuôn mặt mới để camera nhận ra.",
+        marks: [
+          { x: 620, y: 306, label: "Người mới" },
+          { x: 620, y: 376, label: "Mã số, họ tên" },
+          { x: 720, y: 584, label: "Chọn ảnh" },
+          { x: 884, y: 638, label: "Lấy mẫu" },
+        ],
         summary:
           "Thêm hoặc xóa ảnh mẫu để camera nhận ra đúng người. Các thao tác này nằm trong Nhật ký nhận diện của trang Giám sát camera.",
         steps: [
@@ -192,6 +241,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/danh-muc/sinh-vien-ktx",
         menu: "Danh mục > Sinh viên ký túc xá",
         image: "/tutorial/dm-sinh-vien.png",
+        tagline: "Sinh viên đang ở ký túc xá, theo khu và phòng.",
+        marks: [
+          { x: 450, y: 251, label: "Lọc khu, phòng" },
+          { x: 400, y: 303, label: "Tìm kiếm" },
+          { x: 682, y: 303, label: "Đồng bộ từ UIIS" },
+        ],
         summary: "Danh sách sinh viên đang ở ký túc xá, theo khu và phòng.",
         steps: [
           "Chọn Khu và Phòng, hoặc nhập mã sinh viên, họ tên rồi bấm Tìm kiếm.",
@@ -211,6 +266,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/danh-muc/sinh-vien-no-phi",
         menu: "Danh mục > Sinh viên vi phạm",
         image: "/tutorial/dm-no-phi.png",
+        tagline: "Sinh viên vi phạm hoặc nợ phí, lấy từ UIIS.",
+        marks: [
+          { x: 626, y: 251, label: "Chọn khu" },
+          { x: 986, y: 251, label: "Tìm kiếm" },
+          { x: 1293, y: 251, label: "Đồng bộ từ UIIS" },
+        ],
         summary:
           "Danh sách sinh viên đang nợ phí. Camera dùng danh sách này để cảnh báo khi sinh viên đó ra vào.",
         steps: [
@@ -227,6 +288,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/danh-muc/phong-ktx",
         menu: "Danh mục > Phòng ký túc xá",
         image: "/tutorial/dm-phong.png",
+        tagline: "Danh sách phòng theo khu, kèm số chỗ.",
+        marks: [
+          { x: 475, y: 251, label: "Chọn khu, phòng" },
+          { x: 986, y: 251, label: "Tìm kiếm" },
+          { x: 1293, y: 251, label: "Đồng bộ từ UIIS" },
+        ],
         summary: "Danh sách phòng, sức chứa và số chỗ đang có người ở.",
         steps: [
           "Chọn Khu và Phòng rồi bấm Tìm kiếm.",
@@ -241,6 +308,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/danh-muc/khu-ktx",
         menu: "Danh mục > Khu ký túc xá",
         image: "/tutorial/dm-khu.png",
+        tagline: "Các khu và số phòng của từng khu.",
+        marks: [
+          { x: 634, y: 251, label: "Nhập mã khu" },
+          { x: 1016, y: 251, label: "Tìm kiếm" },
+          { x: 1308, y: 251, label: "Đồng bộ từ UIIS" },
+        ],
         summary: "Danh sách các khu và số phòng của mỗi khu.",
         steps: [
           "Chọn hoặc nhập Mã khu rồi bấm Tìm kiếm. Bảng cho biết mã khu, tên khu, số lượng phòng và mô tả.",
@@ -255,6 +328,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/danh-muc/sinh-vien-bi-cam",
         menu: "Danh mục > Sinh viên bị cấm",
         image: "/tutorial/dm-bi-cam.png",
+        tagline: "Sinh viên bị cấm ra vào ký túc xá.",
+        marks: [
+          { x: 628, y: 251, label: "Mã sinh viên" },
+          { x: 1294, y: 251, label: "Thêm sinh viên" },
+          { x: 1347, y: 401, label: "Sửa" },
+        ],
         summary: "Danh sách sinh viên bị cấm ra vào, kèm lý do và thời hạn.",
         steps: [
           "Nhập mã sinh viên rồi bấm Tìm kiếm để lọc danh sách.",
@@ -282,6 +361,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/thong-ke/luot-ra-vao",
         menu: "Thống kê > Thống kê lượt ra vào",
         image: "/tutorial/tk-ra-vao.png",
+        tagline: "Số lượt ra vào theo ngày hoặc tháng.",
+        marks: [
+          { x: 400, y: 281, label: "Theo ngày hoặc tháng" },
+          { x: 830, y: 281, label: "Tìm kiếm" },
+          { x: 1176, y: 281, label: "Xuất Excel / PDF" },
+        ],
         summary: "Số lượt vào và ra của từng người trong khoảng ngày.",
         steps: [
           "Chọn Loại thời gian (theo ngày hoặc theo tháng), Từ ngày và Đến ngày.",
@@ -303,6 +388,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/thong-ke/dang-co-mat",
         menu: "Thống kê > Sinh viên đang có mặt",
         image: "/tutorial/tk-co-mat.png",
+        tagline: "Ai đang ở trong ký túc xá lúc này.",
+        marks: [
+          { x: 440, y: 282, label: "Chọn số ngày" },
+          { x: 495, y: 460, label: "Số đang có mặt" },
+          { x: 1240, y: 337, label: "Xuất Excel / PDF" },
+        ],
         summary: "Những sinh viên có lần quét gần nhất là lượt vào.",
         steps: [
           "Ở ô Tính từ log vào/ra của, chọn số ngày muốn xét. Mặc định là 3 ngày gần nhất.",
@@ -323,6 +414,13 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/thong-ke/vang-mat",
         menu: "Thống kê > Sinh viên vắng mặt lâu ngày",
         image: "/tutorial/tk-vang-mat.png",
+        tagline: "Sinh viên vắng mặt nhiều ngày liền.",
+        marks: [
+          { x: 454, y: 282, label: "Ngày tham chiếu" },
+          { x: 690, y: 282, label: "Số ngày tối thiểu" },
+          { x: 888, y: 281, label: "Tìm kiếm" },
+          { x: 860, y: 520, label: "Biểu đồ theo khu" },
+        ],
         summary: "Sinh viên không có lượt quét nào trong nhiều ngày liên tiếp.",
         steps: [
           "Chọn Ngày tham chiếu, là ngày dùng để tính số ngày vắng.",
@@ -342,6 +440,13 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/thong-ke/nguoi-la",
         menu: "Thống kê > Thống kê người lạ",
         image: "/tutorial/tk-nguoi-la.png",
+        tagline: "Người lạ xuất hiện theo ngày và khu.",
+        marks: [
+          { x: 500, y: 281, label: "Từ ngày, đến ngày" },
+          { x: 752, y: 281, label: "Chọn khu" },
+          { x: 903, y: 281, label: "Tìm kiếm" },
+          { x: 850, y: 560, label: "Biểu đồ theo ngày" },
+        ],
         summary: "Số lần phát hiện người lạ theo ngày và theo khu.",
         steps: [
           "Chọn Từ ngày, Đến ngày và Khu rồi bấm Tìm kiếm.",
@@ -358,6 +463,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/thong-ke/bi-cam",
         menu: "Thống kê > Sinh viên bị cấm",
         image: "/tutorial/tk-bi-cam.png",
+        tagline: "Lượt camera thấy sinh viên bị cấm hoặc nợ phí.",
+        marks: [
+          { x: 505, y: 285, label: "Từ ngày, đến ngày" },
+          { x: 760, y: 285, label: "Họ tên hoặc MSSV" },
+          { x: 911, y: 285, label: "Tìm kiếm" },
+        ],
         summary:
           "Số lần camera phát hiện sinh viên bị cấm hoặc nợ phí trong khoảng ngày.",
         steps: [
@@ -382,6 +493,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/settings",
         menu: "Quản lý hệ thống > Quản lý hệ thống",
         image: "/tutorial/qt-he-thong.png",
+        tagline: "Tên, logo và thông tin liên hệ hiển thị.",
+        marks: [
+          { x: 580, y: 293, label: "Sửa thông tin" },
+          { x: 507, y: 653, label: "Chọn logo" },
+          { x: 762, y: 765, label: "Lưu thay đổi" },
+        ],
         summary: "Đổi tên, màu, thông tin liên hệ và logo hiển thị của hệ thống.",
         steps: [
           "Ở khung Thông tin hiển thị, sửa Tên, Màu chủ đạo, Email, Số điện thoại, Địa chỉ và Mô tả.",
@@ -397,6 +514,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/manage-users",
         menu: "Quản lý hệ thống > Quản lý người dùng",
         image: "/tutorial/qt-nguoi-dung.png",
+        tagline: "Tài khoản người dùng và vai trò của họ.",
+        marks: [
+          { x: 568, y: 245, label: "Tìm người dùng" },
+          { x: 1304, y: 345, label: "Thêm người dùng" },
+          { x: 1308, y: 500, label: "Sửa, gán vai, xóa" },
+        ],
         summary: "Danh sách tài khoản, vai trò và đơn vị của từng người.",
         steps: [
           "Gõ tên, email hoặc đơn vị vào ô tìm. Lọc thêm theo Vai trò và Trạng thái, rồi bấm Tìm. Bấm Đặt lại để xóa bộ lọc.",
@@ -412,6 +535,12 @@ export const TUTORIAL_GROUPS: TutorialGroup[] = [
         path: "/manage-roles",
         menu: "Quản lý hệ thống > Quản lý vai trò",
         image: "/tutorial/qt-vai-tro.png",
+        tagline: "Các vai trò và quyền của từng vai trò.",
+        marks: [
+          { x: 802, y: 245, label: "Tìm vai trò" },
+          { x: 1322, y: 322, label: "Thêm vai trò" },
+          { x: 1310, y: 462, label: "Gán, sửa, xóa" },
+        ],
         summary: "Tạo vai trò và quy định vai trò đó được vào những chức năng nào.",
         steps: [
           "Gõ tên vào ô tìm rồi bấm Tìm. Bấm Thêm vai trò để tạo vai trò mới.",

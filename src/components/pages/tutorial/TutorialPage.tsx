@@ -20,6 +20,8 @@ import {
   IconCategory,
   IconChartBar,
   IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
   IconCurrencyDong,
   IconDeviceCctv,
   IconDoor,
@@ -40,6 +42,7 @@ import {
   IconVideo,
 } from "@tabler/icons-react";
 import {
+  IMAGE_SIZE,
   TUTORIAL_GOAL,
   TUTORIAL_GROUPS,
   TUTORIAL_TECH,
@@ -274,6 +277,9 @@ export default function TutorialPage() {
   const [index, setIndex] = useState(0);
   const [huong, setHuong] = useState(1);
   const [moMucLuc, setMoMucLuc] = useState(false);
+  const [diemNhan, setDiemNhan] = useState<number | null>(null);
+  // true: khung nội dung mở rộng, danh sách bên trái thu thành bản đồ nhỏ ở góc trái màn hình
+  const [moRong, setMoRong] = useState(false);
   const [cumHienTai, setCumHienTai] = useState(0);
 
   const cumRef = [
@@ -290,6 +296,11 @@ export default function TutorialPage() {
 
   const hienTai = FLAT[index];
   const tong = FLAT.length;
+  // Khi mở rộng, ảnh được cắt phần đáy để rộng hết chiều ngang; vẫn giữ đủ các chấm số
+  const phanAnhHien = Math.min(
+    1,
+    ((hienTai.item.marks ?? []).reduce((a, m) => Math.max(a, m.y), 0) + 44) / IMAGE_SIZE.height,
+  );
 
   const denCum = useCallback(
     (n: number) => {
@@ -372,6 +383,7 @@ export default function TutorialPage() {
       if (e.altKey || e.ctrlKey || e.metaKey) return;
       if (e.key === "ArrowRight") chon(index + 1);
       if (e.key === "ArrowLeft") chon(index - 1);
+      if (e.key === "Escape") setMoRong(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -387,6 +399,58 @@ export default function TutorialPage() {
 
   const { group, item } = hienTai;
   const duongDan = item.path ? `/${locale}${item.path}` : null;
+
+  const nutHanhDong = (trongDock: boolean) =>
+    duongDan || item.image ? (
+      <div className="tut-actions">
+          {duongDan && (
+            <a
+              className="tut-open"
+              href={duongDan}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mở trang này"
+              title="Mở trang này"
+            >
+              <span className="tut-open-label">Mở trang này</span>
+              <IconExternalLink size={16} />
+            </a>
+          )}
+          {item.image && !trongDock && (
+            <a
+              className="tut-open is-ghost"
+              href={item.image}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Xem hình ảnh"
+              title="Xem hình ảnh"
+            >
+              <span className="tut-open-label">Xem hình ảnh</span>
+              <IconPhoto size={16} />
+            </a>
+          )}
+          <button
+            type="button"
+            className="tut-open is-ghost tut-expand"
+            onClick={() => setMoRong((v) => !v)}
+            aria-pressed={moRong}
+            aria-label={moRong ? "Thu nhỏ khung nội dung" : "Mở rộng khung nội dung"}
+            title={moRong ? "Thu nhỏ (Esc)" : "Mở rộng"}
+          >
+            {moRong ? (
+              <>
+                <IconChevronRight size={18} />
+                <IconChevronLeft size={18} />
+              </>
+            ) : (
+              <>
+                <IconChevronLeft size={18} />
+                <IconChevronRight size={18} />
+              </>
+            )}
+          </button>
+        </div>
+    ) : null;
 
   const slide = giamChuyenDong
     ? {
@@ -559,9 +623,9 @@ export default function TutorialPage() {
       </section>
 
       {/* ───────── Cụm 5: Timeline + slide ───────── */}
-      <section ref={cumRef[CUM.huongDan]} className="tut-screen tut-s3" aria-label="Hướng dẫn từng chức năng">
-        <div className="tut-main">
-          <aside className="tut-rail tut-card" data-open={moMucLuc}>
+      <section ref={cumRef[CUM.huongDan]} className={`tut-screen tut-s3${moRong ? " has-dock" : ""}`} aria-label="Hướng dẫn từng chức năng">
+        <div className={`tut-main${moRong ? " is-wide" : ""}`}>
+          <aside className="tut-rail tut-card" data-open={moMucLuc} inert={moRong}>
             <div ref={railRef} className="tut-scroll tut-rail-in">
             <button
               type="button"
@@ -616,7 +680,7 @@ export default function TutorialPage() {
           <section ref={khungRef} className="tut-panel tut-card" aria-live="polite">
             <div ref={cuonRef} className="tut-scroll tut-panel-in">
             <AnimatePresence mode="wait" initial={false}>
-              <motion.article key={item.id} {...slide} className="tut-slide">
+              <motion.article key={item.id} {...slide} className={`tut-slide${moRong ? " is-wide" : ""}`}>
                 <p className="tut-crumb">
                   <Icon name={group.icon} size={15} />
                   {group.title}
@@ -627,61 +691,89 @@ export default function TutorialPage() {
                   </span>
                   <h2 className="tut-slide-title">{item.title}</h2>
                 </div>
-                <p className="tut-summary">{item.summary}</p>
+                <p className="tut-summary">{item.tagline ?? item.summary}</p>
 
-                {item.menu && (
-                  <p className="tut-menu">
-                    <span>Vị trí trong menu</span>
-                    {item.menu}
-                  </p>
-                )}
-
-                <ol className="tut-steps">
-                  {item.steps.map((s, n) => (
-                    <li key={n} className="tut-step">
-                      <span className="tut-step-no">{n + 1}</span>
-                      <span>{s}</span>
-                    </li>
-                  ))}
-                </ol>
-
-                {item.notes && item.notes.length > 0 && (
-                  <div className="tut-notes">
-                    <p className="tut-notes-title">Lưu ý</p>
-                    <ul>
-                      {item.notes.map((n) => (
-                        <li key={n}>{n}</li>
+                {item.image && (
+                  <figure className="tut-shot">
+                    <div
+                      className="tut-shot-frame"
+                      style={
+                        {
+                          "--vis": phanAnhHien,
+                        } as React.CSSProperties
+                      }
+                    >
+                      <div className="tut-shot-inner">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.image}
+                        alt={`Màn hình ${item.title}`}
+                        width={IMAGE_SIZE.width}
+                        height={IMAGE_SIZE.height}
+                        draggable={false}
+                      />
+                      {item.marks?.map((m, n) => (
+                        <span
+                          key={n}
+                          className={`tut-mark${diemNhan === n ? " is-on" : ""}`}
+                          style={{
+                            left: `${(m.x / IMAGE_SIZE.width) * 100}%`,
+                            top: `${(m.y / IMAGE_SIZE.height) * 100}%`,
+                          }}
+                          aria-hidden="true"
+                        >
+                          {n + 1}
+                        </span>
                       ))}
-                    </ul>
-                  </div>
+                      </div>
+                    </div>
+                    {item.marks && item.marks.length > 0 && (
+                      <ol className="tut-legend">
+                        {item.marks.map((m, n) => (
+                          <li
+                            key={n}
+                            onMouseEnter={() => setDiemNhan(n)}
+                            onMouseLeave={() => setDiemNhan(null)}
+                          >
+                            <span className="tut-legend-no">{n + 1}</span>
+                            {m.label}
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </figure>
                 )}
 
-                {(duongDan || item.image) && (
-                  <div className="tut-actions">
-                    {duongDan && (
-                      <a
-                        className="tut-open"
-                        href={duongDan}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Mở trang này
-                        <IconExternalLink size={16} />
-                      </a>
-                    )}
-                    {item.image && (
-                      <a
-                        className="tut-open is-ghost"
-                        href={item.image}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Xem hình ảnh
-                        <IconPhoto size={16} />
-                      </a>
-                    )}
-                  </div>
-                )}
+                <details key={`ct-${item.id}`} className="tut-more">
+                  <summary>Chi tiết cách dùng</summary>
+                  {item.menu && (
+                    <p className="tut-menu">
+                      <span>Vị trí trong menu</span>
+                      {item.menu}
+                    </p>
+                  )}
+                  <p className="tut-more-sum">{item.summary}</p>
+                  <ol className="tut-steps">
+                    {item.steps.map((s, n) => (
+                      <li key={n} className="tut-step">
+                        <span className="tut-step-no">{n + 1}</span>
+                        <span>{s}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  {item.notes && item.notes.length > 0 && (
+                    <div className="tut-notes">
+                      <p className="tut-notes-title">Lưu ý</p>
+                      <ul>
+                        {item.notes.map((n) => (
+                          <li key={n}>{n}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </details>
+
+                {!moRong && nutHanhDong(false)}
               </motion.article>
             </AnimatePresence>
             </div>
@@ -689,36 +781,114 @@ export default function TutorialPage() {
           </section>
         </div>
 
-        <div className="tut-pill" role="group" aria-label="Chuyển mục">
-          <button
-            type="button"
-            className="tut-pill-btn"
-            onClick={() => chon(index - 1)}
-            disabled={index === 0}
-          >
-            <IconArrowLeft size={16} />
-            Trước
-          </button>
-          <div className="tut-progress" aria-label={`Mục ${index + 1} trên ${tong}`}>
-            <span className="tut-count">
-              {index + 1} / {tong}
-            </span>
-            <span className="tut-dots" aria-hidden="true">
-              {FLAT.map((f, i) => (
-                <span key={f.item.id} className={`tut-pip${i === index ? " is-active" : ""}`} />
-              ))}
-            </span>
+        {moRong ? (
+          /* Cột điều khiển bên phải khi mở rộng: chuyển mục (dọc), nút biểu tượng, bản đồ nhỏ */
+          cumHienTai === CUM.huongDan && (
+            <motion.div
+              className="tut-dock"
+              initial={giamChuyenDong ? false : { opacity: 0, x: -24 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: giamChuyenDong ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="tut-dock-bar">
+                <div className="tut-dock-nav" role="group" aria-label="Chuyển mục">
+                  <button
+                    type="button"
+                    className="tut-dock-step"
+                    onClick={() => chon(index - 1)}
+                    disabled={index === 0}
+                    aria-label="Chức năng trước"
+                    title="Trước"
+                  >
+                    <IconChevronLeft size={20} />
+                  </button>
+                  <span className="tut-dock-count" aria-label={`Mục ${index + 1} trên ${tong}`}>
+                    {index + 1}/{tong}
+                  </span>
+                  <button
+                    type="button"
+                    className="tut-dock-step"
+                    onClick={() => chon(index + 1)}
+                    disabled={index === tong - 1}
+                    aria-label="Chức năng sau"
+                    title="Sau"
+                  >
+                    <IconChevronRight size={20} />
+                  </button>
+                </div>
+                {nutHanhDong(true)}
+              </div>
+
+              <nav className="tut-mini" aria-label="Bản đồ các chức năng">
+                <button
+                  type="button"
+                  className="tut-mini-head"
+                  onClick={() => setMoRong(false)}
+                  title="Mở lại danh sách"
+                >
+                  <IconListDetails size={16} />
+                  <span>
+                    {index + 1}/{tong} · {item.title}
+                  </span>
+                </button>
+                {TUTORIAL_GROUPS.map((g) => (
+                  <div key={g.id} className="tut-mini-row">
+                    <span className={`tut-mini-ico${g.id === group.id ? " is-active" : ""}`} title={g.title}>
+                      <Icon name={g.icon} size={15} />
+                    </span>
+                    <span className="tut-mini-dots">
+                      {g.items.map((it) => {
+                        const i = chiSoTheoId(it.id);
+                        return (
+                          <button
+                            key={it.id}
+                            type="button"
+                            className={`tut-mini-dot${i === index ? " is-active" : ""}`}
+                            title={it.title}
+                            aria-label={it.title}
+                            aria-current={i === index ? "step" : undefined}
+                            onClick={() => chon(i)}
+                          />
+                        );
+                      })}
+                    </span>
+                  </div>
+                ))}
+              </nav>
+            </motion.div>
+          )
+        ) : (
+          <div className="tut-pill" role="group" aria-label="Chuyển mục">
+            <button
+              type="button"
+              className="tut-pill-btn"
+              onClick={() => chon(index - 1)}
+              disabled={index === 0}
+            >
+              <IconArrowLeft size={16} />
+              Trước
+            </button>
+            <div className="tut-progress" aria-label={`Mục ${index + 1} trên ${tong}`}>
+              <span className="tut-count">
+                {index + 1} / {tong}
+              </span>
+              <span className="tut-dots" aria-hidden="true">
+                {FLAT.map((f, i) => (
+                  <span key={f.item.id} className={`tut-pip${i === index ? " is-active" : ""}`} />
+                ))}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="tut-pill-btn is-primary"
+              onClick={() => chon(index + 1)}
+              disabled={index === tong - 1}
+            >
+              Sau
+              <IconArrowRight size={16} />
+            </button>
           </div>
-          <button
-            type="button"
-            className="tut-pill-btn is-primary"
-            onClick={() => chon(index + 1)}
-            disabled={index === tong - 1}
-          >
-            Sau
-            <IconArrowRight size={16} />
-          </button>
-        </div>
+        )}
       </section>
 
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -855,7 +1025,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 .tut-node.is-active .tut-dot { background: var(--tut-accent); border-color: var(--tut-accent); }
 
 .tut-panel { position: relative; display: flex; overflow: hidden; min-height: 0; scroll-margin-top: 16px; }
-.tut-panel-in { flex: 1; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; padding: 30px 36px 32px; }
+.tut-panel-in { flex: 1; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; padding: 24px 36px 24px; }
 .tut-crumb {
   margin: 0 0 14px; display: inline-flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tut-accent);
@@ -867,6 +1037,42 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 }
 .tut-slide-title { margin: 0; font-size: 28px; font-weight: 700; line-height: 1.2; }
 .tut-summary { margin: 14px 0 0; max-width: 70ch; font-size: 16px; line-height: 1.6; color: var(--tut-dim); }
+/* Ảnh chụp màn hình + chấm số */
+.tut-shot { margin: 18px 0 0; }
+.tut-shot-frame {
+  position: relative; width: min(100%, calc((100dvh - 470px) * 1.6)); min-width: min(100%, 520px);
+  border-radius: 8px; overflow: hidden; border: 1px solid var(--tut-line-strong); background: #fff;
+}
+.tut-shot-inner { position: relative; }
+.tut-shot-frame img { display: block; width: 100%; height: auto; }
+.tut-mark {
+  position: absolute; width: 32px; height: 32px; margin: -16px 0 0 -16px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 22px; font-weight: 800; line-height: 1;
+  color: #ff7a00; background: none; border: 2px solid transparent;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 2px #fff;
+}
+/* Chỉ khi rê chuột vào nhãn bên dưới thì mới hiện vòng cam quanh số */
+.tut-mark.is-on { border-color: #ff7a00; }
+.tut-legend { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.tut-legend li {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px;
+  border-radius: 999px; font-size: 14px; font-weight: 600;
+  background: var(--tut-surface-2); border: 1px solid var(--tut-line);
+}
+.tut-legend li:hover { border-color: #ff7a00; }
+.tut-legend-no {
+  width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 12px; font-weight: 800; background: #ff7a00; color: #000;
+}
+.tut-more { margin-top: 16px; }
+.tut-more > summary {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 4px; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--tut-accent); list-style: none;
+}
+.tut-more > summary::-webkit-details-marker { display: none; }
+.tut-more > summary::before { content: "+"; display: inline-block; width: 18px; font-weight: 700; }
+.tut-more[open] > summary::before { content: "−"; }
+.tut-more-sum { margin: 10px 0 0; max-width: 70ch; font-size: 15px; line-height: 1.6; color: var(--tut-dim); }
 .tut-menu {
   margin: 14px 0 0; display: inline-flex; flex-wrap: wrap; gap: 8px; align-items: center;
   padding: 6px 12px; border-radius: 6px; font-size: 13px; line-height: 1.4;
@@ -894,6 +1100,89 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
   display: inline-flex; align-items: center; gap: 8px; min-height: 42px;
   padding: 0 18px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none;
   color: #000; background: var(--tut-accent); border: 1px solid var(--tut-accent);
+}
+.tut-expand { margin-left: auto; padding: 0 10px; gap: 0; }
+.tut-expand svg + svg { margin-left: -9px; }
+
+/* Bản đồ nhỏ góc trái + chế độ mở rộng (chỉ trên máy tính) */
+.tut-mini {
+  width: 100%; padding: 8px; flex: none;
+  border-radius: 10px; background: var(--tut-surface); border: 1px solid var(--tut-line-strong);
+}
+.tut-mini-head {
+  appearance: none; font: inherit; cursor: pointer; width: 100%; min-height: 32px; padding: 0 4px;
+  display: flex; align-items: center; gap: 8px; text-align: left; font-size: 12px; font-weight: 600;
+  color: var(--tut-text); background: none; border: 0; border-radius: 6px;
+}
+.tut-mini-head:hover { background: var(--tut-surface-2); }
+.tut-mini-head span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tut-mini-row { display: flex; align-items: center; gap: 10px; margin-top: 5px; padding: 0 4px; }
+.tut-mini-ico { flex: none; display: grid; color: var(--tut-dim); }
+.tut-mini-ico.is-active { color: var(--tut-accent); }
+.tut-mini-dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.tut-mini-dot {
+  appearance: none; padding: 0; cursor: pointer; width: 15px; height: 15px; border-radius: 50%;
+  background: #000; border: 2px solid var(--tut-line-strong);
+}
+.tut-mini-dot:hover { border-color: var(--tut-dim); }
+.tut-mini-dot.is-active { background: var(--tut-accent); border-color: var(--tut-accent); }
+/* Cột điều khiển bên phải khi mở rộng */
+.tut-dock {
+  position: fixed; z-index: 15; left: 16px; bottom: 20px; width: 236px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.tut-dock-bar { flex: none; display: flex; align-items: center; gap: 8px; }
+.tut-dock-nav {
+  flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px;
+  min-height: 46px; padding: 4px; border-radius: 10px; background: var(--tut-surface); border: 1px solid var(--tut-line);
+}
+.tut-dock-step {
+  appearance: none; cursor: pointer; flex: none; width: 34px; height: 36px; padding: 0; border-radius: 8px;
+  display: grid; place-items: center; color: var(--tut-text);
+  background: var(--tut-surface-2); border: 1px solid var(--tut-line-strong);
+}
+.tut-dock-step:hover:not(:disabled) { background: #232323; }
+.tut-dock-step:disabled { opacity: 0.4; cursor: default; }
+.tut-dock-count { font-size: 15px; font-weight: 700; white-space: nowrap; }
+.tut-dock .tut-actions { margin: 0; gap: 8px; flex-wrap: nowrap; flex: none; }
+.tut-dock .tut-actions .tut-open { width: 46px; min-height: 46px; padding: 0; justify-content: center; }
+.tut-dock .tut-actions .tut-expand { margin-left: 0; }
+.tut-dock .tut-open-label { display: none; }
+@media (min-width: 861px) {
+  .tut-s3 { transition: padding-left 0.3s ease; }
+  /* Mở rộng: bỏ giới hạn bề ngang, khung nội dung trải tới sát mép phải (chừa chỗ cho chấm điều hướng) */
+  .tut-s3.has-dock { max-width: none; padding-left: 284px; padding-right: 64px; }
+  .tut-main { transition: grid-template-columns 0.3s ease, column-gap 0.3s ease; }
+  .tut-main.is-wide { grid-template-columns: 0px minmax(0, 1fr); column-gap: 0; }
+  .tut-rail { transition: opacity 0.2s ease; }
+  .tut-main.is-wide .tut-rail { opacity: 0; visibility: hidden; border-color: transparent; }
+  /* Mở rộng để trình chiếu: tiêu đề nhỏ gọn, ảnh rộng hết chiều ngang (cắt phần đáy),
+     nhãn số xếp một hàng dưới ảnh, nút chỉ còn biểu tượng */
+  .tut-slide.is-wide { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: center; }
+  .tut-slide.is-wide > * { grid-column: 1 / -1; }
+  .tut-slide.is-wide .tut-crumb { margin-bottom: 6px; font-size: 11px; }
+  .tut-slide.is-wide .tut-slide-head { gap: 10px; }
+  .tut-slide.is-wide .tut-slide-icon { width: 34px; height: 34px; }
+  .tut-slide.is-wide .tut-slide-icon svg { width: 20px; height: 20px; }
+  .tut-slide.is-wide .tut-slide-title { font-size: 22px; }
+  .tut-slide.is-wide .tut-summary { margin-top: 6px; font-size: 14px; max-width: none; }
+  .tut-slide.is-wide > .tut-shot { display: contents; }
+  .tut-slide.is-wide .tut-shot-frame {
+    grid-column: 1 / -1; grid-row: 4; margin-top: 14px; overflow: hidden;
+    width: min(100%, calc((100dvh - 312px) / (var(--vis) * 0.625))); max-height: calc(100dvh - 312px);
+  }
+  .tut-slide.is-wide .tut-mark { width: 38px; height: 38px; margin: -19px 0 0 -19px; font-size: 26px; }
+  /* Hai hàng dưới ảnh chừa chỗ cho bản đồ nhỏ ở góc trái */
+  .tut-slide.is-wide .tut-legend { grid-column: 1 / -1; grid-row: 5; margin: 12px 0 0; gap: 10px; }
+  .tut-slide.is-wide .tut-legend li { font-size: 16px; padding: 6px 14px 6px 7px; }
+  .tut-slide.is-wide .tut-legend-no { width: 24px; height: 24px; font-size: 13px; }
+  .tut-slide.is-wide > .tut-more { grid-column: 1 / -1; grid-row: 6; margin: 6px 0 0; }
+}
+@media (max-width: 860px) {
+  .tut-expand, .tut-dock { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tut-main, .tut-rail, .tut-s3 { transition: none; }
 }
 .tut-open:hover { background: #33c1f5; border-color: #33c1f5; }
 .tut-open.is-ghost { color: var(--tut-text); background: transparent; border-color: var(--tut-line-strong); }
@@ -996,6 +1285,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
   .tut-panel { display: block; overflow: visible; }
   .tut-panel-in { overflow: visible; padding: 20px 18px 24px; }
   .tut-bar { display: none; }
+  .tut-shot-frame { width: 100%; }
   .tut-slide-title { font-size: 22px; }
   .tut-slide-icon { width: 42px; height: 42px; }
   .tut-pill { position: sticky; bottom: 16px; }
