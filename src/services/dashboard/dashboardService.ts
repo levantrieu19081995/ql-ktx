@@ -253,8 +253,23 @@ export const fetchThongKeNguoiLa = async (params: { tuNgay: string; denNgay: str
 };
 
 // 12. Thống kê chi tiết người lạ (GET)
-export const fetchThongKeChiTietNguoiLa = async (params: any): Promise<any> => {
-  return get<any>(API_URLS.thongKeKtx.nguoiLa, params);
+// export const fetchThongKeChiTietNguoiLa = async (params: {
+//   tuNgay: string;
+//   denNgay: string;
+//   maKhu: string;
+// }): Promise<any> => {
+//   // return get<any>(API_URLS.thongKeKtx.nguoiLa, params);
+//   return get<any>(API_URLS.thongKeKtx.chiTietNguoiLa, params);
+// };
+ 
+export const fetchThongKeChiTietNguoiLa = async (params: {
+  tuNgay: string;
+  denNgay: string;
+  maKhu: string;
+  page: number;
+  pageSize: number;
+}): Promise<any> => {
+  return get<any>(API_URLS.thongKeKtx.chiTietNguoiLa, params);
 };
 
 // 13. Dashboard summary (POST) - sử dụng endpoint thong-ke/luot-ra-vao để lấy tổng quan

@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import axios from "axios";
-import { getSession } from "next-auth/react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSessionStore } from "@/context/sessionStore";
 
 const API_BASE_URL = typeof window === "undefined"
-  ? (process.env.NEXT_PUBLIC_API_BASE_URL || "")
+  ? (process.env.API_BASE_URL || "")
   : "/api/proxy";
 
 // ================= DELETE CÓ BODY (RIÊNG BIỆT) =================
@@ -19,7 +18,6 @@ export const axiosDeleteWithBody = async <T = any>(
     // Tạo instance riêng để inject token thủ công
     // const session = await getSession();
     const { accessToken } = useSessionStore.getState();
-    console.log('axiosDelete.ts accessToken :>> ', accessToken);
     const fullUrl = url.startsWith("http")
       ? url
       : `${API_BASE_URL.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;

@@ -8,20 +8,12 @@ import {
   Group,
   Text,
   Table,
-  Badge,
   Avatar,
-  ScrollArea,
   Stack,
-  Title,
-  Grid,
-  TextInput,
   Select,
   Button,
-  ThemeIcon,
   Loader,
   Center,
-  SimpleGrid,
-  Divider,
   Box,
 } from "@mantine/core";
 import {
@@ -49,8 +41,9 @@ import PageSectionHeader from "@/components/common/PageSectionHeader";
 import { KhuKtx } from "@/types/type-danh-muc-ktx";
 import { fetchDanhSachKhuKtx } from "@/services/danh-muc/danhMucKtxService";
 import CustomPagination from "@/components/common/CustomPagination";
-import ExcelExportForm from "@/components/common/excel/excelHelper";
-import PdfExportForm from "@/components/common/pdf/pdfHelper";
+import { xuatRaFileExcel } from "@/components/common/excel/excelHelper";
+import { xuatRaFilePdf } from "@/components/common/pdf/pdfHelper";
+import { showNoti } from "@/components/common/showNoti";
 
 const getDefaultDates = () => {
   const den = new Date();
@@ -58,12 +51,10 @@ const getDefaultDates = () => {
   return { tu, den };
 };
 
-type DuLieuXuat = {
-  title: string;
-  fileName: string;
-  columnLabels: string[];
-  data: Record<string, string | number | boolean | null | undefined>[];
-  sheetName?: string;
+const getCurrentYearDetailDates = () => {
+  const den = new Date();
+  const tu = new Date(den.getFullYear(), 0, 1);
+  return { tu, den };
 };
 
 const STRANGER_EXPORT_TITLE = "Danh s\u00e1ch ng\u01b0\u1eddi l\u1ea1";
@@ -76,6 +67,24 @@ const STRANGER_EXPORT_COLUMNS = [
   "Ng\u00e0y",
   "Gi\u1edd",
 ];
+const DATE_RANGE_ERROR = "Đến ngày không được nhỏ hơn từ ngày.";
+
+const getDateOnlyTime = (dateVal: Date | null) => {
+  if (!dateVal || Number.isNaN(dateVal.getTime())) return null;
+
+  return new Date(
+    dateVal.getFullYear(),
+    dateVal.getMonth(),
+    dateVal.getDate(),
+  ).getTime();
+};
+
+const isInvalidDateRange = (fromDate: Date | null, toDate: Date | null) => {
+  const fromTime = getDateOnlyTime(fromDate);
+  const toTime = getDateOnlyTime(toDate);
+
+  return fromTime !== null && toTime !== null && toTime < fromTime;
+};
 
 const StrangerChartLegend = ({ label }: { label: string }) => {
   return (
@@ -198,21 +207,21 @@ export default function NguoiLaSubPage() {
   const [nguoiLaPageSize] = useState(1000);
   const [nguoiLaTotalPages, setNguoiLaTotalPages] = useState(1);
   const [nguoiLaTotalElements, setNguoiLaTotalElements] = useState(0);
-  const [duLieuXuatExcel, setDuLieuXuatExcel] = useState<DuLieuXuat | null>(
-    null,
-  );
-  const [duLieuXuatPdf, setDuLieuXuatPdf] = useState<DuLieuXuat | null>(null);
+  const [dangXuat, setDangXuat] = useState<"excel" | "pdf" | null>(null);
 
   // State for daily quantity chart
   const [chartData, setChartData] = useState<any[]>([]);
   const [chartLoading, setChartLoading] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
 
-  // State for daily detailed strangers appearance
-  const [detailDate, setDetailDate] = useState<Date | null>(() => new Date());
-  const [detailList, setDetailList] = useState<any[]>([]);
+  const [detailList, setDetailList] = useState<NguoiLaItem[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+
+  const [detailPage, setDetailPage] = useState(1);
+  const [detailPageSize, setDetailPageSize] = useState(10);
+  const [detailTotalPages, setDetailTotalPages] = useState(1);
+  const [detailTotalElements, setDetailTotalElements] = useState(0);
 
   // Format utility (returns MM/dd/yyyy)
   const formatDateToMMDDYYYY = (
@@ -243,23 +252,10 @@ export default function NguoiLaSubPage() {
   const formatChartDateLabel = (value: string) => {
     if (!value) return "";
 
-    if (value.includes("/")) {
-      const parts = value.split("/");
-      if (parts.length === 3) {
-        const [month, day] = parts;
-        return `${day}/${month}`;
-      }
-    }
+    const parsedDate = parseDateStr(value);
+    if (!parsedDate) return value;
 
-    if (value.includes("-")) {
-      const parts = value.split("-");
-      if (parts.length === 3) {
-        const [, month, day] = parts;
-        return `${day}/${month}`;
-      }
-    }
-
-    return value;
+    return formatDateToDDMMYYYY(parsedDate, parsedDate);
   };
 
   // Format utility (returns yyyy-MM-dd)
@@ -278,18 +274,48 @@ export default function NguoiLaSubPage() {
   // Parse helper for chart active label
   const parseDateStr = (dateStr: string): Date | null => {
     if (!dateStr) return null;
-    const parts = dateStr.split("/");
-    if (parts.length === 3) {
-      const part0 = parseInt(parts[0], 10);
-      const part1 = parseInt(parts[1], 10);
-      const part2 = parseInt(parts[2], 10);
-      // Determine if DD/MM/YYYY or MM/DD/YYYY
-      if (part0 > 12) {
-        return new Date(part2, part1 - 1, part0); // DD/MM/YYYY
-      } else {
-        return new Date(part2, part0 - 1, part1); // MM/DD/YYYY
+
+    if (dateStr.includes("/")) {
+      const parts = dateStr.split("/");
+
+      if (parts.length === 3) {
+        const part0 = parseInt(parts[0], 10);
+        const part1 = parseInt(parts[1], 10);
+        const part2 = parseInt(parts[2], 10);
+
+        if (Number.isNaN(part0) || Number.isNaN(part1) || Number.isNaN(part2)) {
+          return null;
+        }
+
+        // Chart data is displayed in Vietnamese date order, so prefer DD/MM/YYYY
+        // for ambiguous values such as 06/01/2026.
+        if (part0 > 12) {
+          return new Date(part2, part1 - 1, part0);
+        }
+
+        if (part1 > 12) {
+          return new Date(part2, part0 - 1, part1);
+        }
+
+        return new Date(part2, part1 - 1, part0);
       }
     }
+
+    if (dateStr.includes("-")) {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+
+        if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+          return null;
+        }
+
+        return new Date(year, month - 1, day);
+      }
+    }
+
     return null;
   };
 
@@ -333,6 +359,14 @@ export default function NguoiLaSubPage() {
             : denNgay;
         const activeKhu =
           overrides && overrides.maKhu !== undefined ? overrides.maKhu : khuKtx;
+
+        if (isInvalidDateRange(activeTu, activeDen)) {
+          setNguoiLaError(DATE_RANGE_ERROR);
+          setNguoiLaList([]);
+          setNguoiLaTotalPages(1);
+          setNguoiLaTotalElements(0);
+          return;
+        }
 
         const body = {
           page: String(page),
@@ -381,6 +415,12 @@ export default function NguoiLaSubPage() {
         const activeKhu =
           overrides && overrides.maKhu !== undefined ? overrides.maKhu : khuKtx;
 
+        if (isInvalidDateRange(activeTu, activeDen)) {
+          setChartError(DATE_RANGE_ERROR);
+          setChartData([]);
+          return;
+        }
+
         const body = {
           tuNgay: formatDateToMMDDYYYY(activeTu, getDefaultDates().tu),
           denNgay: formatDateToMMDDYYYY(activeDen, getDefaultDates().den),
@@ -388,7 +428,29 @@ export default function NguoiLaSubPage() {
         };
 
         const res = await fetchThongKeNguoiLa(body);
-        setChartData(res?.payload || []);
+        const normalizedChartData = (res?.payload || []).map((item: any) => {
+          const parsedDate = parseDateStr(item?.ngay);
+
+          return {
+            ...item,
+            ngay: parsedDate
+              ? formatDateToDDMMYYYY(parsedDate, parsedDate)
+              : item?.ngay,
+          };
+        });
+
+        const sortedChartData = [...normalizedChartData].sort((a, b) => {
+          const dateA = parseDateStr(a?.ngay);
+          const dateB = parseDateStr(b?.ngay);
+
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+
+          return dateA.getTime() - dateB.getTime();
+        });
+
+        setChartData(sortedChartData);
       } catch (err: any) {
         setChartError(err?.message ?? "Lỗi khi tải biểu đồ người lạ");
         setChartData([]);
@@ -401,43 +463,96 @@ export default function NguoiLaSubPage() {
 
   // 4. Fetch Stranger Daily Details List
   const loadStrangerDailyDetails = useCallback(
-    async (overrides?: { detailDate?: Date | null; maKhu?: string }) => {
+    async (
+      page: number,
+      pageSize: number,
+      overrides?: {
+        tuNgay?: Date | null;
+        denNgay?: Date | null;
+        maKhu?: string;
+      },
+    ) => {
       setDetailLoading(true);
       setDetailError(null);
 
-      const activeDate =
-        overrides && overrides.detailDate !== undefined
-          ? overrides.detailDate
-          : detailDate;
+      const defaultDetailDates = getCurrentYearDetailDates();
+      const activeTuNgay =
+        overrides && overrides.tuNgay !== undefined ? overrides.tuNgay : tuNgay;
+      const activeDenNgay =
+        overrides && overrides.denNgay !== undefined
+          ? overrides.denNgay
+          : denNgay;
       const activeKhu =
         overrides && overrides.maKhu !== undefined ? overrides.maKhu : khuKtx;
 
-      if (!activeDate) {
+      if (isInvalidDateRange(activeTuNgay, activeDenNgay)) {
+        setDetailError(DATE_RANGE_ERROR);
         setDetailList([]);
+        setDetailTotalPages(1);
+        setDetailTotalElements(0);
+        setDetailLoading(false);
+        return;
+      }
+
+      if (!activeTuNgay || !activeDenNgay) {
+        setDetailList([]);
+        setDetailTotalPages(1);
+        setDetailTotalElements(0);
         setDetailLoading(false);
         return;
       }
 
       try {
-        const ngayChiTiet = formatDateToMMDDYYYY(activeDate, new Date());
+        const tuNgayChiTiet = formatDateToMMDDYYYY(
+          activeTuNgay,
+          defaultDetailDates.tu,
+        );
+        const denNgayChiTiet = formatDateToMMDDYYYY(
+          activeDenNgay,
+          defaultDetailDates.den,
+        );
         const res = await fetchThongKeChiTietNguoiLa({
-          ngay: ngayChiTiet,
+          tuNgay: tuNgayChiTiet,
+          denNgay: denNgayChiTiet,
           maKhu: activeKhu,
+          page,
+          pageSize,
         });
-        const items = res?.payload || [];
+
+        const payload = res?.payload;
+
+        const items = Array.isArray(payload)
+          ? payload
+          : (payload?.items ?? payload?.content ?? []);
+
+        const totalElements = Array.isArray(payload)
+          ? items.length
+          : (payload?.totalElements ??
+            payload?.totalItems ??
+            payload?.numberOfElements ??
+            items.length);
+
+        const totalPages = Array.isArray(payload)
+          ? Math.max(1, Math.ceil(totalElements / pageSize))
+          : (payload?.totalPages ??
+            Math.max(1, Math.ceil(totalElements / pageSize)));
+
         setDetailList(items);
-        setDetailLoading(false);
-        return;
+        setDetailTotalElements(totalElements);
+        setDetailTotalPages(totalPages);
       } catch (err: any) {
         setDetailError(
           err?.message ?? "Lỗi khi tải chi tiết người lạ trong ngày",
         );
+
         setDetailList([]);
+        setDetailTotalPages(1);
+        setDetailTotalElements(0);
+      } finally {
         setDetailLoading(false);
-        return;
       }
     },
-    [khuKtx, detailDate],
+    [khuKtx, tuNgay, denNgay],
   );
 
   // Load zones on mount, and trigger initial data load
@@ -454,25 +569,43 @@ export default function NguoiLaSubPage() {
   }, [loadChartData]);
 
   useEffect(() => {
-    loadStrangerDailyDetails();
-  }, [loadStrangerDailyDetails]);
+    loadStrangerDailyDetails(detailPage, detailPageSize);
+  }, [detailPage, detailPageSize, loadStrangerDailyDetails]);
 
   // Search Handler
   const handleSearch = () => {
     setNguoiLaPage(1);
+    setDetailPage(1);
+
+    if (isInvalidDateRange(tuNgay, denNgay)) {
+      setNguoiLaError(DATE_RANGE_ERROR);
+      setChartError(DATE_RANGE_ERROR);
+      setDetailError(DATE_RANGE_ERROR);
+      setNguoiLaList([]);
+      setNguoiLaTotalPages(1);
+      setNguoiLaTotalElements(0);
+      setChartData([]);
+      setDetailList([]);
+      setDetailTotalPages(1);
+      setDetailTotalElements(0);
+      showNoti("error", DATE_RANGE_ERROR);
+      return;
+    }
+
     loadNguoiLaHistory(1);
     loadChartData();
-    loadStrangerDailyDetails();
+    loadStrangerDailyDetails(1, detailPageSize);
   };
 
   // Reset Handler
   const handleReset = () => {
     const defaults = getDefaultDates();
+    const detailDefaults = getCurrentYearDetailDates();
     setTuNgay(defaults.tu);
     setDenNgay(defaults.den);
     setKhuKtx("-1");
     setNguoiLaPage(1);
-    setDetailDate(new Date());
+    setDetailPage(1);
 
     loadNguoiLaHistory(1, {
       tuNgay: defaults.tu,
@@ -480,7 +613,11 @@ export default function NguoiLaSubPage() {
       maKhu: "-1",
     });
     loadChartData({ tuNgay: defaults.tu, denNgay: defaults.den, maKhu: "-1" });
-    loadStrangerDailyDetails({ detailDate: new Date(), maKhu: "-1" });
+    loadStrangerDailyDetails(1, detailPageSize, {
+      tuNgay: detailDefaults.tu,
+      denNgay: detailDefaults.den,
+      maKhu: "-1",
+    });
   };
 
   // Handle chart node click to view details of that clicked date
@@ -488,8 +625,12 @@ export default function NguoiLaSubPage() {
     if (nextState && nextState.activeLabel) {
       const parsedDate = parseDateStr(nextState.activeLabel);
       if (parsedDate) {
-        setDetailDate(parsedDate);
-        loadStrangerDailyDetails({ detailDate: parsedDate });
+        setDetailPage(1);
+
+        loadStrangerDailyDetails(1, detailPageSize, {
+          tuNgay: parsedDate,
+          denNgay: parsedDate,
+        });
       }
     }
   };
@@ -502,20 +643,6 @@ export default function NguoiLaSubPage() {
       label: k.tenKhu || `Khu ${k.maKhu}`,
     })),
   ];
-
-  const layTatCaNguoiLaTheoBoLoc = async () => {
-    const body = {
-      page: "1",
-      pageSize: String(nguoiLaTotalElements > 0 ? nguoiLaTotalElements : 10000),
-      tuNgay: formatDateToMMDDYYYY(tuNgay, getDefaultDates().tu),
-      denNgay: formatDateToMMDDYYYY(denNgay, getDefaultDates().den),
-      maKhu: khuKtx,
-    };
-
-    const res = await fetchNguoiLaPaginate(body);
-    const payload = res?.payload;
-    return payload?.items ?? payload?.content ?? [];
-  };
 
   const taoDuLieuXuatNguoiLa = (items: NguoiLaItem[]) => {
     return items.map((item, index) => ({
@@ -531,24 +658,51 @@ export default function NguoiLaSubPage() {
   };
 
   const xuLyXuatExcel = async () => {
-    const items = await layTatCaNguoiLaTheoBoLoc();
-    setDuLieuXuatExcel({
-      title: STRANGER_EXPORT_TITLE,
-      fileName: `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
-      sheetName: STRANGER_EXPORT_SHEET,
-      columnLabels: STRANGER_EXPORT_COLUMNS,
-      data: taoDuLieuXuatNguoiLa(items),
-    });
+    if (dangXuat) return;
+
+    setDangXuat("excel");
+    try {
+      const fileName = `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`;
+
+      await xuatRaFileExcel(
+        taoDuLieuXuatNguoiLa(detailList),
+        fileName,
+        STRANGER_EXPORT_SHEET,
+        {
+          soCot: STRANGER_EXPORT_COLUMNS.length,
+          nhanCot: STRANGER_EXPORT_COLUMNS,
+          tieuDe: STRANGER_EXPORT_TITLE,
+          soCotKhoiTieuNgu: 6,
+        },
+      );
+      showNoti("success", t("exportExcelSuccess"));
+    } catch (error) {
+      console.error("Lỗi khi xuất Excel danh sách người lạ:", error);
+      showNoti("error", t("exportError"));
+    } finally {
+      setDangXuat(null);
+    }
   };
 
   const xuLyXuatPdf = async () => {
-    const items = await layTatCaNguoiLaTheoBoLoc();
-    setDuLieuXuatPdf({
-      title: STRANGER_EXPORT_TITLE,
-      fileName: `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`,
-      columnLabels: STRANGER_EXPORT_COLUMNS,
-      data: taoDuLieuXuatNguoiLa(items),
-    });
+    if (dangXuat) return;
+
+    setDangXuat("pdf");
+    try {
+      const fileName = `Danh_Sach_Nguoi_La_${new Date().toISOString().split("T")[0]}`;
+
+      await xuatRaFilePdf(taoDuLieuXuatNguoiLa(detailList), fileName, {
+        soCot: STRANGER_EXPORT_COLUMNS.length,
+        nhanCot: STRANGER_EXPORT_COLUMNS,
+        tieuDe: STRANGER_EXPORT_TITLE,
+      });
+      showNoti("success", t("exportPdfSuccess"));
+    } catch (error) {
+      console.error("Lỗi khi xuất PDF danh sách người lạ:", error);
+      showNoti("error", t("exportError"));
+    } finally {
+      setDangXuat(null);
+    }
   };
 
   return (
@@ -613,6 +767,7 @@ export default function NguoiLaSubPage() {
             value={denNgay}
             onChange={(val) => setDenNgay(val ? new Date(val) : null)}
             valueFormat="DD/MM/YYYY"
+            minDate={tuNgay || undefined}
             clearable
             styles={{
               label: {
@@ -691,6 +846,8 @@ export default function NguoiLaSubPage() {
               leftSection={<IconDownload size={16} />}
               variant="outline"
               onClick={() => void xuLyXuatExcel()}
+              loading={dangXuat === "excel"}
+              disabled={dangXuat !== null}
               style={{
                 borderColor: "#1f5ca9",
                 color: "#1f5ca9",
@@ -706,6 +863,8 @@ export default function NguoiLaSubPage() {
               leftSection={<IconDownload size={16} />}
               variant="outline"
               onClick={() => void xuLyXuatPdf()}
+              loading={dangXuat === "pdf"}
+              disabled={dangXuat !== null}
               style={{
                 borderColor: "#0ea5e9",
                 color: "#0ea5e9",
@@ -753,8 +912,7 @@ export default function NguoiLaSubPage() {
               c="dimmed"
               style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
             >
-              {t("noStrangerData") ||
-                "Không có dữ liệu người lạ trong khoảng thời gian này"}
+              {chartError}
             </Text>
           </Center>
         ) : !chartData || chartData.length === 0 ? (
@@ -774,8 +932,8 @@ export default function NguoiLaSubPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
-                  onClick={handleChartClick}
-                  style={{ cursor: "pointer" }}
+                  // onClick={handleChartClick}
+                  // style={{ cursor: "pointer" }}
                   margin={{
                     top: 8,
                     right: 12,
@@ -850,6 +1008,7 @@ export default function NguoiLaSubPage() {
         )}
       </Card>
 
+      {/* Cụm chi tiết người lạ */}
       <Card
         withBorder
         radius="lg"
@@ -872,26 +1031,6 @@ export default function NguoiLaSubPage() {
           >
             {t("dailyDetailsTitle") || "CHI TIẾT NGƯỜI LẠ TRONG NGÀY"}
           </Text>
-          <DateInput
-            placeholder="Chọn ngày..."
-            value={detailDate}
-            onChange={(val) => {
-              const d = val ? new Date(val) : null;
-              setDetailDate(d);
-              loadStrangerDailyDetails({ detailDate: d });
-            }}
-            valueFormat="DD/MM/YYYY"
-            clearable={false}
-            styles={{
-              input: {
-                borderRadius: "8px",
-                width: "150px",
-                height: "32px",
-                fontSize: "12px",
-                fontFamily: "var(--font-readex-pro), sans-serif",
-              },
-            }}
-          />
         </Group>
 
         {detailLoading ? (
@@ -905,8 +1044,7 @@ export default function NguoiLaSubPage() {
               c="dimmed"
               style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
             >
-              {t("noStrangerData") ||
-                "Không có dữ liệu người lạ trong khoảng thời gian này"}
+              {detailError}
             </Text>
           </Center>
         ) : (
@@ -947,7 +1085,7 @@ export default function NguoiLaSubPage() {
                       color: "#64748b",
                     }}
                   >
-                    {idx + 1}
+                    {(detailPage - 1) * detailPageSize + idx + 1}
                   </Table.Td>
                   <Table.Td style={{ textAlign: "center" }}>
                     {item.pathImage ? (
@@ -971,7 +1109,7 @@ export default function NguoiLaSubPage() {
                     {item.maKhu || "--"}
                   </Table.Td>
                   <Table.Td>
-                    {item.tenKhu || getTranslatedKhu(item.maKhu) || "--"}
+                    {item.tenKhu || getTranslatedKhu(item.maKhu || "") || "--"}
                   </Table.Td>
                   <Table.Td style={{ textAlign: "center" }}>
                     {item.ngay || "--"}
@@ -987,47 +1125,27 @@ export default function NguoiLaSubPage() {
               {detailList.length === 0 && (
                 <Table.Tr>
                   <Table.Td colSpan={7}>
-                      <Text size="sm" c="dimmed" ta="center" py="xl">
-                        {t("noStrangerDetailsForDay") ||
-                          "Không phát hiện người lạ nào trong ngày này."}
-                      </Text>
+                    <Text size="sm" c="dimmed" ta="center" py="xl">
+                      {t("noStrangerDetailsForDay") ||
+                        "Không phát hiện người lạ nào trong ngày này."}
+                    </Text>
                   </Table.Td>
                 </Table.Tr>
               )}
             </Table.Tbody>
           </Table>
         )}
+        {!detailLoading && !detailError && detailList.length > 0 && (
+          <CustomPagination
+            totalItems={detailTotalElements}
+            totalPages={detailTotalPages}
+            page={detailPage}
+            pageSize={detailPageSize}
+            setPage={setDetailPage}
+            setPageSize={setDetailPageSize}
+          />
+        )}
       </Card>
-
-      {duLieuXuatExcel && (
-        <ExcelExportForm
-          hidden
-          autoExport
-          title={duLieuXuatExcel.title}
-          fileName={duLieuXuatExcel.fileName}
-          sheetName={duLieuXuatExcel.sheetName}
-          columnLabels={duLieuXuatExcel.columnLabels}
-          data={duLieuXuatExcel.data}
-          onExported={() => {
-            setDuLieuXuatExcel(null);
-          }}
-        />
-      )}
-
-      {duLieuXuatPdf && (
-        <PdfExportForm
-          hidden
-          autoExport
-          title={duLieuXuatPdf.title}
-          fileName={duLieuXuatPdf.fileName}
-          columnLabels={duLieuXuatPdf.columnLabels}
-          data={duLieuXuatPdf.data}
-          onExported={() => {
-            setDuLieuXuatPdf(null);
-          }}
-        />
-      )}
     </Stack>
   );
 }
-

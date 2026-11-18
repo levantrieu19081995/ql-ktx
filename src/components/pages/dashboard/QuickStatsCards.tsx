@@ -9,13 +9,15 @@ import {
   IconBan,
   IconAlertTriangle,
 } from '@tabler/icons-react';
+import Reveal, { SoDem } from './Reveal';
 import { INITIAL_QUICK_STATS, QuickStat } from './dashboardTypes';
 
 interface QuickStatsCardsProps {
   stats?: QuickStat[];
+  mocMo?: number;
 }
 
-export default function QuickStatsCards({ stats = INITIAL_QUICK_STATS }: QuickStatsCardsProps) {
+export default function QuickStatsCards({ stats = INITIAL_QUICK_STATS, mocMo }: QuickStatsCardsProps) {
   const t = useTranslations("Dashboard");
 
   const getIcon = (type: string, color: string) => {
@@ -62,11 +64,11 @@ export default function QuickStatsCards({ stats = INITIAL_QUICK_STATS }: QuickSt
         {t("quickStats")}
       </Text>
       <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 3, lg: 6 }} spacing="md">
-        {stats.map((stat) => {
+        {stats.map((stat, index) => {
           const trans = getStatTranslation(stat.id);
           return (
+            <Reveal key={stat.id} order={index + 1} mocMo={mocMo} cot={index % 3} style={{ height: '100%' }}>
             <Card
-              key={stat.id}
               withBorder
               radius="lg"
               p="md"
@@ -120,7 +122,7 @@ export default function QuickStatsCards({ stats = INITIAL_QUICK_STATS }: QuickSt
                         letterSpacing: '-0.5px'
                       }}
                     >
-                      {stat.value}
+                      <SoDem value={stat.value} />
                     </Title>
                   </Stack>
                   <Box
@@ -142,6 +144,7 @@ export default function QuickStatsCards({ stats = INITIAL_QUICK_STATS }: QuickSt
                 </Text>
               </Stack>
             </Card>
+            </Reveal>
           );
         })}
       </SimpleGrid>

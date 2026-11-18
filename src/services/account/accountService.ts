@@ -1,7 +1,15 @@
  // src/services/account/accountService.ts
 import API_URLS from "@/constants/apiUrls";
 import { post, get, del, put } from "@/utils/axios";
-import type { User, UserResponse,UserDetailResponse, UserByOrganizationsResponse, FetchUsersRequest, AccountDetailResponse  } from "@/types/global";
+import { fetchOrganizationsByAccount } from "@/services/organizations/OrganizationsService";
+import type {
+  User,
+  UserResponse,
+  UserDetailResponse,
+  UserByOrganizationsResponse,
+  FetchUsersRequest,
+  AccountDetailResponse,
+} from "@/types/global";
 //  
 // Function to get paginated user data
 export const fetchUsers = async (
@@ -183,6 +191,39 @@ export async function getAccountDetailByGuid(guid: string): Promise<AccountDetai
     console.error("Lỗi khi lấy chi tiết người dùng bằng GUID:", error);
     throw error;
   }
+}
+
+export type AccountRoleInfo = {
+  organizationId: number;
+  organizationName: string;
+  roleName: string;
+};
+
+export async function fetchAccountRolesByGuid(
+  guid: string
+): Promise<AccountRoleInfo[]> {
+  const accountDetail = await getAccountDetailByGuid(guid);
+  const accountId = Number(accountDetail?.payload?.id ?? 0);
+
+  if (!accountId) {
+    return [];
+  }
+
+  const response = await fetchOrganizationsByAccount({
+    acocuntId: accountId,
+    fetchOrganizationRole: true,
+  });
+  const organizations = Array.isArray(response?.payload)
+    ? response.payload
+    : [];
+
+  return organizations.flatMap((organization) =>
+    (organization.roles || []).map((role) => ({
+      organizationId: Number(organization.id ?? 0),
+      organizationName: organization.name || "",
+      roleName: role.roleName || "",
+    }))
+  );
 }
 
 export const __findAccountByUsernameAndType = async (

@@ -176,13 +176,22 @@ const veHeaderBang = (
   pdf.setFont(TEN_FONT_DAM, "bold");
   pdf.setFontSize(11);
 
-  nhanCot.forEach((nhan, index) => {
+  const nhanCotDaTach = nhanCot.map((nhan) =>
+    pdf.splitTextToSize(nhan, Math.max(rongCot - 2, 8)),
+  );
+  const soDongLonNhat = Math.max(
+    ...nhanCotDaTach.map((dong) => dong.length),
+    1,
+  );
+  const chieuCao = Math.max(10, soDongLonNhat * 4.5 + 3);
+
+  nhanCotDaTach.forEach((nhan, index) => {
     const x = xBatDau + index * rongCot;
-    pdf.rect(x, yBatDau, rongCot, 10);
-    pdf.text(nhan, x + rongCot / 2, yBatDau + 6.5, { align: "center" });
+    pdf.rect(x, yBatDau, rongCot, chieuCao);
+    pdf.text(nhan, x + rongCot / 2, yBatDau + 4.5, { align: "center" });
   });
 
-  return { rongCot, chieuCao: 10 };
+  return { rongCot, chieuCao };
 };
 
 const veThongTinDauTrang = (

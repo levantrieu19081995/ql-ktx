@@ -29,7 +29,7 @@ export default function PhongKtxTable({
             <Table.Th style={{ width: 70, textAlign: "center" }}>STT</Table.Th>
             <Table.Th style={{ width: 180 }}>Mã phòng</Table.Th>
             <Table.Th style={{ width: 180 }}>Khu</Table.Th>
-            <Table.Th style={{ width: 140 }}>Sức chứa</Table.Th>
+            <Table.Th style={{ width: 160 }}>Sức chứa tối đa</Table.Th>
             <Table.Th style={{ width: 160 }}>Số chỗ đang có</Table.Th>
           </Table.Tr>
         </Table.Thead>

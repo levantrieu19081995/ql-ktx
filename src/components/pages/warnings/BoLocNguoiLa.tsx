@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Select, Button } from "@mantine/core";
+import { Select, Button, TextInput, Checkbox } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useTranslations } from "next-intl";
 import {
@@ -11,14 +11,18 @@ import {
   IconFileTypePdf,
 } from "@tabler/icons-react";
 import dayjs from "dayjs";
-import { dichVuDanhMucKhu, KhuItem } from "./strangerService";
+import { dichVuDanhMucCamera, CameraOption } from "./strangerService";
+
+export interface BoLocNguoiLaState {
+  ngay?: string;
+  camera?: string;
+  q?: string;
+  hideAdded?: boolean;
+}
 
 interface ThuocTinhBoLocNguoiLa {
-  boLoc: {
-    ngay?: string;
-    maKtx?: string;
-  };
-  datBoLoc: (boLocMoi: { ngay?: string; maKtx?: string }) => void;
+  boLoc: BoLocNguoiLaState;
+  datBoLoc: (boLocMoi: BoLocNguoiLaState) => void;
   datLaiBoLoc: () => void;
   khiTimKiem: () => void;
   khiXuatExcel?: () => void;
@@ -34,15 +38,15 @@ export const BoLocNguoiLa: React.FC<ThuocTinhBoLocNguoiLa> = ({
   khiXuatPdf,
 }) => {
   const t = useTranslations("History");
-  const [danhSachKhu, setDanhSachKhu] = useState<KhuItem[]>([]);
+  const [danhSachCamera, setDanhSachCamera] = useState<CameraOption[]>([]);
 
   useEffect(() => {
-    dichVuDanhMucKhu.layDanhSach().then(setDanhSachKhu);
+    dichVuDanhMucCamera.layDanhSach().then(setDanhSachCamera);
   }, []);
 
-  const optionsKhu = [
+  const optionsCamera = [
     { value: "-1", label: t("filter.all") },
-    ...danhSachKhu.map((k) => ({ value: k.maKhu, label: k.tenKhu })),
+    ...danhSachCamera,
   ];
 
   return (
@@ -71,17 +75,41 @@ export const BoLocNguoiLa: React.FC<ThuocTinhBoLocNguoiLa> = ({
               </div>
 
               <div className="filter-field">
-                <label className="filter-label">KHU KTX</label>
+                <label className="filter-label">CAMERA</label>
                 <Select
-                  value={boLoc.maKtx || "-1"}
-                  onChange={(giaTri) => datBoLoc({ maKtx: giaTri || "-1" })}
+                  value={boLoc.camera || "-1"}
+                  onChange={(giaTri) => datBoLoc({ camera: giaTri || "-1" })}
                   size="sm"
                   radius="md"
                   styles={{
                     input: { height: "38px", borderColor: "#e4e4e7", flex: 1 },
                   }}
-                  data={optionsKhu}
-                  placeholder="Tat ca"
+                  data={optionsCamera}
+                  placeholder={t("filter.all")}
+                />
+              </div>
+
+              <div className="filter-field">
+                <label className="filter-label">ID / TÊN</label>
+                <TextInput
+                  placeholder="Một phần ID hoặc tên (nếu nhận ra)"
+                  value={boLoc.q || ""}
+                  onChange={(e) => datBoLoc({ q: e.currentTarget.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") khiTimKiem();
+                  }}
+                  size="sm"
+                  radius="md"
+                  styles={{ input: { height: "38px", borderColor: "#e4e4e7" } }}
+                />
+              </div>
+
+              <div className="filter-field" style={{ justifyContent: "flex-end" }}>
+                <Checkbox
+                  label="Ẩn khuôn mặt đã thêm vào ảnh đăng ký"
+                  checked={!!boLoc.hideAdded}
+                  onChange={(e) => datBoLoc({ hideAdded: e.currentTarget.checked })}
+                  styles={{ label: { fontSize: 12 } }}
                 />
               </div>
             </div>

@@ -40,8 +40,10 @@ import {
   syncDanhSachPhongUiis,
 } from "@/services/danh-muc/danhMucKtxService";
 import type { PhongKtx, SinhVienKtx } from "@/types/type-danh-muc-ktx";
+import useAccountAccess from "@/hooks/useAccountAccess";
 
 type SyncStatus = "SAME" | "CHANGED" | "NEW";
+type PreviewFilter = "ALL" | SyncStatus;
 
 type SyncPreviewRow = {
   stt: number;
@@ -52,6 +54,7 @@ type SyncPreviewRow = {
     sucChua: string;
   };
   current: {
+    maPhong: string;
     maKhu: string;
     tenPhong: string;
     sucChua: string;
@@ -107,6 +110,7 @@ const getUiisSucChua = (item: UiisPhongItem) =>
   item.ktx_td_phong_suc_chua || item.suc_chua || item.so_luong_cho;
 
 export default function PhongKtxPage() {
+  const { isAdmin } = useAccountAccess();
   const [items, setItems] = useState<PhongKtx[]>([]);
   const [dsKhu, setDsKhu] = useState<KhuOption[]>([]);
   const [dsPhong, setDsPhong] = useState<{ value: string; label: string }[]>(
@@ -134,6 +138,8 @@ export default function PhongKtxPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [confirmSyncLoading, setConfirmSyncLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [activePreviewFilter, setActivePreviewFilter] =
+    useState<PreviewFilter>("ALL");
   const [selectedRoom, setSelectedRoom] = useState<PhongKtx | null>(null);
   const [roomDrawerOpened, setRoomDrawerOpened] = useState(false);
   const [roomStudents, setRoomStudents] = useState<SinhVienKtx[]>([]);
@@ -143,6 +149,7 @@ export default function PhongKtxPage() {
     setSyncMaKhu(appliedFilters.maKhu || "-1");
     setOpenedSync(true);
     setShowPreview(false);
+    setActivePreviewFilter("ALL");
     setUiisItems([]);
     setCurrentItems([]);
   };
@@ -150,6 +157,7 @@ export default function PhongKtxPage() {
   const handleCloseSync = () => {
     setOpenedSync(false);
     setShowPreview(false);
+    setActivePreviewFilter("ALL");
     setUiisItems([]);
     setCurrentItems([]);
   };
@@ -191,7 +199,6 @@ export default function PhongKtxPage() {
     try {
       const res = await fetchDanhMucKhuKtx();
       setDsKhu([
-        { value: "-1", label: "Tất cả", khuId: 0 },
         ...res.map((item) => ({
           value: item.khuMa || item.maKhu || "",
           label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
@@ -214,13 +221,33 @@ export default function PhongKtxPage() {
         maPhong: "-1",
       });
 
-      setDsPhong([
-        { value: "-1", label: "Tất cả" },
-        ...(res?.items || []).map((item: PhongKtx) => ({
-          value: item.maPhong || item.phongMa || "",
-          label: item.tenPhong || item.phongMa || item.maPhong || "",
-        })),
-      ]);
+      // setDsPhong([
+      //   { value: "-1", label: "Tất cả" },
+      //   ...(res?.items || []).map((item: PhongKtx) => ({
+      //     value: item.maPhong || item.phongMa || "",
+      //     label: item.tenPhong || item.phongMa || item.maPhong || "",
+      //   })),
+      // ]);
+
+      const uniqueRooms = Array.from(
+        new Map(
+          (res?.items || [])
+            .map((item: PhongKtx) => {
+              const value = String(item.maPhong || item.phongMa || "").trim();
+
+              return [
+                value,
+                {
+                  value,
+                  label: item.tenPhong || item.phongMa || item.maPhong || value,
+                },
+              ] as const;
+            })
+            .filter(([value]) => value),
+        ).values(),
+      );
+
+      setDsPhong([{ value: "-1", label: "Tất cả" }, ...uniqueRooms]);
     } catch (error) {
       console.error("Lỗi lấy danh mục phòng KTX:", error);
       setDsPhong([{ value: "-1", label: "Tất cả" }]);
@@ -267,8 +294,8 @@ export default function PhongKtxPage() {
   };
 
   const handleReset = async () => {
-    setMaKhu("-1");
-    setMaPhong("-1");
+    setMaKhu("");
+    setMaPhong("");
     setAppliedFilters({
       maKhu: "-1",
       maPhong: "-1",
@@ -311,6 +338,7 @@ export default function PhongKtxPage() {
       const uiisPayload = uiisRes?.payload || {};
       const uiisData = uiisPayload?.data || [];
 
+      setActivePreviewFilter("ALL");
       setUiisItems(Array.isArray(uiisData) ? uiisData : []);
       setCurrentItems(currentRes?.items || []);
       setShowPreview(true);
@@ -360,13 +388,20 @@ export default function PhongKtxPage() {
 
       const isChanged =
         !!currentItem &&
-        (normalizeString(currentItem.phongMa || currentItem.maPhong) !==
-          uiisMaPhong ||
-          normalizeString(currentItem.tenPhong || currentItem.maPhong) !==
-            uiisTenPhong ||
-          normalizeString(currentItem.sucChua) !== uiisSucChua ||
-          normalizeString(currentItem.khuMa || currentItem.maKhu) !==
-            uiisMaKhu);
+        normalizeString(currentItem.phongMa || currentItem.maPhong) !==
+          uiisMaPhong;
+
+      // const isChanged =
+      //   !!currentItem &&
+      //   (normalizeString(currentItem.phongMa || currentItem.maPhong) !==
+      //     uiisMaPhong ||
+      //     normalizeString(currentItem.tenPhong || currentItem.maPhong) !==
+      //       uiisTenPhong);
+      // ||
+      // normalizeString(currentItem.sucChua) !== uiisSucChua);
+      // ||
+      // normalizeString(currentItem.khuMa || currentItem.maKhu) !==
+      //   uiisMaKhu);
 
       return {
         stt: index + 1,
@@ -379,6 +414,7 @@ export default function PhongKtxPage() {
         current: currentItem
           ? {
               maKhu: displayText(currentItem.khuMa || currentItem.maKhu),
+              maPhong: displayText(currentItem.phongMa || currentItem.maPhong),
               tenPhong: displayText(
                 currentItem.tenPhong || currentItem.maPhong,
               ),
@@ -405,6 +441,11 @@ export default function PhongKtxPage() {
       totalSame,
     };
   }, [previewRows]);
+
+  const filteredPreviewRows = useMemo(() => {
+    if (activePreviewFilter === "ALL") return previewRows;
+    return previewRows.filter((row) => row.status === activePreviewFilter);
+  }, [activePreviewFilter, previewRows]);
 
   const previewMessage = useMemo(() => {
     if (!showPreview) return null;
@@ -436,6 +477,21 @@ export default function PhongKtxPage() {
     showPreview &&
     previewSummary.totalUiis > 0 &&
     (previewSummary.totalNew > 0 || previewSummary.totalChanged > 0);
+
+  const getSummaryCardStyles = (
+    filter: PreviewFilter,
+    borderColor: string,
+    background: string,
+  ) => ({
+    borderColor,
+    background,
+    cursor: "pointer",
+    transition: "all 0.15s ease",
+    boxShadow:
+      activePreviewFilter === filter
+        ? `0 0 0 2px ${borderColor} inset`
+        : undefined,
+  });
 
   const renderStatusBadge = (status: SyncStatus) => {
     if (status === "NEW") {
@@ -489,6 +545,11 @@ export default function PhongKtxPage() {
     loadData(1, pageSize);
   }, []);
 
+  const selectedRoomAvailableSlots = Number(selectedRoom?.soChoDangCo);
+  const remainingRoomSlots = Number.isFinite(selectedRoomAvailableSlots)
+    ? Math.max(selectedRoomAvailableSlots - roomStudents.length, 0)
+    : null;
+
   return (
     <>
       <DanhMucFeaturePage
@@ -539,14 +600,16 @@ export default function PhongKtxPage() {
               >
                 Làm mới
               </Button>
-              <Button
-                leftSection={<IconCloudDownload size={18} />}
-                color="green"
-                radius="md"
-                onClick={handleOpenSync}
-              >
-                Đồng bộ từ UIIS
-              </Button>
+              {isAdmin && (
+                <Button
+                  leftSection={<IconCloudDownload size={18} />}
+                  color="green"
+                  radius="md"
+                  onClick={handleOpenSync}
+                >
+                  Đồng bộ từ UIIS
+                </Button>
+              )}
             </Group>
           </Stack>
         }
@@ -614,7 +677,8 @@ export default function PhongKtxPage() {
                 withBorder
                 radius="md"
                 p="md"
-                style={{ borderColor: "#bfdbfe", background: "#f8fbff" }}
+                style={getSummaryCardStyles("ALL", "#bfdbfe", "#f8fbff")}
+                onClick={() => setActivePreviewFilter("ALL")}
               >
                 <Text size="sm" c="blue.6" fw={700}>
                   Trong UIIS
@@ -628,7 +692,8 @@ export default function PhongKtxPage() {
                 withBorder
                 radius="md"
                 p="md"
-                style={{ borderColor: "#cce8d1", background: "#f3fbf4" }}
+                style={getSummaryCardStyles("NEW", "#cce8d1", "#f3fbf4")}
+                onClick={() => setActivePreviewFilter("NEW")}
               >
                 <Text size="sm" c="green.6" fw={700}>
                   Hoàn toàn mới
@@ -642,7 +707,8 @@ export default function PhongKtxPage() {
                 withBorder
                 radius="md"
                 p="md"
-                style={{ borderColor: "#fde0b5", background: "#fffaf1" }}
+                style={getSummaryCardStyles("CHANGED", "#fde0b5", "#fffaf1")}
+                onClick={() => setActivePreviewFilter("CHANGED")}
               >
                 <Text size="sm" c="orange.6" fw={700}>
                   Có thay đổi
@@ -656,7 +722,8 @@ export default function PhongKtxPage() {
                 withBorder
                 radius="md"
                 p="md"
-                style={{ borderColor: "#e5e7eb", background: "#fafafa" }}
+                style={getSummaryCardStyles("SAME", "#e5e7eb", "#fafafa")}
+                onClick={() => setActivePreviewFilter("SAME")}
               >
                 <Text size="sm" c="gray.6" fw={700}>
                   Không đổi
@@ -686,7 +753,7 @@ export default function PhongKtxPage() {
                 </Table.Thead>
 
                 <Table.Tbody>
-                  {previewRows.map((row) => (
+                  {filteredPreviewRows.map((row) => (
                     <Table.Tr
                       key={`${row.maPhong}-${row.stt}`}
                       style={{
@@ -707,17 +774,19 @@ export default function PhongKtxPage() {
                       </Table.Td>
 
                       <Table.Td>
-                        <Text fw={700}>Khu: {row.uiis.maKhu}</Text>
-                        <Text>Tên phòng: {row.uiis.tenPhong}</Text>
-                        <Text>Sức chứa: {row.uiis.sucChua}</Text>
+                        {/* <Text fw={700}>Khu: {row.uiis.maKhu}</Text> */}
+                        {/* <Text>Tên phòng: {row.uiis.tenPhong}</Text>
+                        <Text>Sức chứa: {row.uiis.sucChua}</Text> */}
+                        <Text>Mã phòng: {row.maPhong}</Text>
                       </Table.Td>
 
                       <Table.Td>
                         {row.current ? (
                           <>
-                            <Text fw={700}>Khu: {row.current.maKhu}</Text>
-                            <Text>Tên phòng: {row.current.tenPhong}</Text>
-                            <Text>Sức chứa: {row.current.sucChua}</Text>
+                            {/* <Text fw={700}>Khu: {row.current.maKhu}</Text> */}
+                            {/* <Text>Tên phòng: {row.current.tenPhong}</Text>
+                            <Text>Sức chứa: {row.current.sucChua}</Text> */}
+                            <Text>Mã phòng: {row.current.maPhong}</Text>
                           </>
                         ) : (
                           <Text c="green.7" fw={700}>
@@ -731,6 +800,13 @@ export default function PhongKtxPage() {
                       </Table.Td>
                     </Table.Tr>
                   ))}
+                  {filteredPreviewRows.length === 0 && (
+                    <Table.Tr>
+                      <Table.Td colSpan={5} ta="center">
+                        Không có dữ liệu phù hợp với trạng thái đang chọn.
+                      </Table.Td>
+                    </Table.Tr>
+                  )}
                 </Table.Tbody>
               </Table>
             </ScrollArea>
@@ -788,21 +864,39 @@ export default function PhongKtxPage() {
                   Khu
                 </Text>
                 <Text fw={700}>
-                  {selectedRoom?.tenKhu || selectedRoom?.khuTen || selectedRoom?.maKhu || "-"}
+                  {selectedRoom?.tenKhu ||
+                    selectedRoom?.khuTen ||
+                    selectedRoom?.maKhu ||
+                    "-"}
                 </Text>
               </Box>
+            </SimpleGrid>
+
+            <Divider my="md" />
+
+            <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
               <Box>
                 <Text size="sm" c="dimmed">
-                  Sức chứa
+                  Sức chứa tối đa
                 </Text>
                 <Text fw={700}>{selectedRoom?.sucChua ?? "-"}</Text>
               </Box>
               <Box>
                 <Text size="sm" c="dimmed">
-                  Số người hiện tại
+                  Số sinh viên hiện tại
                 </Text>
                 <Text fw={700}>
-                  {roomStudentsLoading ? "Dang tai..." : roomStudents.length}
+                  {roomStudentsLoading ? "Đang tải..." : roomStudents.length}
+                </Text>
+              </Box>
+              <Box>
+                <Text size="sm" c="dimmed">
+                  Số chỗ còn trống
+                </Text>
+                <Text fw={700}>
+                  {roomStudentsLoading
+                    ? "Đang tải..."
+                    : (remainingRoomSlots ?? "-")}
                 </Text>
               </Box>
             </SimpleGrid>
@@ -843,7 +937,10 @@ export default function PhongKtxPage() {
                         >
                           <Table.Td ta="center">{index + 1}</Table.Td>
                           <Table.Td>
-                            {student.maSinhVien || student.mssv || student.maso || "-"}
+                            {student.maSinhVien ||
+                              student.mssv ||
+                              student.maso ||
+                              "-"}
                           </Table.Td>
                           <Table.Td>
                             {student.hoTen || student.hoten || "-"}

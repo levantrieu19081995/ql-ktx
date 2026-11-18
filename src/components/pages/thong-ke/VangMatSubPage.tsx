@@ -1,49 +1,46 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { DateInput } from "@mantine/dates";
 import {
-  Card,
-  Group,
-  Text,
-  Table,
-  Badge,
-  ScrollArea,
-  Stack,
-  Title,
-  Grid,
-  TextInput,
-  Select,
-  Button,
-  ThemeIcon,
-  Loader,
-  Center,
-  SimpleGrid,
-  Divider,
   ActionIcon,
+  Badge,
   Box,
+  Button,
+  Card,
+  Center,
+  Grid,
+  Group,
+  Loader,
+  NumberInput,
+  Pagination,
+  ScrollArea,
+  Select,
+  SimpleGrid,
+  Stack,
+  Table,
+  Text,
 } from "@mantine/core";
 import {
-  IconSearch,
-  IconRefresh,
-  IconDownload,
-  IconReportAnalytics,
   IconChevronDown,
   IconChevronUp,
+  IconDownload,
+  IconRefresh,
+  IconReportAnalytics,
+  IconSearch,
 } from "@tabler/icons-react";
 import {
-  BarChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from "recharts";
-import { fetchThongKeRaVao } from "@/services/dashboard/thongkeService";
+import { fetchThongKeVangMat } from "@/services/dashboard/thongkeService";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
-import CustomPagination from "@/components/common/CustomPagination";
 import ExcelExportForm from "@/components/common/excel/excelHelper";
 import PdfExportForm from "@/components/common/pdf/pdfHelper";
 
@@ -57,6 +54,7 @@ type DuLieuXuat = {
 
 const resolveKhu = (item: any): string => {
   if (!item) return "Khu A";
+
   let rawKhu =
     item.tenKhu ||
     item.maKhu ||
@@ -74,6 +72,7 @@ const resolveKhu = (item: any): string => {
     item.danhSachVao?.[0]?.maPhong ||
     item.danhSachRa?.[0]?.maPhong ||
     "";
+
   if (!rawKhu && phong) {
     const firstChar = String(phong).charAt(0).toUpperCase();
     if (["A", "B", "C", "D"].includes(firstChar)) {
@@ -84,17 +83,32 @@ const resolveKhu = (item: any): string => {
   return rawKhu || "Khu A";
 };
 
-const getDefaultDates = () => {
-  const den = new Date();
-  const tu = new Date();
-  tu.setDate(tu.getDate() - 60); // 60 ngày trước (tầm 2 tháng)
-  return { tu, den };
+const getDefaultReferenceDate = () => new Date();
+
+const formatDate = (dateVal: Date | null): string => {
+  const date =
+    dateVal && !Number.isNaN(dateVal.getTime())
+      ? dateVal
+      : getDefaultReferenceDate();
+
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const yyyy = date.getFullYear();
+
+  return `${mm}/${dd}/${yyyy}`;
+};
+
+const formatLastScan = (timestamp: number): string => {
+  const d = new Date(timestamp);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
 };
 
 const AbsentChartLegend = () => {
   return (
     <Group justify="center" align="flex-end" gap="md" mt={8} wrap="wrap">
-      {/* Minh họa trục biểu đồ */}
       <Box
         style={{
           position: "relative",
@@ -103,7 +117,6 @@ const AbsentChartLegend = () => {
           flexShrink: 0,
         }}
       >
-        {/* Tên trục Y */}
         <Text
           size="10px"
           fw={600}
@@ -118,7 +131,6 @@ const AbsentChartLegend = () => {
           Số sinh viên
         </Text>
 
-        {/* Trục Y */}
         <Box
           style={{
             position: "absolute",
@@ -130,7 +142,6 @@ const AbsentChartLegend = () => {
           }}
         />
 
-        {/* Trục X */}
         <Box
           style={{
             position: "absolute",
@@ -142,7 +153,6 @@ const AbsentChartLegend = () => {
           }}
         />
 
-        {/* Cột minh họa */}
         <Box
           style={{
             position: "absolute",
@@ -155,7 +165,6 @@ const AbsentChartLegend = () => {
           }}
         />
 
-        {/* Tên trục X */}
         <Text
           size="10px"
           fw={600}
@@ -172,7 +181,6 @@ const AbsentChartLegend = () => {
         </Text>
       </Box>
 
-      {/* Chú thích series */}
       <Group gap={5} wrap="nowrap">
         <Box
           style={{
@@ -209,79 +217,63 @@ export default function VangMatSubPage() {
     return khu;
   };
 
-  const [hoTen, setHoTen] = useState("");
-  const [mssv, setMssv] = useState("");
-
-  const [tuNgay, setTuNgay] = useState<Date | null>(() => getDefaultDates().tu);
-  const [denNgay, setDenNgay] = useState<Date | null>(
-    () => getDefaultDates().den,
+  const [ngayThamChieu, setNgayThamChieu] = useState<Date | null>(() =>
+    getDefaultReferenceDate(),
   );
-  const [khuKtx, setKhuKtx] = useState("Tất cả");
-  const [trangThai, setTrangThai] = useState("Tất cả");
+  const [soNgayVangToiThieu, setSoNgayVangToiThieu] = useState<number>(5);
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [absentList, setAbsentList] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [duLieuXuatExcel, setDuLieuXuatExcel] = useState<DuLieuXuat | null>(
     null,
   );
   const [duLieuXuatPdf, setDuLieuXuatPdf] = useState<DuLieuXuat | null>(null);
 
   const loadAbsentData = useCallback(
-    async (overrides?: { tuNgay?: Date | null; denNgay?: Date | null }) => {
+    async (overrides?: {
+      ngayThamChieu?: Date | null;
+      soNgayVangToiThieu?: number;
+    }) => {
       setLoading(true);
       setError(null);
+
       try {
-        const activeTu =
-          overrides && overrides.tuNgay !== undefined
-            ? overrides.tuNgay
-            : tuNgay;
-        const activeDen =
-          overrides && overrides.denNgay !== undefined
-            ? overrides.denNgay
-            : denNgay;
+        const activeNgayThamChieu =
+          overrides?.ngayThamChieu !== undefined
+            ? overrides.ngayThamChieu
+            : ngayThamChieu;
+        const activeSoNgayVangToiThieu =
+          overrides?.soNgayVangToiThieu !== undefined
+            ? overrides.soNgayVangToiThieu
+            : soNgayVangToiThieu;
 
-        const formatDate = (
-          dateVal: Date | null,
-          defaultToToday: boolean,
-        ): string => {
-          if (dateVal && !isNaN(dateVal.getTime())) {
-            const mm = String(dateVal.getMonth() + 1).padStart(2, "0");
-            const dd = String(dateVal.getDate()).padStart(2, "0");
-            const yyyy = dateVal.getFullYear();
-            return `${mm}/${dd}/${yyyy}`;
-          }
-          const fallbackDate = defaultToToday
-            ? getDefaultDates().den
-            : getDefaultDates().tu;
-          const mm = String(fallbackDate.getMonth() + 1).padStart(2, "0");
-          const dd = String(fallbackDate.getDate()).padStart(2, "0");
-          const yyyy = fallbackDate.getFullYear();
-          return `${mm}/${dd}/${yyyy}`;
-        };
+        const minimumAbsentDays = Math.max(
+          0,
+          Number(activeSoNgayVangToiThieu) || 0,
+        );
+        const referenceDate =
+          activeNgayThamChieu && !Number.isNaN(activeNgayThamChieu.getTime())
+            ? activeNgayThamChieu
+            : getDefaultReferenceDate();
+        const referenceTs = referenceDate.getTime();
 
-        const res = await fetchThongKeRaVao({
-          tuNgay: formatDate(activeTu, false),
-          denNgay: formatDate(activeDen, true),
+        const res = await fetchThongKeVangMat({
+          ngayThamChieu: formatDate(referenceDate),
+          soNgayVangToiThieu: minimumAbsentDays,
         });
 
         const list = res?.payload || [];
-        const endTs =
-          activeDen && !isNaN(activeDen.getTime())
-            ? activeDen.getTime()
-            : Date.now();
 
         const mappedAbsent = list.map((item: any, index: number) => {
           let lastActiveTs = 0;
 
-          // Tìm timestamp của lần quét thẻ gần nhất trong danh sách vào và ra
           if (Array.isArray(item.danhSachVao)) {
             item.danhSachVao.forEach((s: any) => {
               const tc = Number(s.timecheck);
-              if (!isNaN(tc) && tc > 0) {
+              if (!Number.isNaN(tc) && tc > 0) {
                 const ms = tc < 10000000000 ? tc * 1000 : tc;
                 if (ms > lastActiveTs) lastActiveTs = ms;
               }
@@ -291,47 +283,41 @@ export default function VangMatSubPage() {
           if (Array.isArray(item.danhSachRa)) {
             item.danhSachRa.forEach((s: any) => {
               const tc = Number(s.timecheck);
-              if (!isNaN(tc) && tc > 0) {
+              if (!Number.isNaN(tc) && tc > 0) {
                 const ms = tc < 10000000000 ? tc * 1000 : tc;
                 if (ms > lastActiveTs) lastActiveTs = ms;
               }
             });
           }
 
-          // Tính số ngày vắng mặt
-          let absentDays = 0;
-          let lastScanStr = "Chưa quét";
+          const apiAbsentDays = Number(
+            item.soNgayVangMat ?? item.soNgayVang ?? item.absentDays,
+          );
+          const absentDays = !Number.isNaN(apiAbsentDays)
+            ? apiAbsentDays
+            : lastActiveTs > 0
+              ? Math.max(
+                  0,
+                  Math.floor(
+                    (referenceTs - lastActiveTs) / (1000 * 60 * 60 * 24),
+                  ),
+                )
+              : minimumAbsentDays;
 
-          if (lastActiveTs > 0) {
-            const diffMs = endTs - lastActiveTs;
-            absentDays = Math.max(
-              0,
-              Math.floor(diffMs / (1000 * 60 * 60 * 24)),
-            );
-
-            const d = new Date(lastActiveTs);
-            const dd = String(d.getDate()).padStart(2, "0");
-            const mm = String(d.getMonth() + 1).padStart(2, "0");
-            const yyyy = d.getFullYear();
-            lastScanStr = `${dd}/${mm}/${yyyy}`;
-          } else {
-            // Nếu chưa bao giờ quét thẻ trong kỳ, tính vắng từ ngày bắt đầu truy vấn
-            const start = activeTu || getDefaultDates().tu;
-            const diffMs = endTs - start.getTime();
-            absentDays = Math.max(
-              1,
-              Math.floor(diffMs / (1000 * 60 * 60 * 24)),
-            );
-          }
+          const lastScan =
+            item.lastScan ||
+            item.ngayQuetCuoi ||
+            item.lanCuoiQuet ||
+            (lastActiveTs > 0 ? formatLastScan(lastActiveTs) : "Chưa quét");
 
           return {
             stt: index + 1,
             studentId: item.maSinhVien || item.maSo || `SV${index}`,
             hoTen: item.hoTen || "Chưa rõ",
             ktx: resolveKhu(item),
-            room: item.maPhong || "--",
+            room: item.maPhong || item.tenPhong || "--",
             absentDays,
-            lastScan: lastScanStr,
+            lastScan,
             status:
               absentDays > 15
                 ? "Cảnh báo"
@@ -341,8 +327,13 @@ export default function VangMatSubPage() {
           };
         });
 
-        setAbsentList(mappedAbsent);
-        console.log("[VangMat] fetchThongKeRaVao payload sample:", list[0]);
+        setAbsentList(
+          mappedAbsent.filter(
+            (item: { absentDays: number }) =>
+              item.absentDays >= minimumAbsentDays,
+          ),
+        );
+        setCurrentPage(1);
       } catch (err: any) {
         setError(err?.message || "Lỗi khi tải dữ liệu sinh viên vắng mặt");
         setAbsentList([]);
@@ -350,54 +341,23 @@ export default function VangMatSubPage() {
         setLoading(false);
       }
     },
-    [tuNgay, denNgay],
+    [ngayThamChieu, soNgayVangToiThieu],
   );
 
   useEffect(() => {
     loadAbsentData();
-  }, [loadAbsentData]);
+  }, []);
 
   const handleReset = () => {
-    setHoTen("");
-    setMssv("");
-    const defaults = getDefaultDates();
-    setTuNgay(defaults.tu);
-    setDenNgay(defaults.den);
-    setKhuKtx("Tất cả");
-    setTrangThai("Tất cả");
+    const defaultNgayThamChieu = getDefaultReferenceDate();
+    const defaultSoNgayVangToiThieu = 5;
+
+    setNgayThamChieu(defaultNgayThamChieu);
+    setSoNgayVangToiThieu(defaultSoNgayVangToiThieu);
     setCurrentPage(1);
-    loadAbsentData({ tuNgay: defaults.tu, denNgay: defaults.den });
   };
 
-  const normalizeKhu = (val: string | undefined | null): string => {
-    if (!val) return "";
-    const s = String(val)
-      .toLowerCase()
-      .replace(/[_\-\s]+/g, "");
-    if (s.includes("a")) return "Khu A";
-    if (s.includes("b")) return "Khu B";
-    return val;
-  };
-
-  // Chỉ hiển thị sinh viên vắng mặt lâu ngày (>= 5 ngày)
-  const filteredAbsent = absentList.filter((item) => {
-    if (!item) return false;
-    // Lọc sinh viên vắng mặt lâu ngày (tối thiểu 5 ngày)
-    if ((item.absentDays || 0) < 5) return false;
-
-    const name = item.hoTen || "";
-    const id = item.studentId || "";
-    const ktxStr = item.ktx || "";
-    const statusStr = item.status || "";
-
-    const matchName =
-      hoTen.trim() === "" || name.toLowerCase().includes(hoTen.toLowerCase());
-    const matchMssv =
-      mssv.trim() === "" || id.toLowerCase().includes(mssv.toLowerCase());
-    const matchKhu = khuKtx === "Tất cả" || normalizeKhu(ktxStr) === khuKtx;
-    const matchTrangThai = trangThai === "Tất cả" || statusStr === trangThai;
-    return matchName && matchMssv && matchKhu && matchTrangThai;
-  });
+  const filteredAbsent = absentList;
 
   const taoDuLieuXuatVangMat = () => {
     return filteredAbsent.map((item, index) => ({
@@ -459,16 +419,15 @@ export default function VangMatSubPage() {
     currentPage * pageSize,
   );
 
-  // Calculate dynamic bar chart from data — phân nhóm vắng mặt
   const chartData = [
     {
-      name: t("range5to10") || "5–10",
+      name: t("range5to10") || "5-10",
       value: filteredAbsent.filter(
         (s) => s.absentDays >= 5 && s.absentDays <= 10,
       ).length,
     },
     {
-      name: t("range11to15") || "11–15",
+      name: t("range11to15") || "11-15",
       value: filteredAbsent.filter(
         (s) => s.absentDays > 10 && s.absentDays <= 15,
       ).length,
@@ -504,472 +463,150 @@ export default function VangMatSubPage() {
           borderColor: "#e2e8f0",
         }}
       >
-        {!showAdvancedFilter ? (
-          // ==================== THU GỌN ====================
+        <Box
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr)) auto",
+            gap: "16px",
+            alignItems: "end",
+          }}
+        >
+          <DateInput
+            label="Ngày tham chiếu"
+            placeholder="MM/DD/YYYY"
+            value={ngayThamChieu}
+            onChange={(val) => setNgayThamChieu(val ? new Date(val) : null)}
+            valueFormat="DD/MM/YYYY"
+            clearable
+            styles={{
+              label: {
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
+            }}
+          />
+
+          <NumberInput
+            label="Số ngày vắng tối thiểu"
+            placeholder="Nhập số ngày"
+            value={soNgayVangToiThieu}
+            onChange={(val) =>
+              setSoNgayVangToiThieu(
+                typeof val === "number" && !Number.isNaN(val) ? val : 0,
+              )
+            }
+            min={0}
+            clampBehavior="strict"
+            styles={{
+              label: {
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#475569",
+                marginBottom: "6px",
+                letterSpacing: "0.3px",
+              },
+              input: {
+                borderRadius: "8px",
+                height: "40px",
+              },
+            }}
+          />
+
           <Box
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr)) auto",
-              gap: "16px",
+              display: "flex",
+              justifyContent: "flex-end",
               alignItems: "end",
             }}
           >
-            <DateInput
-              label={t("fromDate")}
-              placeholder="MM/DD/YYYY"
-              value={tuNgay}
-              onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: {
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.3px",
-                },
-                input: {
-                  borderRadius: "8px",
+            <Group gap={10} wrap="nowrap">
+              <Button
+                leftSection={
+                  loading ? (
+                    <Loader size={16} color="white" />
+                  ) : (
+                    <IconSearch size={17} />
+                  )
+                }
+                onClick={() => loadAbsentData()}
+                disabled={loading}
+                style={{
+                  backgroundColor: "#1f5ca9",
+                  borderRadius: "10px",
                   height: "40px",
-                },
-              }}
-            />
-
-            <DateInput
-              label={t("toDate")}
-              placeholder="MM/DD/YYYY"
-              value={denNgay}
-              onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              styles={{
-                label: {
-                  fontSize: "12px",
+                  minWidth: "128px",
                   fontWeight: 600,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.3px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  height: "40px",
-                },
-              }}
-            />
+                  fontSize: "14px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t("search")}
+              </Button>
 
-            <Select
-              label={t("dormZone")}
-              value={khuKtx}
-              onChange={(val) => setKhuKtx(val || "Tất cả")}
-              data={[
-                { value: "Tất cả", label: t("all") },
-                { value: "Khu A", label: t("dormA") },
-                { value: "Khu B", label: t("dormB") },
-              ]}
-              styles={{
-                label: {
-                  fontSize: "12px",
+              <Button
+                leftSection={<IconRefresh size={17} />}
+                variant="outline"
+                color="gray"
+                onClick={handleReset}
+                style={{
+                  borderColor: "#cbd5e1",
+                  color: "#64748b",
+                  borderRadius: "10px",
+                  height: "40px",
+                  minWidth: "118px",
                   fontWeight: 600,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.3px",
-                },
-                input: {
-                  borderRadius: "8px",
-                  height: "40px",
-                },
-              }}
-            />
+                  fontSize: "14px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t("reset")}
+              </Button>
 
-            <Select
-              label={t("status")}
-              value={trangThai}
-              onChange={(val) => setTrangThai(val || "Tất cả")}
-              data={[
-                { value: "Tất cả", label: t("all") },
-                {
-                  value: "Cảnh báo",
-                  label: t("statusWarning") || "Cảnh báo",
-                },
-                {
-                  value: "Nghi vấn",
-                  label: t("statusSuspicious") || "Nghi vấn",
-                },
-                {
-                  value: "Hợp lệ",
-                  label: t("statusValid") || "Hợp lệ",
-                },
-              ]}
-              styles={{
-                label: {
-                  fontSize: "12px",
+              <Button
+                leftSection={<IconDownload size={17} />}
+                variant="outline"
+                onClick={xuLyXuatExcel}
+                style={{
+                  borderColor: "#1f5ca9",
+                  color: "#1f5ca9",
+                  borderRadius: "10px",
+                  height: "40px",
+                  minWidth: "136px",
                   fontWeight: 600,
-                  color: "#475569",
-                  marginBottom: "6px",
-                  letterSpacing: "0.3px",
-                },
-                input: {
-                  borderRadius: "8px",
+                  fontSize: "14px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t("exportExcel")}
+              </Button>
+
+              <Button
+                leftSection={<IconDownload size={17} />}
+                variant="outline"
+                onClick={xuLyXuatPdf}
+                style={{
+                  borderColor: "#60a5fa",
+                  color: "#3b82f6",
+                  borderRadius: "10px",
                   height: "40px",
-                },
-              }}
-            />
-
-            <Box
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "end",
-              }}
-            >
-              <Group gap={10} wrap="nowrap">
-                <Button
-                  leftSection={
-                    loading ? (
-                      <Loader size={16} color="white" />
-                    ) : (
-                      <IconSearch size={17} />
-                    )
-                  }
-                  onClick={() => loadAbsentData()}
-                  disabled={loading}
-                  style={{
-                    backgroundColor: "#1f5ca9",
-                    borderRadius: "10px",
-                    height: "40px",
-                    minWidth: "128px",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("search")}
-                </Button>
-
-                <Button
-                  leftSection={<IconRefresh size={17} />}
-                  variant="outline"
-                  color="gray"
-                  onClick={handleReset}
-                  style={{
-                    borderColor: "#cbd5e1",
-                    color: "#64748b",
-                    borderRadius: "10px",
-                    height: "40px",
-                    minWidth: "118px",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("reset")}
-                </Button>
-
-                <Button
-                  leftSection={<IconDownload size={17} />}
-                  variant="outline"
-                  onClick={xuLyXuatExcel}
-                  style={{
-                    borderColor: "#1f5ca9",
-                    color: "#1f5ca9",
-                    borderRadius: "10px",
-                    height: "40px",
-                    minWidth: "136px",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("exportExcel")}
-                </Button>
-
-                <Button
-                  leftSection={<IconDownload size={17} />}
-                  variant="outline"
-                  onClick={xuLyXuatPdf}
-                  style={{
-                    borderColor: "#60a5fa",
-                    color: "#3b82f6",
-                    borderRadius: "10px",
-                    height: "40px",
-                    minWidth: "128px",
-                    fontWeight: 600,
-                    fontSize: "14px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("exportPdf")}
-                </Button>
-
-                <ActionIcon
-                  variant="outline"
-                  color="gray"
-                  size="lg"
-                  aria-label="Thu gọn bộ lọc"
-                  onClick={() => setShowAdvancedFilter(true)}
-                  style={{
-                    borderColor: "#cbd5e1",
-                    borderRadius: "10px",
-                    height: "40px",
-                    width: "40px",
-                    minWidth: "40px",
-                  }}
-                >
-                  <IconChevronDown size={18} color="#64748b" />
-                </ActionIcon>
-              </Group>
-            </Box>
+                  minWidth: "128px",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {t("exportPdf")}
+              </Button>
+            </Group>
           </Box>
-        ) : (
-          // ==================== MỞ RỘNG ====================
-          <Stack gap={12}>
-            {/* Hàng 1 */}
-            <SimpleGrid
-              cols={{ base: 1, sm: 2, md: 4 }}
-              spacing="md"
-              verticalSpacing="md"
-            >
-              <DateInput
-                label={t("fromDate")}
-                placeholder="MM/DD/YYYY"
-                value={tuNgay}
-                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
-
-              <DateInput
-                label={t("toDate")}
-                placeholder="MM/DD/YYYY"
-                value={denNgay}
-                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
-
-              <Select
-                label={t("dormZone")}
-                value={khuKtx}
-                onChange={(val) => setKhuKtx(val || "Tất cả")}
-                data={[
-                  { value: "Tất cả", label: t("all") },
-                  { value: "Khu A", label: t("dormA") },
-                  { value: "Khu B", label: t("dormB") },
-                ]}
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
-
-              <Select
-                label={t("status")}
-                value={trangThai}
-                onChange={(val) => setTrangThai(val || "Tất cả")}
-                data={[
-                  { value: "Tất cả", label: t("all") },
-                  {
-                    value: "Cảnh báo",
-                    label: t("statusWarning") || "Cảnh báo",
-                  },
-                  {
-                    value: "Nghi vấn",
-                    label: t("statusSuspicious") || "Nghi vấn",
-                  },
-                  {
-                    value: "Hợp lệ",
-                    label: t("statusValid") || "Hợp lệ",
-                  },
-                ]}
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
-            </SimpleGrid>
-
-            {/* Hàng 2 */}
-            <Box
-              style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "minmax(220px, 1fr) minmax(220px, 1fr) auto",
-                gap: "16px",
-                alignItems: "end",
-              }}
-            >
-              <TextInput
-                label={t("fullName")}
-                placeholder={`${t("enterFullName")}...`}
-                value={hoTen}
-                onChange={(e) => setHoTen(e.currentTarget.value)}
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
-
-              <TextInput
-                label={t("studentId")}
-                placeholder={`${t("enterMssv")}...`}
-                value={mssv}
-                onChange={(e) => setMssv(e.currentTarget.value)}
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
-
-              <Group gap="sm" wrap="nowrap">
-                <Button
-                  leftSection={
-                    loading ? (
-                      <Loader size={16} color="white" />
-                    ) : (
-                      <IconSearch size={16} />
-                    )
-                  }
-                  onClick={() => loadAbsentData()}
-                  disabled={loading}
-                  style={{
-                    backgroundColor: "#1f5ca9",
-                    borderRadius: "8px",
-                    height: "40px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("search")}
-                </Button>
-
-                <Button
-                  leftSection={<IconRefresh size={16} />}
-                  variant="outline"
-                  color="gray"
-                  onClick={handleReset}
-                  style={{
-                    borderColor: "#cbd5e1",
-                    color: "#64748b",
-                    borderRadius: "8px",
-                    height: "40px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("reset")}
-                </Button>
-
-                <Button
-                  leftSection={<IconDownload size={16} />}
-                  variant="outline"
-                  onClick={xuLyXuatExcel}
-                  style={{
-                    borderColor: "#1f5ca9",
-                    color: "#1f5ca9",
-                    borderRadius: "8px",
-                    height: "40px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("exportExcel")}
-                </Button>
-
-                <Button
-                  leftSection={<IconDownload size={16} />}
-                  variant="outline"
-                  onClick={xuLyXuatPdf}
-                  style={{
-                    borderColor: "#0ea5e9",
-                    color: "#0ea5e9",
-                    borderRadius: "8px",
-                    height: "40px",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {t("exportPdf")}
-                </Button>
-
-                <ActionIcon
-                  variant="outline"
-                  color="gray"
-                  size="lg"
-                  aria-label="Thu gọn bộ lọc"
-                  onClick={() => setShowAdvancedFilter(false)}
-                  style={{
-                    borderColor: "#cbd5e1",
-                    borderRadius: "8px",
-                    height: "40px",
-                    width: "40px",
-                    minWidth: "40px",
-                  }}
-                >
-                  <IconChevronUp size={18} color="#64748b" />
-                </ActionIcon>
-              </Group>
-            </Box>
-          </Stack>
-        )}
+        </Box>
       </Card>
 
       {error && (
@@ -1015,16 +652,12 @@ export default function VangMatSubPage() {
                 >
                   {t("absentChartTitle")}
                 </Text>
+
                 <div style={{ height: 260 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={chartData}
-                      margin={{
-                        top: 18,
-                        right: 16,
-                        left: 0,
-                        bottom: 4,
-                      }}
+                      margin={{ top: 18, right: 16, left: 0, bottom: 4 }}
                       barCategoryGap="32%"
                     >
                       <CartesianGrid
@@ -1036,33 +669,21 @@ export default function VangMatSubPage() {
                       <XAxis
                         dataKey="name"
                         interval={0}
-                        tick={{
-                          fontSize: 12,
-                          fill: "#475569",
-                        }}
+                        tick={{ fontSize: 12, fill: "#475569" }}
                         tickLine={false}
-                        axisLine={{
-                          stroke: "#94a3b8",
-                        }}
+                        axisLine={{ stroke: "#94a3b8" }}
                       />
 
                       <YAxis
                         allowDecimals={false}
                         width={40}
-                        tick={{
-                          fontSize: 12,
-                          fill: "#475569",
-                        }}
+                        tick={{ fontSize: 12, fill: "#475569" }}
                         tickLine={false}
-                        axisLine={{
-                          stroke: "#94a3b8",
-                        }}
+                        axisLine={{ stroke: "#94a3b8" }}
                       />
 
                       <Tooltip
-                        cursor={{
-                          fill: "rgba(148, 163, 184, 0.08)",
-                        }}
+                        cursor={{ fill: "rgba(148, 163, 184, 0.08)" }}
                         contentStyle={{
                           borderRadius: "8px",
                           border: "1px solid #e2e8f0",
@@ -1203,6 +824,7 @@ export default function VangMatSubPage() {
                     </Table.Th>
                   </Table.Tr>
                 </Table.Thead>
+
                 <Table.Tbody>
                   {paginatedAbsent.map((row, index) => (
                     <Table.Tr
@@ -1266,6 +888,7 @@ export default function VangMatSubPage() {
                       </Table.Td>
                     </Table.Tr>
                   ))}
+
                   {paginatedAbsent.length === 0 && (
                     <Table.Tr>
                       <Table.Td colSpan={8}>
@@ -1279,14 +902,44 @@ export default function VangMatSubPage() {
               </Table>
             </ScrollArea>
 
-            <CustomPagination
-              totalItems={filteredAbsent.length}
-              totalPages={totalPages}
-              page={currentPage}
-              pageSize={pageSize}
-              setPage={setCurrentPage}
-              setPageSize={() => {}}
-            />
+            {totalPages > 0 && (
+              <Group justify="right" gap="sm" mt="md">
+                <Text size="sm" c="dimmed">
+                  Tổng số: {filteredAbsent.length}
+                </Text>
+
+                <Select
+                  value={pageSize.toString()}
+                  onChange={(value) => {
+                    if (!value) return;
+                    setPageSize(Number(value));
+                    setCurrentPage(1);
+                  }}
+                  data={[
+                    { value: "5", label: "5/trang" },
+                    { value: "10", label: "10/trang" },
+                    { value: "20", label: "20/trang" },
+                    { value: "50", label: "50/trang" },
+                    { value: "100", label: "100/trang" },
+                  ]}
+                  size="sm"
+                  w={120}
+                  comboboxProps={{
+                    withinPortal: true,
+                    position: "top",
+                  }}
+                  maxDropdownHeight={260}
+                />
+
+                <Pagination
+                  total={totalPages}
+                  value={currentPage}
+                  onChange={setCurrentPage}
+                  siblings={1}
+                  size="sm"
+                />
+              </Group>
+            )}
           </Card>
         </>
       )}

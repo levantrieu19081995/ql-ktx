@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Text, Box, Group } from '@mantine/core';
 import { useTranslations } from 'next-intl';
+import { useChartAnimation } from './Reveal';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { KtxInOutData } from './dashboardTypes';
 
@@ -9,6 +10,7 @@ interface KtxInOutChartProps {
 }
 
 export default function KtxInOutChart({ data = [] }: KtxInOutChartProps) {
+  const anim = useChartAnimation();
   const t = useTranslations("Dashboard");
 
   return (
@@ -72,6 +74,7 @@ export default function KtxInOutChart({ data = [] }: KtxInOutChartProps) {
               fill="#ef4444"
               radius={[4, 4, 0, 0]}
               maxBarSize={18}
+              {...anim}
             />
             <Bar
               dataKey="vao"
@@ -79,6 +82,8 @@ export default function KtxInOutChart({ data = [] }: KtxInOutChartProps) {
               fill="#3b82f6"
               radius={[4, 4, 0, 0]}
               maxBarSize={18}
+              {...anim}
+              animationBegin={anim.animationBegin + 350}
             />
           </BarChart>
         </ResponsiveContainer>

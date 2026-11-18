@@ -19,7 +19,7 @@ import { IconAlertTriangle, IconCheck, IconX } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { HistoryItem } from "../../../types/type-history";
 import { dichVuNguoiLa } from "./strangerService";
-import BoLocNguoiLa from "./BoLocNguoiLa";
+import BoLocNguoiLa, { BoLocNguoiLaState } from "./BoLocNguoiLa";
 import DrawerChiTietLichSu from "../history/DrawerChiTietLichSu";
 import ExcelExportForm from "../../common/excel/excelHelper";
 import PdfExportForm from "../../common/pdf/pdfHelper";
@@ -37,9 +37,11 @@ type DuLieuXuatFile = {
 export default function StrangerWarningsPage() {
   const t = useTranslations("History");
   const ngayHienTai = dayjs().format("YYYY-MM-DD");
-  const taoBoLocMacDinh = () => ({
+  const taoBoLocMacDinh = (): BoLocNguoiLaState => ({
     ngay: ngayHienTai,
-    maKtx: "-1",
+    camera: "-1",
+    q: "",
+    hideAdded: false,
   });
   const [dangTai, setDangTai] = useState(false);
   const [danhSachCanhBao, setDanhSachCanhBao] = useState<HistoryItem[]>([]);
@@ -93,14 +95,8 @@ export default function StrangerWarningsPage() {
     }));
 
   const layTatCaDuLieuTheoBoLoc = async () => {
-    const response = await dichVuNguoiLa.layDanhSachNguoiLa({
-      ngay: boLocDaApDung.ngay,
-      maKtx: boLocDaApDung.maKtx,
-      page: 1,
-      pageSize: tongSoPhanTu > 0 ? tongSoPhanTu : 10000,
-    });
-
-    return response.items || [];
+    // API giới hạn 500 bản ghi / lần nên service tự gọi lặp theo offset
+    return dichVuNguoiLa.layTatCaNguoiLa(boLocDaApDung);
   };
 
   const xuLyXuatExcel = async () => {
@@ -177,8 +173,7 @@ export default function StrangerWarningsPage() {
       setDangTai(true);
       try {
         const response = await dichVuNguoiLa.layDanhSachNguoiLa({
-          ngay: boLocDaApDung.ngay,
-          maKtx: boLocDaApDung.maKtx,
+          ...boLocDaApDung,
           page,
           pageSize: size,
         });
@@ -216,7 +211,7 @@ export default function StrangerWarningsPage() {
     setTrangHienTai(1);
   };
 
-  const datBoLoc = (boLocMoi: { ngay?: string; maKtx?: string }) => {
+  const datBoLoc = (boLocMoi: BoLocNguoiLaState) => {
     setBoLocNhap((prev) => ({ ...prev, ...boLocMoi }));
   };
 
@@ -283,6 +278,7 @@ export default function StrangerWarningsPage() {
                 </Table.Th>
                 <Table.Th>{t("warnings.camera")}</Table.Th>
                 <Table.Th>{t("warnings.dorm")}</Table.Th>
+                <Table.Th>Dự đoán</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -317,6 +313,25 @@ export default function StrangerWarningsPage() {
                     <Badge color="#1f5ca9" variant="light" size="md">
                       {banGhi.tenKtx}
                     </Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    {banGhi.duDoan ? (
+                      <div>
+                        <Text size="sm" fw={600}>
+                          {banGhi.duDoan.ten}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {banGhi.duDoan.ma}
+                          {typeof banGhi.duDoan.doTinCay === "number"
+                            ? ` · ${Math.round(banGhi.duDoan.doTinCay * 100)}%`
+                            : ""}
+                        </Text>
+                      </div>
+                    ) : (
+                      <Text size="xs" c="dimmed">
+                        —
+                      </Text>
+                    )}
                   </Table.Td>
                 </Table.Tr>
               ))}
@@ -374,6 +389,7 @@ export default function StrangerWarningsPage() {
           title={duLieuXuatExcel.title}
           columnLabels={duLieuXuatExcel.columnLabels}
           columnCount={duLieuXuatExcel.columnLabels.length}
+          nationalHeaderColumnCount={6}
           data={duLieuXuatExcel.data}
           fileName={duLieuXuatExcel.fileName}
           sheetName={duLieuXuatExcel.sheetName}

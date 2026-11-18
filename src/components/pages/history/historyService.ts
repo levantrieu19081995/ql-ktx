@@ -1,10 +1,12 @@
 /* eslint-disable prefer-const */
 import { HistoryItem, HistoryPaginatedResponse } from '../../../types/type-history';
 import dayjs from 'dayjs';
+import { get, post } from '@/utils/axios';
+import API_URLS from '@/constants/apiUrls';
+import { FACE_DETECT_SERVICE } from '@/constants/servicePaths';
 
-
-const AUTH_HEADER = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
-const BASE_URL = 'https://qldaotaolaixe.cusc.vn/face-detect-service';
+// Ảnh riêng đi qua proxy cùng origin để không lộ host/token nội bộ cho browser.
+const IMAGE_PROXY_BASE_URL = '/api/images';
 
 const moPhongDoTre = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -21,15 +23,7 @@ export interface KhuItem {
 export const dichVuDanhMucKhu = {
   layDanhSach: async (): Promise<KhuItem[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/face-web-ktx-khu/index`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
-        }
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
+      const data = await get<any>(`${FACE_DETECT_SERVICE}/face-web-ktx-khu/index`);
       if (data?.status && data.status !== 'OK') return [];
       const payload = data?.payload || data;
       return (Array.isArray(payload) ? payload : []) as KhuItem[];
@@ -49,15 +43,7 @@ export interface NhomItem {
 export const dichVuDanhMucNhom = {
   layDanhSach: async (): Promise<NhomItem[]> => {
     try {
-      const res = await fetch(`${BASE_URL}/face-web-ktx-nhom/index`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
-        }
-      });
-      if (!res.ok) return [];
-      const data = await res.json();
+      const data = await get<any>(`${FACE_DETECT_SERVICE}/face-web-ktx-nhom/index`);
       if (data?.status !== 'OK') return [];
       // API trả về payload dạng paginate hoặc mảng thẳng
       const items = Array.isArray(data?.payload)
@@ -128,34 +114,31 @@ export const dichVuLichSuRaVao = {
     // 3. Query the endpoint for each day in parallel
     const apiResultsPromises = datesToQuery.map(async (dateStr) => {
       try {
-        const response = await fetch(`${BASE_URL}/face-web-check-time/paginate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': AUTH_HEADER.startsWith('Bearer ') ? AUTH_HEADER : `Bearer ${AUTH_HEADER}`
-          },
-          body: JSON.stringify({
-            page,
-            pageSize,
-            maNhom: maNhom,
-            maKhu: maKhu,
-            ngay: dateStr,
-            keyword,
-          })
+        const data = await post<any>(API_URLS.faceDetect.paginateLichSuRaVao, {
+          page,
+          pageSize,
+          maNhom: maNhom,
+          maKhu: maKhu,
+          ngay: dateStr,
+          keyword,
         });
 
-        if (!response.ok) {
-          console.error(`API response error for date ${dateStr}: ${response.status}`);
-          return { items: [], meta: null };
-        }
-
-        const data = await response.json();
         if (data?.status && data.status !== 'OK') {
           console.error(`API response status not OK for date ${dateStr}:`, data);
           return { items: [], meta: data?.payload || null };
         }
 
-        const items = data?.payload?.items || data?.items || (Array.isArray(data) ? data : []);
+        const rawItems = data?.payload?.items || data?.items || (Array.isArray(data) ? data : []);
+        // BE đổi tên trường (timeCheck, direction, peopleId): chuẩn hóa về tên cũ
+        const items = rawItems.map((it: any) => {
+          const huong = String(it?.direction ?? "").toLowerCase();
+          return {
+            ...it,
+            timecheck: it?.timecheck ?? it?.timeCheck,
+            maso: it?.maso ?? it?.peopleId,
+            cameraIdId: huong === "in" ? 1 : huong === "out" ? 2 : it?.cameraIdId,
+          };
+        });
         return {
           items: items.map((item: any): HistoryItem => {
           const isVao = item.cameraName?.toLowerCase().includes("vào") || item.cameraIdId === 1;
@@ -169,10 +152,10 @@ export const dichVuLichSuRaVao = {
             trangThaiSinhVien = "BI_CAM";
           }
 
-          let duongDanAnh = item.pathimage || "";
+          let duongDanAnh = item.pathImage || "";
           if (duongDanAnh && !duongDanAnh.startsWith("http") && !duongDanAnh.startsWith("data:")) {
             const cleanPath = duongDanAnh.startsWith("/") ? duongDanAnh : "/" + duongDanAnh;
-            duongDanAnh = `${BASE_URL}${cleanPath}`;
+            duongDanAnh = `${IMAGE_PROXY_BASE_URL}${encodeURI(cleanPath)}`;
           }
 
             return {
@@ -188,6 +171,7 @@ export const dichVuLichSuRaVao = {
             maPhong: item.maPhong || item.phongId || "",
             tenPhong: item.tenPhong || item.phong || item.donvi || item.tenDonVi || "",
             thietBi: item.cameraName || "",
+            tennhom,
             loaiDoiTuong: tennhom,
             trangThaiSinhVien,
             trangThaiHienDien: loai === "IN" ? "CO_MAT" : "VANG_MAT"

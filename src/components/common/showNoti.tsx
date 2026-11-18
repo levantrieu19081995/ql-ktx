@@ -7,6 +7,7 @@ import {
   IconAlertTriangle,
   IconInfoCircle,
 } from "@tabler/icons-react";
+import { GLOBAL_ERROR_NOTIFICATION_ID } from "@/constants/notification";
 
 type NotiType = "success" | "error" | "warning" | "info";
 
@@ -33,6 +34,7 @@ export const showNoti = (type: NotiType, message: string) => {
   const { title, color, icon } = config[type];
 
   notifications.show({
+    id: type === "error" ? GLOBAL_ERROR_NOTIFICATION_ID : undefined,
     title,
     message,
     color,

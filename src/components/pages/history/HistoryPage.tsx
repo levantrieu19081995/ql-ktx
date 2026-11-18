@@ -43,6 +43,7 @@ import { HistoryItem } from "../../../types/type-history";
 import PageSectionHeader from "@/components/common/PageSectionHeader";
 import CustomPagination from "@/components/common/CustomPagination";
 import dayjs from "dayjs";
+import { useSessionStore } from "@/context/sessionStore";
 
 type LoaiTabChinh = "LICH_SU" | "THONG_KE" | "CAN_BO" | "SINH_VIEN";
 type BoLocLichSuState = {
@@ -115,7 +116,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
     loai: "ALL",
     trangThai: "ALL",
     loaiDoiTuong: "ALL",
-    maNhom: tabValue === "CAN_BO" ? "0" : tabValue === "SINH_VIEN" ? "1" : "-1",
+    maNhom: tabValue === "CAN_BO" ? "2" : tabValue === "SINH_VIEN" ? "1" : "-1",
   });
 
   const [tabActive, datTabActive] = useState<LoaiTabChinh>(tab);
@@ -259,6 +260,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           h.loaiDoiTuong === "Người lạ"
             ? t("filter.stranger")
             : t("filter.student"),
+        [t("filter.objectType")]: h.tennhom || h.loaiDoiTuong,
         [t("table.dormitory")]: h.tenKtx,
         [t("table.room")]: h.tenPhong,
       }));
@@ -295,6 +297,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
         h.loaiDoiTuong === "Người lạ"
           ? t("filter.stranger")
           : t("filter.student"),
+      [t("filter.objectType")]: h.tennhom || h.loaiDoiTuong,
       [t("table.dormitory")]: h.tenKtx,
       [t("table.room")]: h.tenPhong,
     }));
@@ -324,6 +327,7 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
           h.loaiDoiTuong === "Người lạ"
             ? t("filter.stranger")
             : t("filter.student"),
+        [t("filter.objectType")]: h.tennhom || h.loaiDoiTuong,
         [t("table.dormitory")]: h.tenKtx,
         [t("table.room")]: h.tenPhong,
       }));
@@ -378,8 +382,8 @@ export default function HistoryPage({ tab = "LICH_SU" }: HistoryPageProps) {
   //   // @ts-ignore
   //   window.showSessionExpired = () => setIsExpired(true);
   // }, [setIsExpired]);
-  // // Sau đó vào đúng trang history, mở Console và gọi:
-  // window.showSessionExpired()
+  // // // Sau đó vào đúng trang history, mở Console và gọi:
+  // // window.showSessionExpired()
 
   return (
     <Box className="history-page-container">

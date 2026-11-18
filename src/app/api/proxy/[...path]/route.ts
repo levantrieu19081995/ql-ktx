@@ -43,7 +43,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
-const BASE = process.env.API_BASE_URL!;
+const BASE = process.env.API_BASE_URL;
+// Host riêng cho face-detect-service (nếu không khai báo thì đi qua BASE như các service khác)
+const FACE_DETECT_BASE = process.env.FACE_DETECT_BASE_URL || BASE;
 
 //   Route handlers (Next.js 15+ expects params as Promise)
 export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
@@ -76,16 +78,20 @@ async function forward(req: NextRequest, { path }: { path: string[] }) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   const url = new URL(req.url);
-  const cleanBase = BASE.replace(/\/+$/, "");
+  const base = path[0] === 'face-detect-service' ? FACE_DETECT_BASE : BASE;
+  if (!base) {
+    return NextResponse.json(
+      { message: 'API base URL is not configured' },
+      { status: 500 },
+    );
+  }
+
+  const cleanBase = base.replace(/\/+$/, "");
   const cleanPath = path.join('/').replace(/^\/+/, "");
   const target = `${cleanBase}/${cleanPath}${url.search}`;
 
   const headers = new Headers(req.headers);
-  console.log("--- PROXY FORWARDING ---");
-  console.log("Target:", target);
-  console.log("Client Headers Authorization:", req.headers.get("Authorization"));
-  console.log("Client Headers Host:", req.headers.get("host"));
-  headers.set('host', new URL(BASE).host);
+  headers.set('host', new URL(base).host);
   headers.delete('accept-encoding'); // Prevent double compression/decoding issues
 
   if ((token as any)?.accessToken) {

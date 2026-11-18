@@ -49,6 +49,12 @@ import { fetchThongKeTheoMaSo, fetchSinhVienPaginate } from "@/services/dashboar
 import PageSectionHeader from "@/components/common/PageSectionHeader";
 import CustomPagination from "@/components/common/CustomPagination";
 
+// Khoảng ngày mặc định: từ đầu tháng hiện tại đến hôm nay
+const macDinhTuNgay = () => {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), 1);
+};
+
 export default function TheoMaSoSubPage() {
   const t = useTranslations("Statistics");
 
@@ -71,8 +77,8 @@ export default function TheoMaSoSubPage() {
 
   const [hoTen, setHoTen] = useState("");
   const [mssv, setMssv] = useState("");
-  const [tuNgay, setTuNgay] = useState<Date | null>(new Date("2026-06-01"));
-  const [denNgay, setDenNgay] = useState<Date | null>(new Date("2026-06-06"));
+  const [tuNgay, setTuNgay] = useState<Date | null>(macDinhTuNgay());
+  const [denNgay, setDenNgay] = useState<Date | null>(new Date());
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -209,7 +215,8 @@ export default function TheoMaSoSubPage() {
           const yyyy = dateVal.getFullYear();
           return `${mm}/${dd}/${yyyy}`;
         }
-        return isStart ? "06/01/2026" : "06/06/2026";
+        const fb = isStart ? macDinhTuNgay() : new Date();
+        return `${String(fb.getMonth() + 1).padStart(2, "0")}/${String(fb.getDate()).padStart(2, "0")}/${fb.getFullYear()}`;
       };
 
       const res = await fetchThongKeTheoMaSo({
@@ -316,8 +323,8 @@ export default function TheoMaSoSubPage() {
   const handleReset = () => {
     setHoTen("");
     setMssv("");
-    setTuNgay(new Date("2026-06-01"));
-    setDenNgay(new Date("2026-06-06"));
+    setTuNgay(macDinhTuNgay());
+    setDenNgay(new Date());
     setSelectedStudent(null);
     setStudentSummary(null);
     setWeeklyChartData([]);

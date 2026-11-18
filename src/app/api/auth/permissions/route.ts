@@ -6,7 +6,6 @@ import { fetchPermissionsByAccountLimit } from "@/services/permission/permission
 
 export async function GET() {
   const session: any = await getServerSession(authOptions);
-console.log('permissions/route.ts session :>> ', session);
   // Kiểm tra session
   if (!session?.accessToken || !session?.user?.id) {
     return NextResponse.json(

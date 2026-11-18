@@ -1,26 +1,30 @@
-import React from 'react';
-import { Card, Text, Box, Group, Button } from '@mantine/core';
-import { DateInput } from '@mantine/dates';
-import { useTranslations } from 'next-intl';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { IntrusionAlert } from './dashboardTypes';
-import { IconCalendar } from '@tabler/icons-react';
+import React from "react";
+import { useChartAnimation } from './Reveal';
+import { Card, Text, Box, Group, Button } from "@mantine/core";
+import { useTranslations } from "next-intl";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { IntrusionAlert } from "./dashboardTypes";
 
 interface IntrusionAlertsChartProps {
   data?: IntrusionAlert[];
-  filterType: 'area' | 'time';
-  setFilterType: (type: 'area' | 'time') => void;
-  selectedDate: Date | null;
-  setSelectedDate: (date: Date | null) => void;
+  filterType: "area" | "time";
+  setFilterType: (type: "area" | "time") => void;
 }
 
 export default function IntrusionAlertsChart({
   data = [],
   filterType,
   setFilterType,
-  selectedDate,
-  setSelectedDate,
 }: IntrusionAlertsChartProps) {
+  const anim = useChartAnimation(250);
   const t = useTranslations("Dashboard");
 
   return (
@@ -29,13 +33,22 @@ export default function IntrusionAlertsChart({
       radius="lg"
       p="lg"
       style={{
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-        height: '100%',
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+        height: "100%",
       }}
     >
       <Group justify="space-between" mb="xl" wrap="wrap" gap="md">
         <Box>
-          <Text fw={700} size="xs" c="#1f5ca9" style={{ letterSpacing: '0.5px', textTransform: 'uppercase', fontFamily: 'var(--font-readex-pro), sans-serif' }}>
+          <Text
+            fw={700}
+            size="xs"
+            c="#1f5ca9"
+            style={{
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
+              fontFamily: "var(--font-readex-pro), sans-serif",
+            }}
+          >
             {t("intrusionTitle")}
           </Text>
           <Text size="xs" c="dimmed">
@@ -44,41 +57,19 @@ export default function IntrusionAlertsChart({
         </Box>
 
         <Group gap="xs" align="center">
-          {filterType === 'time' && (
-            <DateInput
-              size="xs"
-              placeholder="Chọn ngày/tháng"
-              value={selectedDate}
-              onChange={(val) => setSelectedDate(val ? new Date(val) : null)}
-              valueFormat="DD/MM/YYYY"
-              clearable
-              leftSection={<IconCalendar size={14} color="#64748b" />}
-              styles={{
-                input: {
-                  height: '30px',
-                  width: '140px',
-                  fontSize: '11px',
-                  borderRadius: '8px',
-                  borderColor: '#cbd5e1',
-                  fontFamily: 'var(--font-readex-pro), sans-serif'
-                }
-              }}
-            />
-          )}
-
           <Button
             size="xs"
-            variant={filterType === 'area' ? 'filled' : 'default'}
+            variant={filterType === "area" ? "filled" : "default"}
             color="blue"
             radius="md"
-            onClick={() => setFilterType('area')}
+            onClick={() => setFilterType("area")}
             styles={{
               root: {
                 fontWeight: 600,
-                fontSize: '11px',
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                height: '30px',
+                fontSize: "11px",
+                paddingLeft: "12px",
+                paddingRight: "12px",
+                height: "30px",
               },
             }}
           >
@@ -87,17 +78,17 @@ export default function IntrusionAlertsChart({
 
           <Button
             size="xs"
-            variant={filterType === 'time' ? 'filled' : 'default'}
+            variant={filterType === "time" ? "filled" : "default"}
             color="blue"
             radius="md"
-            onClick={() => setFilterType('time')}
+            onClick={() => setFilterType("time")}
             styles={{
               root: {
                 fontWeight: 600,
-                fontSize: '11px',
-                paddingLeft: '12px',
-                paddingRight: '12px',
-                height: '30px',
+                fontSize: "11px",
+                paddingLeft: "12px",
+                paddingRight: "12px",
+                height: "30px",
               },
             }}
           >
@@ -107,34 +98,49 @@ export default function IntrusionAlertsChart({
       </Group>
 
       {data.length === 0 ? (
-        <Box h={240} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Text c="dimmed" size="sm" fw={500} style={{ fontFamily: 'var(--font-readex-pro), sans-serif' }}>
+        <Box
+          h={240}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <Text
+            c="dimmed"
+            size="sm"
+            fw={500}
+            style={{ fontFamily: "var(--font-readex-pro), sans-serif" }}
+          >
             Hiện tại chưa có dữ liệu.
           </Text>
         </Box>
       ) : (
         <Box h={240}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <BarChart
+              data={data}
+              margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#f1f5f9"
+              />
               <XAxis
-                dataKey="ktx"
+                dataKey="label"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#94a3b8', fontSize: 11 }}
+                tick={{ fill: "#94a3b8", fontSize: 11 }}
               />
               <Tooltip
-                cursor={{ fill: '#f8fafc' }}
+                cursor={{ fill: "#f8fafc" }}
                 contentStyle={{
-                  border: 'none',
-                  borderRadius: '8px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
-                  fontSize: '12px',
+                  border: "none",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                  fontSize: "12px",
                 }}
               />
               <Bar
@@ -143,6 +149,7 @@ export default function IntrusionAlertsChart({
                 fill="#2563eb"
                 radius={[4, 4, 0, 0]}
                 maxBarSize={22}
+                {...anim}
               />
             </BarChart>
           </ResponsiveContainer>

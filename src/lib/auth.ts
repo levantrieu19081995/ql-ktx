@@ -19,7 +19,6 @@ export async function verifyCredentials(
     }
 
     const userInfo = await fetchUserAPI(tokenData.access_token);
-    console.log("============== > verifyCredentials userInfo :>> ", userInfo);
 
     return {
       accessToken: tokenData.access_token,

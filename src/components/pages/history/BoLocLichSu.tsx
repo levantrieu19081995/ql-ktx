@@ -72,15 +72,38 @@ export const BoLocLichSu: React.FC<ThuocTinhBoLocLichSu> = ({
     dichVuDanhMucNhom.layDanhSach().then(setDanhSachNhom);
   }, []);
 
-  const optionsKhu = [
-    { value: "-1", label: t("filter.all") },
-    ...danhSachKhu.map((k) => ({ value: k.maKhu, label: k.tenKhu })),
-  ];
+  // Mantine Select throw lỗi (crash cả trang) nếu value không phải string hoặc bị trùng,
+  // nên chuẩn hóa dữ liệu API trước khi đưa vào.
+  const taoOptions = <T,>(
+    ds: T[],
+    layValue: (x: T) => unknown,
+    layLabel: (x: T) => unknown,
+  ) => {
+    const daCo = new Set<string>(["-1"]);
+    const ketQua: { value: string; label: string }[] = [
+      { value: "-1", label: t("filter.all") },
+    ];
+    ds.forEach((x) => {
+      const raw = layValue(x);
+      if (raw === null || raw === undefined || raw === "") return;
+      const value = String(raw);
+      if (daCo.has(value)) return;
+      daCo.add(value);
+      ketQua.push({ value, label: String(layLabel(x) ?? value) });
+    });
+    return ketQua;
+  };
 
-  const optionsNhom = [
-    { value: "-1", label: t("filter.all") },
-    ...danhSachNhom.map((n) => ({ value: n.maNhom, label: n.tenNhom })),
-  ];
+  const optionsKhu = taoOptions(
+    danhSachKhu,
+    (k) => k.maKhu,
+    (k) => k.tenKhu,
+  );
+  const optionsNhom = taoOptions(
+    danhSachNhom,
+    (n) => n.idNhom,
+    (n) => n.tenNhom,
+  );
 
   const laTrangLichSu = loaiBoLoc === "LICH_SU";
 

@@ -85,7 +85,9 @@ export default function SinhVienBiCamTable({
             <Table.Th>Lý do cấm</Table.Th>
             <Table.Th>Ngày bắt đầu</Table.Th>
             <Table.Th>Ngày kết thúc</Table.Th>
-            <Table.Th style={{ width: 90, textAlign: "center" }}>#</Table.Th>
+            <Table.Th style={{ width: 90, textAlign: "center" }}>
+              Hành động
+            </Table.Th>
           </Table.Tr>
         </Table.Thead>
 

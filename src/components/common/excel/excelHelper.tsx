@@ -21,6 +21,7 @@ type ExcelExportOptions = {
   soCot?: number;
   nhanCot?: string[];
   tieuDe?: string;
+  soCotKhoiTieuNgu?: number;
 };
 
 export type ExcelExportFormProps = {
@@ -43,6 +44,8 @@ export type ExcelExportFormProps = {
   disabled?: boolean;
   autoExport?: boolean;
   hidden?: boolean;
+  nationalHeaderColumnCount?: number;
+  soCotKhoiTieuNgu?: number;
   onExported?: () => void;
 };
 
@@ -148,7 +151,7 @@ export const xuatRaFileExcel = (
   tenFile: string,
   tenTrang: string = "Sheet1",
   options?: Omit<ExcelExportOptions, "tenFile" | "tenTrang">,
-) => {
+): Promise<void> => {
   const duLieuDaChuanHoa = chuanHoaDuLieuExcel(duLieu, {
     ...options,
     tenFile,
@@ -164,11 +167,12 @@ export const xuatRaFileExcel = (
     nhanCot.map((nhan) => dong[nhan]),
   );
 
-  const soCotKhoiTieuNgu = 5;
+  const soCotKhoiDonVi = 5;
+  const soCotKhoiTieuNgu = options?.soCotKhoiTieuNgu ?? 5;
   const soCotDuLieuHieuLuc = Math.max(nhanCot.length, 7);
   const soCotBaoCao = soCotDuLieuHieuLuc + soCotKhoiTieuNgu;
   const cotBatDauKhoiTrai = 1;
-  const cotKetThucKhoiTrai = cotBatDauKhoiTrai + soCotKhoiTieuNgu - 3;
+  const cotKetThucKhoiTrai = cotBatDauKhoiTrai + soCotKhoiDonVi - 3;
   const cotBatDauKhoiPhai = Math.max(soCotDuLieuHieuLuc - 2, 0);
   const cotKetThucKhoiPhai = cotBatDauKhoiPhai + soCotKhoiTieuNgu - 1;
   const cotCuoiTieuDe = Math.max(soCotBaoCao - 4, soCotDuLieuHieuLuc - 1);
@@ -259,7 +263,7 @@ PHÒNG CÔNG TÁC SINH VIÊN`;
     });
   });
 
-  void workbook.xlsx.writeBuffer().then((buffer) => {
+  return workbook.xlsx.writeBuffer().then((buffer) => {
     const doiTuongBlob = new Blob([buffer], { type: LOAI_TEP_EXCEL });
     saveAs(doiTuongBlob, `${tenFile}${DUOI_TEP_EXCEL}`);
   });
@@ -279,6 +283,8 @@ export default function ExcelExportForm(props: ExcelExportFormProps) {
   const tenFile = props.fileName || props.tenFile || "du_lieu_xuat";
   const tenTrang = props.sheetName || props.tenTrang || "Sheet1";
   const nhanNut = props.buttonLabel || props.nhanNut || "Xuất Excel";
+  const soCotKhoiTieuNgu =
+    props.nationalHeaderColumnCount || props.soCotKhoiTieuNgu;
 
   const danhSachCot = taoDanhSachCot({
     cot,
@@ -287,16 +293,26 @@ export default function ExcelExportForm(props: ExcelExportFormProps) {
     duLieu,
   });
 
-  const xuLyXuatFile = useCallback(() => {
-    xuatRaFileExcel(duLieu, tenFile, tenTrang, {
+  const xuLyXuatFile = useCallback(async () => {
+    await xuatRaFileExcel(duLieu, tenFile, tenTrang, {
       cot: danhSachCot,
       soCot,
       nhanCot: danhSachCot.map((item) => item.label),
       tieuDe: title,
+      soCotKhoiTieuNgu,
     });
 
     props.onExported?.();
-  }, [danhSachCot, duLieu, props, soCot, tenFile, tenTrang, title]);
+  }, [
+    danhSachCot,
+    duLieu,
+    props,
+    soCot,
+    soCotKhoiTieuNgu,
+    tenFile,
+    tenTrang,
+    title,
+  ]);
 
   useEffect(() => {
     if (!props.autoExport || duLieu.length === 0) {
@@ -315,7 +331,7 @@ export default function ExcelExportForm(props: ExcelExportFormProps) {
     }
 
     daTuDongXuatRef.current = khoaXuat;
-    xuLyXuatFile();
+    void xuLyXuatFile();
   }, [props.autoExport, duLieu, tenFile, tenTrang, danhSachCot, xuLyXuatFile]);
 
   if (props.hidden) {
@@ -336,7 +352,7 @@ export default function ExcelExportForm(props: ExcelExportFormProps) {
           </div>
           <Button
             leftSection={<IconFileSpreadsheet size={18} />}
-            onClick={xuLyXuatFile}
+            onClick={() => void xuLyXuatFile()}
             disabled={props.disabled || duLieu.length === 0}
           >
             {nhanNut}

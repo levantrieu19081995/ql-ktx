@@ -1,10 +1,9 @@
 import axios from "axios";
-import { getSession } from "next-auth/react";
 import { useSessionStore } from "@/context/sessionStore";
 
 // Lấy base URL từ .env
 const API_BASE_URL = typeof window === "undefined"
-  ? process.env.NEXT_PUBLIC_API_BASE_URL
+  ? process.env.API_BASE_URL
   : "/api/proxy";
 
 // Instance chuyên cho tải file (PDF, Excel, ZIP…)
@@ -21,7 +20,6 @@ axiosBlob.interceptors.request.use(
     //   config.headers["Authorization"] = `Bearer ${session.accessToken}`;
     // }
     const { accessToken } = useSessionStore.getState();
-    console.log('axiosBlob.ts accessToken :>> ', accessToken);
     if (accessToken) {
       config.headers["Authorization"] = `Bearer ${accessToken}`;
     }

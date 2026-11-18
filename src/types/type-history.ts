@@ -24,12 +24,21 @@ export interface HistoryItem {
   tenPhong: string;
   thietBi: string;
   ghiChu?: string;
+  tennhom?: string;
   loaiDoiTuong?: string;
   trangThaiSinhVien?: 'BINH_THUONG' | 'NO_PHI' | 'BI_CAM';
   trangThaiHienDien?: 'CO_MAT' | 'VANG_MAT';
   ngayNguoiLa?: string;
   gioNguoiLa?: string;
   cameraNguoiLa?: number;
+  // Dự đoán của hệ thống nhận diện cho khuôn mặt lạ (service camera, view=unknown)
+  duDoan?: {
+    ten: string;
+    ma: string;
+    doTinCay?: number;
+    doTuongDong?: number;
+    gnhat?: { ten: string; ma: string; diem?: number } | null;
+  } | null;
 }
 
 export interface HistoryListResponse {

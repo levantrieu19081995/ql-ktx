@@ -5,6 +5,8 @@ export interface ThongKeRequest {
   tuNgay?: string;
   denNgay?: string;
   groupBy?: string;
+  ngayThamChieu?: string;
+  soNgayVangToiThieu?: number;
 }
 
 export const fetchThongKeRaVao = async (params: ThongKeRequest) => {
@@ -17,6 +19,15 @@ export const fetchThongKeRaVao = async (params: ThongKeRequest) => {
   return response;
 };
 
+export const fetchThongKeVangMat = async (params: ThongKeRequest) => {
+  const payload = {
+    ngayThamChieu: params.ngayThamChieu,
+    soNgayVangToiThieu: params.soNgayVangToiThieu,
+  };
+  const response = await post<any>(API_URLS.thongKeKtx.thongKeVangMat, payload);
+  return response;
+};
+
 export interface SinhVienCamRequest {
   page: string;
   pageSize: string;
@@ -24,6 +35,9 @@ export interface SinhVienCamRequest {
 }
 
 export const fetchSinhVienCamPaginate = async (params: SinhVienCamRequest) => {
-  const response = await post<any>(API_URLS.danhMucKtx.sinhVienBiCam.paginate, params);
+  const response = await post<any>(
+    API_URLS.danhMucKtx.sinhVienBiCam.paginate,
+    params,
+  );
   return response;
-}; 
+};

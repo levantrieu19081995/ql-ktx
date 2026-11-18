@@ -24,6 +24,8 @@ import {
   Loader,
   Center,
   Modal,
+  Drawer,
+  Tabs,
   Textarea,
   ActionIcon,
   Tooltip,
@@ -31,6 +33,7 @@ import {
   Alert,
   Paper,
   Box,
+  Image,
   Transition,
   SimpleGrid,
 } from "@mantine/core";
@@ -48,6 +51,12 @@ import {
   IconUserSearch,
   IconCalendar,
   IconFileText,
+  IconBan,
+  IconCash,
+  IconCamera,
+  IconEye,
+  IconAlertTriangle,
+  IconCircleCheck,
 } from "@tabler/icons-react";
 import {
   BarChart,
@@ -55,8 +64,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  PieChart,
-  Pie,
   Cell,
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
@@ -73,21 +80,102 @@ import PdfExportForm from "@/components/common/pdf/pdfHelper";
 interface BannedItem {
   camId?: number;
   sinhVienId?: number | string;
-  lyDo: string;
-  ngayBatDau: number | null;
-  ngayKetThuc: number | null;
-  loaiSuKienId: number | string;
-  maSinhVien: string;
+  lyDo?: string;
+  ngayBatDau?: number | null;
+  ngayKetThuc?: number | null;
+  loaiSuKienId?: number | string;
+  maSinhVien?: string;
   hoTen?: string;
+  maPhong?: string;
+  maLop?: string;
+  tenLop?: string;
+  lop?: string;
   trangThai?: string;
-  danhSachNoPhi?: NoPhiEvent[];
+  tongSoLanBiCam?: number;
+  tongSoLanNoPhi?: number;
+  danhSachCam?: ViolationSourceItem[];
+  danhSachNoPhi?: ViolationSourceItem[];
+  danhSachChiTietPhatHien?: DetectionDetailItem[];
 }
 
-interface NoPhiEvent {
+interface ViolationSourceItem {
+  lyDo?: string;
+  lyDoCam?: string;
+  tenLoaiSuKien?: string;
+  loiPhatHien?: string;
+  noiDung?: string;
+  tenLoi?: string;
+  moTa?: string;
   maPhong?: string;
   soTien?: number | null;
   loaiSuKienId?: number;
-  tenLoaiSuKien?: string;
+  ngayBatDau?: string | number | null;
+  ngayKetThuc?: string | number | null;
+  trangThai?: string;
+  ghiChu?: string;
+}
+
+interface DetectionDetailItem extends ViolationSourceItem {
+  tenCamera?: string;
+  viTriCamera?: string;
+  tenViTri?: string;
+  viTri?: string;
+  cameraName?: string;
+  thoiGianPhatHien?: string | number | null;
+  ngayPhatHien?: string | number | null;
+  createdAt?: string | number | null;
+  thoiGian?: string | number | null;
+  ngayTao?: string | number | null;
+  pathImage?: string;
+  hinhAnh?: string;
+  imageUrl?: string;
+  urlAnh?: string;
+}
+
+interface DetectionDetailDisplay {
+  violation: string;
+  cameraPosition: string;
+  detectedAtLabel: string;
+  detectedAtValue: number | null;
+  imageUrl: string | null;
+}
+
+type StudentStatus = "BOTH" | "BANNED" | "DEBT" | "DETECTED" | "NORMAL";
+
+interface BannedTableRowView {
+  item: BannedItem;
+  bannedItems: ViolationSourceItem[];
+  debtItems: ViolationSourceItem[];
+  detectionItems: DetectionDetailItem[];
+  detectionDetails: DetectionDetailDisplay[];
+  bannedCount: number;
+  debtCount: number;
+  detectionCount: number;
+  status: StudentStatus;
+}
+
+interface BannedApiItem extends BannedItem {
+  maSo?: string;
+  maso?: string;
+  studentId?: number | string;
+  id?: number | string;
+  fullName?: string;
+  ten?: string;
+  maLop?: string;
+  tenLop?: string;
+  lop?: string;
+  reason?: string;
+  startDate?: string | number | null;
+  endDate?: string | number | null;
+  status?: string;
+  violationCount?: number;
+  createdDate?: string | number | null;
+}
+
+interface BannedStatisticsPayload {
+  tongSoLuotPhatHienSinhVienBiCam?: number;
+  tongSoLuotPhatHienSinhVienNoPhi?: number;
+  chiTiet?: BannedApiItem[];
 }
 
 interface SinhVienSuggestion {
@@ -115,13 +203,13 @@ interface FormErrors {
   ngayBatDau?: string;
 }
 
-type ViolationChartItem = {
+type StudentStatusChartItem = {
   name: string;
   value: number;
-  percentage: number;
   color: string;
-  lyDo?: string;
 };
+
+type DetailTab = "banned" | "debt" | "detection";
 
 type DuLieuXuat = {
   title: string;
@@ -137,6 +225,22 @@ function formatDateApi(d: Date | null): string {
   const dd = String(d.getDate()).padStart(2, "0");
   const yyyy = d.getFullYear();
   return `${mm}/${dd}/${yyyy}`;
+}
+
+function getDefaultFilterDates() {
+  const den = new Date();
+  const tu = new Date(den.getFullYear(), 0, 1);
+  return { tu, den };
+}
+
+function normalizeDateInputValue(value: unknown): Date | null {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const parsed = new Date(value as string | number);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 function formatTimestamp(ts: number | null): string {
@@ -160,6 +264,133 @@ function parseTimestamp(value: any): number | null {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+function getDisplayValue(value: unknown): string | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  return String(value);
+}
+
+function getViolationName(item: ViolationSourceItem | null | undefined) {
+  return getDisplayValue(
+    item?.lyDo ||
+      item?.lyDoCam ||
+      item?.tenLoaiSuKien ||
+      item?.loiPhatHien ||
+      item?.noiDung ||
+      item?.tenLoi ||
+      item?.moTa,
+  );
+}
+
+function getCameraPosition(item: DetectionDetailItem | null | undefined) {
+  return getDisplayValue(
+    item?.tenCamera ||
+      item?.viTriCamera ||
+      item?.tenViTri ||
+      item?.viTri ||
+      item?.cameraName,
+  );
+}
+
+function getDetectionTime(item: DetectionDetailItem | null | undefined) {
+  return (
+    item?.thoiGianPhatHien ||
+    item?.ngayPhatHien ||
+    item?.createdAt ||
+    item?.thoiGian ||
+    item?.ngayTao ||
+    null
+  );
+}
+
+function formatDateTime(value: string | number | null | undefined): string {
+  const timestamp = parseTimestamp(value);
+  if (!timestamp) return "-";
+
+  const normalized = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+  const d = new Date(normalized);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
+
+function formatDateValue(value: string | number | null | undefined): string {
+  if (value === null || value === undefined || value === "") {
+    return "";
+  }
+
+  return formatDateTime(value);
+}
+
+function formatCurrency(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return "-";
+  }
+
+  return `${new Intl.NumberFormat("vi-VN").format(Number(value))} đ`;
+}
+
+function getStudentStatusDisplay(status: StudentStatus) {
+  switch (status) {
+    case "BOTH":
+      return {
+        label: "Cấm và nợ phí",
+        color: "red",
+      };
+    case "BANNED":
+      return {
+        label: "Bị cấm",
+        color: "orange",
+      };
+    case "DEBT":
+      return {
+        label: "Nợ phí",
+        color: "yellow",
+      };
+    case "DETECTED":
+      return {
+        label: "Camera phát hiện",
+        color: "blue",
+      };
+    default:
+      return {
+        label: "Bình thường",
+        color: "green",
+      };
+  }
+}
+
+function getDetectionDetails(item: BannedItem): DetectionDetailDisplay[] {
+  const details = Array.isArray(item.danhSachChiTietPhatHien)
+    ? item.danhSachChiTietPhatHien
+    : [];
+
+  return details
+    .map((detail) => {
+      const detectedAt = getDetectionTime(detail);
+
+      return {
+        violation: getViolationName(detail) || "Phát hiện vi phạm",
+        cameraPosition: getCameraPosition(detail) || "-",
+        detectedAtLabel: formatDateTime(detectedAt),
+        detectedAtValue: parseTimestamp(detectedAt),
+        imageUrl: getDisplayValue(
+          detail.pathImage ||
+            detail.hinhAnh ||
+            detail.imageUrl ||
+            detail.urlAnh,
+        ),
+      };
+    })
+    .sort((a, b) => (b.detectedAtValue ?? 0) - (a.detectedAtValue ?? 0));
+}
+
 const defaultForm: FormState = {
   sinhVienId: "",
   maSinhVien: "",
@@ -174,28 +405,18 @@ function makeDefaultForm(): FormState {
   return { ...defaultForm, ngayBatDau: new Date() };
 }
 
-const VIOLATION_CHART_COLORS = [
-  "#1f5ca9",
-  "#00afef",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#14b8a6",
-  "#ec4899",
-];
-
-type ChartTooltipProps = {
+type StudentStatusTooltipProps = {
   active?: boolean;
-  payload?: Array<{ payload: ViolationChartItem }>;
+  payload?: Array<{ payload: StudentStatusChartItem }>;
 };
 
-function formatPercentVi(value: number): string {
-  return new Intl.NumberFormat("vi-VN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 1,
-  }).format(value);
-}
+type ClickableCountBadgeProps = {
+  count: number;
+  label: string;
+  color: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+};
 
 function renderWrappedAxisTick(props: {
   x?: number;
@@ -223,7 +444,7 @@ function renderWrappedAxisTick(props: {
   }
 
   return (
-    <text x={x} y={y} textAnchor="middle" fill="#475569" fontSize={11}>
+    <text x={x} y={y + 12} textAnchor="middle" fill="#475569" fontSize={11}>
       {lines.map((line, index) => (
         <tspan key={`${line}-${index}`} x={x} dy={index === 0 ? 0 : 14}>
           {line}
@@ -233,57 +454,128 @@ function renderWrappedAxisTick(props: {
   );
 }
 
-const CustomTooltip = ({ active, payload }: ChartTooltipProps) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
+const StudentStatusTooltip = ({
+  active,
+  payload,
+}: StudentStatusTooltipProps) => {
+  if (!active || !payload?.length) {
+    return null;
+  }
+
+  const data = payload[0].payload;
+
+  return (
+    <Paper withBorder radius="md" p="sm" shadow="sm">
+      <Text size="sm" fw={700}>
+        {data.name}
+      </Text>
+      <Text size="sm" c="dimmed">
+        {data.value} lượt phát hiện
+      </Text>
+    </Paper>
+  );
+};
+
+function DetectionThumbnail({
+  src,
+  alt,
+}: {
+  src: string | null;
+  alt: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+
+  if (!src || hasError) {
     return (
-      <div
+      <Center
+        w={128}
+        h={84}
         style={{
-          backgroundColor: "#ffffff",
-          border: "1px solid #cbd5e1",
-          padding: "10px 12px",
-          borderRadius: "8px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-          maxWidth: "320px",
-          fontFamily: "var(--font-readex-pro), sans-serif",
+          flexShrink: 0,
+          borderRadius: 8,
+          border: "1px dashed #cbd5e1",
+          background: "#f8fafc",
         }}
       >
-        <p
-          style={{
-            margin: 0,
-            fontWeight: 700,
-            fontSize: "13px",
-            color: "#1e293b",
-          }}
-        >
-          {data.name}
-        </p>
-        <p
-          style={{
-            margin: "4px 0 0 0",
-            fontSize: "11px",
-            color: "#334155",
-            lineHeight: "1.4",
-          }}
-        >
-          <span style={{ fontWeight: 600 }}>Số sinh viên:</span> {data.value}
-        </p>
-        <p
-          style={{
-            margin: "4px 0 0 0",
-            fontSize: "11px",
-            color: "#334155",
-            lineHeight: "1.4",
-          }}
-        >
-          <span style={{ fontWeight: 600 }}>Tỷ lệ:</span>{" "}
-          {formatPercentVi(data.percentage)}%
-        </p>
-      </div>
+        <Stack align="center" gap={3}>
+          <IconCamera size={20} color="#94a3b8" />
+          <Text size="10px" c="dimmed">
+            {hasError ? "Không tải được ảnh" : "Không có ảnh"}
+          </Text>
+        </Stack>
+      </Center>
     );
   }
-  return null;
-};
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      w={128}
+      h={84}
+      radius="md"
+      fit="cover"
+      loading="lazy"
+      onError={() => setHasError(true)}
+      style={{ flexShrink: 0, border: "1px solid #e2e8f0" }}
+    />
+  );
+}
+
+function ClickableCountBadge({
+  count,
+  label,
+  color,
+  icon,
+  onClick,
+}: ClickableCountBadgeProps) {
+  if (count <= 0) {
+    return (
+      <Text size="sm" c="dimmed">
+        -
+      </Text>
+    );
+  }
+
+  return (
+    <Button
+      variant="light"
+      color={color}
+      size="compact-sm"
+      radius="md"
+      leftSection={icon}
+      onClick={onClick}
+      styles={{
+        root: {
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+        },
+      }}
+    >
+      {count} {label}
+    </Button>
+  );
+}
+
+function ChartAxisLegend() {
+  return (
+    <Group justify="center" gap="xl" wrap="wrap" mt="sm">
+      <Group gap={6} wrap="nowrap">
+        <Box w={12} h={12} style={{ borderRadius: 3, background: "#ef4444" }} />
+        <Text size="xs" c="#64748b" fw={500}>
+          Lượt phát hiện sinh viên bị cấm
+        </Text>
+      </Group>
+
+      <Group gap={6} wrap="nowrap">
+        <Box w={12} h={12} style={{ borderRadius: 3, background: "#2563eb" }} />
+        <Text size="xs" c="#64748b" fw={500}>
+          Lượt phát hiện sinh viên nợ phí
+        </Text>
+      </Group>
+    </Group>
+  );
+}
 
 export default function BiCamSubPage() {
   const t = useTranslations("Statistics");
@@ -294,16 +586,23 @@ export default function BiCamSubPage() {
     return statusName;
   };
 
-  const [hoTenFilter, setHoTenFilter] = useState("");
-  const [mssvFilter, setMssvFilter] = useState("");
+  const [keyWordFilter, setKeyWordFilter] = useState("");
+  const [tuNgayFilter, setTuNgayFilter] = useState<Date | null>(
+    () => getDefaultFilterDates().tu,
+  );
+  const [denNgayFilter, setDenNgayFilter] = useState<Date | null>(
+    () => getDefaultFilterDates().den,
+  );
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bannedList, setBannedList] = useState<BannedItem[]>([]);
-  const [allBannedItems, setAllBannedItems] = useState<BannedItem[]>([]);
-  const [svNameMap, setSvNameMap] = useState<Record<string, string>>({});
   const [totalElements, setTotalElements] = useState(0);
+  const [detectionTotals, setDetectionTotals] = useState({
+    banned: 0,
+    debt: 0,
+  });
 
   // Toast notifications
   const [toast, setToast] = useState<{
@@ -320,6 +619,9 @@ export default function BiCamSubPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [form, setForm] = useState<FormState>(defaultForm);
+  const [selectedDetailRow, setSelectedDetailRow] =
+    useState<BannedTableRowView | null>(null);
+  const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>("banned");
 
   // Student search autocomplete
   const [svSearch, setSvSearch] = useState("");
@@ -334,27 +636,34 @@ export default function BiCamSubPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const openStudentDetail = (row: BannedTableRowView, tab: DetailTab) => {
+    setSelectedDetailRow(row);
+    setActiveDetailTab(tab);
+  };
+
+  const getDefaultDetailTab = (row: BannedTableRowView): DetailTab => {
+    if (row.bannedCount > 0) return "banned";
+    if (row.debtCount > 0) return "debt";
+    return "detection";
+  };
+
   const loadBannedData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
+      const defaultDates = getDefaultFilterDates();
       const res = await fetchThongKeSvBiCamNoPhi({
-        keyWord: mssvFilter.trim() || hoTenFilter.trim() || "",
+        tuNgay: formatDateApi(tuNgayFilter || defaultDates.tu),
+        denNgay: formatDateApi(denNgayFilter || defaultDates.den),
+        keyWord: keyWordFilter.trim(),
       });
-      const payload = res?.payload;
-      const rawItems: any[] =
-        payload?.content ??
-        payload?.items ??
-        (Array.isArray(payload) ? payload : []);
-      const items: BannedItem[] = rawItems.map((item: any, index: number) => {
+      const payload = res?.payload as BannedStatisticsPayload | undefined;
+      const rawItems: BannedApiItem[] = Array.isArray(payload?.chiTiet)
+        ? payload.chiTiet
+        : [];
+      const items: BannedItem[] = rawItems.map((item, index) => {
         const maSinhVien =
           item.maSinhVien || item.maSo || item.maso || item.studentId || "";
-        const lyDo =
-          item.reason ||
-          item.lyDo ||
-          item.danhSachNoPhi?.[0]?.tenLoaiSuKien ||
-          item.tenLoaiSuKien ||
-          "Không rõ lý do";
         const ngayBatDau =
           parseTimestamp(item.ngayBatDau) ||
           parseTimestamp(item.startDate) ||
@@ -365,9 +674,13 @@ export default function BiCamSubPage() {
         return {
           camId: item.camId ?? index + 1,
           sinhVienId: item.sinhVienId ?? item.studentId ?? item.id ?? "",
-          maSinhVien,
+          maSinhVien: String(maSinhVien || ""),
           hoTen: item.hoTen || item.fullName || item.ten || "",
-          lyDo,
+          maPhong: item.maPhong || "-",
+          maLop: item.maLop,
+          tenLop: item.tenLop,
+          lop: item.lop,
+          lyDo: item.reason || item.lyDo || "",
           ngayBatDau,
           ngayKetThuc,
           loaiSuKienId:
@@ -375,52 +688,41 @@ export default function BiCamSubPage() {
             item.violationCount ??
             item.tongSoLanNoPhi ??
             0,
+          tongSoLanBiCam: item.tongSoLanBiCam,
+          tongSoLanNoPhi: item.tongSoLanNoPhi,
+          danhSachCam: Array.isArray(item.danhSachCam) ? item.danhSachCam : [],
           danhSachNoPhi: Array.isArray(item.danhSachNoPhi)
             ? item.danhSachNoPhi
             : [],
+          danhSachChiTietPhatHien: Array.isArray(item.danhSachChiTietPhatHien)
+            ? item.danhSachChiTietPhatHien
+            : [],
           trangThai:
             item.status ||
-            (ngayKetThuc && ngayKetThuc < Date.now()
-              ? "HĂ¡ÂºÂ¿t hĂ¡ÂºÂ¡n"
-              : "Ă„Âang cĂ¡ÂºÂ¥m"),
+            (ngayKetThuc && ngayKetThuc < Date.now() ? "Hết hạn" : "Đang cấm"),
         };
       });
-      setAllBannedItems(items);
       setBannedList(items);
       setTotalElements(items.length);
-
-      // Resolve student names
-      const uniqueMaSv = [
-        ...new Set(items.map((i) => i.maSinhVien).filter(Boolean)),
-      ];
-      if (uniqueMaSv.length > 0) {
-        try {
-          const svRes = await fetchSinhVienPaginate({
-            page: 1,
-            pageSize: 200,
-            maKhu: "-1",
-            maPhong: "-1",
-          });
-          const svItems: any[] = svRes?.payload?.items ?? [];
-          const nameMap: Record<string, string> = {};
-          svItems.forEach((sv: any) => {
-            if (sv.maSinhVien)
-              nameMap[sv.maSinhVien] =
-                sv.hoTen || sv.ten || sv.hoVaTen || sv.maSinhVien;
-          });
-          setSvNameMap(nameMap);
-        } catch {
-          // ignore
-        }
-      }
+      setDetectionTotals({
+        banned: Math.max(
+          0,
+          Number(payload?.tongSoLuotPhatHienSinhVienBiCam) || 0,
+        ),
+        debt: Math.max(
+          0,
+          Number(payload?.tongSoLuotPhatHienSinhVienNoPhi) || 0,
+        ),
+      });
     } catch (err: any) {
       setError(err?.message || "Lỗi khi tải dữ liệu sinh viên bị cấm");
-      setAllBannedItems([]);
       setBannedList([]);
+      setTotalElements(0);
+      setDetectionTotals({ banned: 0, debt: 0 });
     } finally {
       setLoading(false);
     }
-  }, [hoTenFilter, mssvFilter]);
+  }, [denNgayFilter, keyWordFilter, tuNgayFilter]);
 
   useEffect(() => {
     loadBannedData();
@@ -492,40 +794,14 @@ export default function BiCamSubPage() {
   };
 
   const handleReset = () => {
-    setHoTenFilter("");
-    setMssvFilter("");
+    const defaultDates = getDefaultFilterDates();
+    setKeyWordFilter("");
+    setTuNgayFilter(defaultDates.tu);
+    setDenNgayFilter(defaultDates.den);
   };
 
   const handleSearch = () => {
     loadBannedData();
-  };
-
-  // ---- Modal helpers ----
-  const openAddModal = () => {
-    setIsEditing(false);
-    setForm(makeDefaultForm());
-    setSvSearch("");
-    setSvSuggestions([]);
-    setFormErrors({});
-    setModalOpen(true);
-  };
-
-  const openEditModal = (item: BannedItem) => {
-    setIsEditing(true);
-    const hoTenResolved = svNameMap[item.maSinhVien] || item.hoTen || "";
-    setForm({
-      camId: item.camId,
-      sinhVienId: String(item.sinhVienId),
-      maSinhVien: item.maSinhVien,
-      hoTen: hoTenResolved,
-      lyDo: item.lyDo,
-      ngayBatDau: item.ngayBatDau ? new Date(item.ngayBatDau) : null,
-      ngayKetThuc: item.ngayKetThuc ? new Date(item.ngayKetThuc) : null,
-      loaiSuKienId: String(item.loaiSuKienId),
-    });
-    setSvSearch(item.maSinhVien);
-    setFormErrors({});
-    setModalOpen(true);
   };
 
   const validateForm = (): boolean => {
@@ -546,7 +822,7 @@ export default function BiCamSubPage() {
       const ngayBatDauStr = formatDateApi(form.ngayBatDau);
       const ngayKetThucStr = formatDateApi(form.ngayKetThuc);
 
-      // Build body - luĂ´n gá»­i sinhVienId (ká»ƒ cáº£ 0) vĂ¬ API yĂªu cáº§u
+      // Build body - luôn gửi sinhVienId (kể cả 0) vì API yêu cầu
       const body: Record<string, any> = {
         sinhVienId: isNaN(svIdNum) ? 0 : svIdNum,
         maSinhVien: form.maSinhVien.trim(),
@@ -555,12 +831,12 @@ export default function BiCamSubPage() {
         loaiSuKienId: loaiId,
       };
 
-      // Chá»‰ gá»­i ngayKetThuc náº¿u cĂ³ giĂ¡ trá»‹
+      // Chỉ gửi ngayKetThuc nếu có giá trị
       if (ngayKetThucStr) {
         body.ngayKetThuc = ngayKetThucStr;
       }
 
-      // Gá»­i camId khi cáº­p nháº­t
+      // Gửi camId khi cập nhật
       if (isEditing && form.camId) {
         body.camId = Number(form.camId);
       }
@@ -580,7 +856,7 @@ export default function BiCamSubPage() {
         throw new Error(
           data?.message ||
             data?.error ||
-            "Thao tĂ¡c tháº¥t báº¡i (API status: " + data?.status + ")",
+            "Thao tác thất bại (API status: " + data?.status + ")",
         );
       }
 
@@ -598,101 +874,116 @@ export default function BiCamSubPage() {
     }
   };
 
-  const violationChartData = useMemo<ViolationChartItem[]>(() => {
-    if (!Array.isArray(allBannedItems) || allBannedItems.length === 0) {
-      return [];
-    }
+  const studentStatusChartData = useMemo<StudentStatusChartItem[]>(() => {
+    return [
+      {
+        name: "Sinh viên bị cấm",
+        value: detectionTotals.banned,
+        color: "#ef4444",
+      },
+      {
+        name: "Sinh viên nợ phí",
+        value: detectionTotals.debt,
+        color: "#2563eb",
+      },
+    ];
+  }, [detectionTotals]);
 
-    const studentIdsByViolation = new Map<string, Set<string>>();
-
-    allBannedItems.forEach((item, itemIndex) => {
-      const studentKey =
-        String(item.maSinhVien || item.sinhVienId || `unknown-${itemIndex}`) ||
-        `unknown-${itemIndex}`;
-      const events = Array.isArray(item.danhSachNoPhi)
-        ? item.danhSachNoPhi
-        : [];
-
-      events.forEach((event, eventIndex) => {
-        const violationName =
-          event?.tenLoaiSuKien?.trim() ||
-          item.lyDo?.trim() ||
-          `Loại vi phạm ${eventIndex + 1}`;
-
-        if (!studentIdsByViolation.has(violationName)) {
-          studentIdsByViolation.set(violationName, new Set<string>());
-        }
-
-        studentIdsByViolation.get(violationName)?.add(studentKey);
-      });
-    });
-
-    const rawChartData = Array.from(studentIdsByViolation.entries())
-      .map(([name, students]) => ({
-        name,
-        value: students.size,
-      }))
-      .filter((item) => item.value > 0)
-      .sort((a, b) => b.value - a.value);
-
-    const total = rawChartData.reduce((sum, item) => sum + item.value, 0);
-
-    return rawChartData.map((item, index) => ({
-      ...item,
-      percentage:
-        total > 0 ? Number(((item.value / total) * 100).toFixed(1)) : 0,
-      color: VIOLATION_CHART_COLORS[index % VIOLATION_CHART_COLORS.length],
-      lyDo: `Số sinh viên: ${item.value} | Tỷ lệ: ${formatPercentVi(
-        total > 0 ? (item.value / total) * 100 : 0,
-      )}%`,
-    }));
-  }, [allBannedItems]);
-
-  const totalViolationStudents = useMemo(
-    () => violationChartData.reduce((sum, item) => sum + item.value, 0),
-    [violationChartData],
+  const chartTotal = useMemo(
+    () => studentStatusChartData.reduce((sum, item) => sum + item.value, 0),
+    [studentStatusChartData],
   );
 
   const filteredBanned = bannedList.filter((item) => {
-    const mssvMatch =
-      !mssvFilter ||
-      (item.maSinhVien || "").toLowerCase().includes(mssvFilter.toLowerCase());
-    const nameResolved = svNameMap[item.maSinhVien] || "";
-    const nameMatch =
-      !hoTenFilter ||
-      nameResolved.toLowerCase().includes(hoTenFilter.toLowerCase());
-    return mssvMatch && nameMatch;
+    const keyword = keyWordFilter.trim().toLowerCase();
+    if (!keyword) return true;
+
+    const maSinhVien = (item.maSinhVien || "").toLowerCase();
+    const nameResolved = (item.hoTen || "").toLowerCase();
+
+    return maSinhVien.includes(keyword) || nameResolved.includes(keyword);
   });
 
+  const tableRows = useMemo<BannedTableRowView[]>(
+    () =>
+      filteredBanned.map((item) => {
+        const bannedItems = Array.isArray(item.danhSachCam)
+          ? item.danhSachCam
+          : [];
+
+        const debtItems = Array.isArray(item.danhSachNoPhi)
+          ? item.danhSachNoPhi
+          : [];
+
+        const detectionItems = Array.isArray(item.danhSachChiTietPhatHien)
+          ? item.danhSachChiTietPhatHien
+          : [];
+
+        const detectionDetails = getDetectionDetails(item);
+        let status: StudentStatus = "NORMAL";
+
+        if (bannedItems.length > 0 && debtItems.length > 0) {
+          status = "BOTH";
+        } else if (bannedItems.length > 0) {
+          status = "BANNED";
+        } else if (debtItems.length > 0) {
+          status = "DEBT";
+        } else if (detectionItems.length > 0) {
+          status = "DETECTED";
+        }
+
+        return {
+          item,
+          bannedItems,
+          debtItems,
+          detectionItems,
+          detectionDetails,
+          bannedCount:
+            typeof item.tongSoLanBiCam === "number"
+              ? item.tongSoLanBiCam
+              : bannedItems.length,
+          debtCount:
+            typeof item.tongSoLanNoPhi === "number"
+              ? item.tongSoLanNoPhi
+              : debtItems.length,
+          detectionCount: detectionItems.length,
+          status,
+        };
+      }),
+    [filteredBanned],
+  );
+
   const taoDuLieuXuatBiCam = () => {
-    return filteredBanned.map((item, index) => ({
-      [t("no")]: index + 1,
-      [t("studentId")]: item.maSinhVien,
-      [t("fullName")]: svNameMap[item.maSinhVien] || item.hoTen || "-",
-      [t("bannedReason")]: item.lyDo,
-      [t("startDate")]: formatTimestamp(item.ngayBatDau),
-      [t("endDate")]: item.ngayKetThuc
-        ? formatTimestamp(item.ngayKetThuc)
-        : t("noData"),
-      [t("banEventType")]: item.loaiSuKienId,
+    return tableRows.map((row, index) => ({
+      STT: index + 1,
+      MSSV: row.item.maSinhVien || "-",
+      "Họ tên": row.item.hoTen || "-",
+      Lớp: row.item.maLop || row.item.tenLop || row.item.lop || "-",
+      Phòng: row.item.maPhong || "-",
+      "Số lượt cấm": row.bannedCount,
+      "Số khoản nợ phí": row.debtCount,
+      "Số lần camera phát hiện": row.detectionCount,
+      "Trạng thái": getStudentStatusDisplay(row.status).label,
     }));
   };
 
   const xuLyXuatExcel = () => {
     const columnLabels = [
-      t("no"),
-      t("studentId"),
-      t("fullName"),
-      t("bannedReason"),
-      t("startDate"),
-      t("endDate"),
-      t("banEventType"),
+      "STT",
+      "MSSV",
+      "Họ tên",
+      "Lớp",
+      "Phòng",
+      "Số lượt cấm",
+      "Số khoản nợ phí",
+      "Số lần camera phát hiện",
+      "Trạng thái",
     ];
 
     setDuLieuXuatExcel({
-      title: "Danh sách sinh viên bị cấm",
-      fileName: `Danh_Sach_Sinh_Vien_Bi_Cam_${new Date().toISOString().split("T")[0]}`,
-      sheetName: "Sinh viên bị cấm",
+      title: "Danh sách sinh viên thuộc diện cấm / nợ phí được phát hiện",
+      fileName: `Danh_Sach_Sinh_Vien_Vi_Pham_${new Date().toISOString().split("T")[0]}`,
+      sheetName: "Sinh viên vi phạm",
       columnLabels,
       data: taoDuLieuXuatBiCam(),
     });
@@ -700,18 +991,20 @@ export default function BiCamSubPage() {
 
   const xuLyXuatPdf = () => {
     const columnLabels = [
-      t("no"),
-      t("studentId"),
-      t("fullName"),
-      t("bannedReason"),
-      t("startDate"),
-      t("endDate"),
-      t("banEventType"),
+      "STT",
+      "MSSV",
+      "Họ tên",
+      "Lớp",
+      "Phòng",
+      "Số lượt cấm",
+      "Số khoản nợ phí",
+      "Số lần camera phát hiện",
+      "Trạng thái",
     ];
 
     setDuLieuXuatPdf({
-      title: "Danh sách sinh viên bị cấm",
-      fileName: `Danh_Sach_Sinh_Vien_Bi_Cam_${new Date().toISOString().split("T")[0]}`,
+      title: "Danh sách sinh viên thuộc diện cấm / nợ phí được phát hiện",
+      fileName: `Danh_Sach_Sinh_Vien_Vi_Pham_${new Date().toISOString().split("T")[0]}`,
       columnLabels,
       data: taoDuLieuXuatBiCam(),
     });
@@ -776,13 +1069,43 @@ export default function BiCamSubPage() {
         }}
       >
         <div className="flex flex-col gap-4 w-full lg:flex-row lg:items-end">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
             <div>
-              <TextInput
-                label={t("fullName").toUpperCase()}
-                placeholder={t("enterFullName") + "..."}
-                value={hoTenFilter}
-                onChange={(e) => setHoTenFilter(e.currentTarget.value)}
+              <DateInput
+                label="TỪ NGÀY"
+                placeholder="Chọn từ ngày..."
+                value={tuNgayFilter}
+                onChange={(value) => {
+                  setTuNgayFilter(normalizeDateInputValue(value));
+                }}
+                valueFormat="DD/MM/YYYY"
+                clearable={false}
+                styles={{
+                  label: {
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    color: "#475569",
+                    marginBottom: "6px",
+                    letterSpacing: "0.5px",
+                  },
+                  input: {
+                    borderRadius: "8px",
+                    fontFamily: "var(--font-readex-pro), sans-serif",
+                    height: "40px",
+                  },
+                }}
+              />
+            </div>
+            <div>
+              <DateInput
+                label="ĐẾN NGÀY"
+                placeholder="Chọn đến ngày..."
+                value={denNgayFilter}
+                onChange={(value) => {
+                  setDenNgayFilter(normalizeDateInputValue(value));
+                }}
+                valueFormat="DD/MM/YYYY"
+                clearable={false}
                 styles={{
                   label: {
                     fontSize: "11px",
@@ -801,10 +1124,10 @@ export default function BiCamSubPage() {
             </div>
             <div>
               <TextInput
-                label={t("studentId").toUpperCase()}
-                placeholder={t("enterMssv") + "..."}
-                value={mssvFilter}
-                onChange={(e) => setMssvFilter(e.currentTarget.value)}
+                label="HỌ TÊN/MSSV"
+                placeholder="Nhập họ tên hoặc MSSV..."
+                value={keyWordFilter}
+                onChange={(e) => setKeyWordFilter(e.currentTarget.value)}
                 styles={{
                   label: {
                     fontSize: "11px",
@@ -912,190 +1235,116 @@ export default function BiCamSubPage() {
       ) : (
         <>
           {/* Chart */}
-          <Grid gutter="md" align="stretch">
-            <Grid.Col span={{ base: 12, md: 8 }}>
-              <Card
-                withBorder
-                radius="lg"
-                p="lg"
+          <Card
+            withBorder
+            radius="lg"
+            p="lg"
+            style={{
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            }}
+          >
+            <Stack gap={4} mb="md">
+              <Text
+                fw={700}
+                size="xs"
+                c="#1f5ca9"
                 style={{
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  height: "100%",
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  fontFamily: "var(--font-readex-pro), sans-serif",
                 }}
               >
-                <Text
-                  fw={700}
-                  size="xs"
-                  c="#1f5ca9"
-                  mb="md"
-                  style={{
-                    letterSpacing: "0.5px",
-                    textTransform: "uppercase",
-                    fontFamily: "var(--font-readex-pro), sans-serif",
+                Thống kê lượt phát hiện
+              </Text>
+
+              <Text size="sm" c="dimmed">
+                Tổng số lượt camera phát hiện sinh viên bị cấm và sinh viên nợ
+                phí trong kỳ lọc.
+              </Text>
+            </Stack>
+            <Box h={360}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={studentStatusChartData}
+                  margin={{
+                    top: 24,
+                    right: 24,
+                    left: 0,
+                    bottom: 24,
                   }}
+                  barCategoryGap="35%"
                 >
-                  Thống kê sinh viên theo loại vi phạm
-                </Text>
-                <div style={{ height: 320 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={violationChartData}
-                      margin={{
-                        top: 20,
-                        right: 12,
-                        left: 0,
-                        bottom: 42,
-                      }}
-                      barCategoryGap="28%"
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke="#dbe4ee"
-                      />
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#e2e8f0"
+                  />
 
-                      <XAxis
-                        dataKey="name"
-                        interval={0}
-                        height={64}
-                        tick={renderWrappedAxisTick}
-                        tickLine={false}
-                        axisLine={{
-                          stroke: "#94a3b8",
-                        }}
-                      />
+                  <XAxis
+                    dataKey="name"
+                    interval={0}
+                    tickLine={false}
+                    axisLine={{
+                      stroke: "#cbd5e1",
+                    }}
+                    tick={renderWrappedAxisTick}
+                    height={56}
+                  />
 
-                      <YAxis
-                        allowDecimals={false}
-                        width={48}
-                        domain={[0, "dataMax + 1"]}
-                        tick={{
-                          fontSize: 12,
-                          fill: "#475569",
-                        }}
-                        tickLine={false}
-                        axisLine={{
-                          stroke: "#94a3b8",
-                        }}
-                        label={{
-                          value: "Số sinh viên",
-                          angle: -90,
-                          position: "insideLeft",
-                          fill: "#64748b",
-                          fontSize: 12,
-                        }}
-                      />
+                  <YAxis
+                    allowDecimals={false}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{
+                      fontSize: 12,
+                      fill: "#64748b",
+                    }}
+                    domain={[0, "dataMax + 1"]}
+                  />
 
-                      <RechartsTooltip
-                        content={<CustomTooltip />}
-                        cursor={{
-                          fill: "rgba(148, 163, 184, 0.08)",
-                        }}
-                      />
+                  <RechartsTooltip
+                    content={<StudentStatusTooltip />}
+                    cursor={{
+                      fill: "rgba(148, 163, 184, 0.08)",
+                    }}
+                  />
 
-                      <Bar
-                        dataKey="value"
-                        name="Sinh viên bị cấm"
-                        fill="#1f5ca9"
-                        radius={[8, 8, 0, 0]}
-                        maxBarSize={80}
-                        label={{
-                          position: "top",
-                          fill: "#475569",
-                          fontSize: 12,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {violationChartData.map((entry) => (
-                          <Cell key={entry.name} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <ViolationBarChartLegend data={violationChartData} />
-              </Card>
-            </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 4 }}>
-              <Card
-                withBorder
-                radius="lg"
-                p="lg"
+                  <Bar
+                    dataKey="value"
+                    name="Số lượt phát hiện"
+                    radius={[8, 8, 0, 0]}
+                    maxBarSize={120}
+                    minPointSize={3}
+                    label={{
+                      position: "top",
+                      fill: "#475569",
+                      fontSize: 12,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {studentStatusChartData.map((entry) => (
+                      <Cell key={entry.name} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+            <ChartAxisLegend />
+
+            <Text size="sm" c="dimmed" mt="xs">
+              Tổng cộng{" "}
+              <span
                 style={{
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-                  height: "100%",
+                  fontWeight: 700,
+                  color: "#1f5ca9",
+                  fontVariantNumeric: "tabular-nums",
                 }}
               >
-                <Text
-                  fw={700}
-                  size="xs"
-                  c="#1f5ca9"
-                  mb="md"
-                  style={{
-                    letterSpacing: "0.5px",
-                    textTransform: "uppercase",
-                    fontFamily: "var(--font-readex-pro), sans-serif",
-                  }}
-                >
-                  Tỷ lệ theo loại vi phạm
-                </Text>
-
-                {violationChartData.length > 0 ? (
-                  <Stack gap="md" h={320} justify="space-between">
-                    <Box
-                      style={{ position: "relative", flex: 1, minHeight: 0 }}
-                    >
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={violationChartData}
-                            dataKey="value"
-                            nameKey="name"
-                            innerRadius={62}
-                            outerRadius={92}
-                            paddingAngle={3}
-                            cx="50%"
-                            cy="48%"
-                          >
-                            {violationChartData.map((entry) => (
-                              <Cell key={entry.name} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <RechartsTooltip content={<CustomTooltip />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-
-                      <Box
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          pointerEvents: "none",
-                        }}
-                      >
-                        <Stack gap={0} align="center">
-                          <Text size="xs" c="#64748b" fw={600}>
-                            Tổng
-                          </Text>
-                          <Text size="xl" fw={800} c="#1e293b">
-                            {totalViolationStudents}
-                          </Text>
-                        </Stack>
-                      </Box>
-                    </Box>
-
-                    <BannedChartLegend data={violationChartData} />
-                  </Stack>
-                ) : (
-                  <Center h={320}>
-                    <Text c="dimmed">Không có dữ liệu thống kê</Text>
-                  </Center>
-                )}
-              </Card>
-            </Grid.Col>
-          </Grid>
+                {chartTotal}
+              </span>{" "}
+              lượt phát hiện.
+            </Text>
+          </Card>
 
           {/* Table */}
           <Card
@@ -1115,7 +1364,8 @@ export default function BiCamSubPage() {
                   fontFamily: "var(--font-readex-pro), sans-serif",
                 }}
               >
-                {t("bannedTableTitle")} ({totalElements})
+                DANH SÁCH SINH VIÊN THUỘC DIỆN CẤM / NỢ PHÍ ĐƯỢC PHÁT HIỆN (
+                {totalElements})
               </Text>
             </Group>
 
@@ -1123,7 +1373,7 @@ export default function BiCamSubPage() {
               <Table
                 verticalSpacing="sm"
                 highlightOnHover
-                style={{ minWidth: 860 }}
+                style={{ minWidth: 1240 }}
               >
                 <Table.Thead>
                   <Table.Tr>
@@ -1143,7 +1393,7 @@ export default function BiCamSubPage() {
                         fontSize: "12px",
                       }}
                     >
-                      {t("studentId")}
+                      Sinh viên
                     </Table.Th>
                     <Table.Th
                       style={{
@@ -1152,16 +1402,7 @@ export default function BiCamSubPage() {
                         fontSize: "12px",
                       }}
                     >
-                      {t("fullName")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                      }}
-                    >
-                      {t("bannedReason")}
+                      Lớp
                     </Table.Th>
                     <Table.Th
                       style={{
@@ -1171,7 +1412,51 @@ export default function BiCamSubPage() {
                         textAlign: "center",
                       }}
                     >
-                      {t("startDate")}
+                      Phòng
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        minWidth: 140,
+                        textAlign: "center",
+                      }}
+                    >
+                      Danh sách cấm
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        minWidth: 140,
+                        textAlign: "center",
+                      }}
+                    >
+                      Nợ phí
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        minWidth: 160,
+                        textAlign: "center",
+                      }}
+                    >
+                      Camera phát hiện/Phát hiện thêm
+                    </Table.Th>
+                    <Table.Th
+                      style={{
+                        color: "#475569",
+                        fontWeight: 600,
+                        fontSize: "12px",
+                        minWidth: 140,
+                        textAlign: "center",
+                      }}
+                    >
+                      Trạng thái
                     </Table.Th>
                     <Table.Th
                       style={{
@@ -1181,114 +1466,117 @@ export default function BiCamSubPage() {
                         textAlign: "center",
                       }}
                     >
-                      {t("endDate")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        textAlign: "center",
-                      }}
-                    >
-                      {t("banEventType")}
-                    </Table.Th>
-                    <Table.Th
-                      style={{
-                        color: "#475569",
-                        fontWeight: 600,
-                        fontSize: "12px",
-                        textAlign: "center",
-                      }}
-                    >
-                      {t("actions")}
+                      Thao tác
                     </Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {filteredBanned.map((row, index) => (
-                    <Table.Tr
-                      key={row.camId || index}
-                      style={{ borderBottom: "1px solid #f1f5f9" }}
-                    >
-                      <Table.Td style={{ fontSize: "13px", color: "#64748b" }}>
-                        {index + 1}
-                      </Table.Td>
-                      <Table.Td
-                        style={{
-                          fontSize: "13px",
-                          color: "#64748b",
-                          fontFamily: "monospace",
-                          fontWeight: 600,
-                        }}
+                  {tableRows.map((row, index) => {
+                    const statusDisplay = getStudentStatusDisplay(row.status);
+
+                    return (
+                      <Table.Tr
+                        key={row.item.camId || index}
+                        style={{ borderBottom: "1px solid #f1f5f9" }}
                       >
-                        {row.maSinhVien}
-                      </Table.Td>
-                      <Table.Td
-                        style={{
-                          fontSize: "13px",
-                          color: "#1e293b",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {svNameMap[row.maSinhVien] || "-"}
-                      </Table.Td>
-                      <Table.Td
-                        style={{
-                          fontSize: "13px",
-                          color: "#fa5252",
-                          fontWeight: 500,
-                          maxWidth: 260,
-                        }}
-                      >
-                        {row.lyDo}
-                      </Table.Td>
-                      <Table.Td
-                        style={{
-                          fontSize: "13px",
-                          color: "#475569",
-                          textAlign: "center",
-                        }}
-                      >
-                        {formatTimestamp(row.ngayBatDau)}
-                      </Table.Td>
-                      <Table.Td
-                        style={{
-                          fontSize: "13px",
-                          color: "#475569",
-                          textAlign: "center",
-                        }}
-                      >
-                        {row.ngayKetThuc ? (
-                          formatTimestamp(row.ngayKetThuc)
-                        ) : (
-                          <Badge color="red" variant="light" size="xs">
-                            {t("noData")}
+                        <Table.Td
+                          style={{ fontSize: "13px", color: "#64748b" }}
+                        >
+                          {index + 1}
+                        </Table.Td>
+                        <Table.Td>
+                          <Stack gap={2}>
+                            <Text size="sm" fw={700} c="#1e293b">
+                              {row.item.hoTen || "-"}
+                            </Text>
+                            <Text
+                              size="xs"
+                              c="#1f5ca9"
+                              fw={600}
+                              style={{ fontFamily: "monospace" }}
+                            >
+                              {row.item.maSinhVien || "-"}
+                            </Text>
+                          </Stack>
+                        </Table.Td>
+                        <Table.Td
+                          style={{
+                            fontSize: "13px",
+                            color: "#475569",
+                          }}
+                        >
+                          {row.item.maLop ||
+                            row.item.tenLop ||
+                            row.item.lop ||
+                            "-"}
+                        </Table.Td>
+                        <Table.Td
+                          style={{
+                            fontSize: "13px",
+                            color: "#475569",
+                            textAlign: "center",
+                          }}
+                        >
+                          <Badge color="teal" variant="light" radius="sm">
+                            {row.item.maPhong || "-"}
                           </Badge>
-                        )}
-                      </Table.Td>
-                      <Table.Td style={{ textAlign: "center" }}>
-                        <Badge color="orange" variant="light" size="sm">
-                          ID: {row.loaiSuKienId}
-                        </Badge>
-                      </Table.Td>
-                      <Table.Td style={{ textAlign: "center" }}>
-                        <Tooltip label={t("save")} withArrow>
-                          <ActionIcon
-                            variant="light"
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: "center" }}>
+                          <ClickableCountBadge
+                            count={row.bannedCount}
+                            label="lượt cấm"
+                            color="red"
+                            icon={<IconBan size={14} />}
+                            onClick={() => openStudentDetail(row, "banned")}
+                          />
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: "center" }}>
+                          <ClickableCountBadge
+                            count={row.debtCount}
+                            label="khoản"
+                            color="orange"
+                            icon={<IconCash size={14} />}
+                            onClick={() => openStudentDetail(row, "debt")}
+                          />
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: "center" }}>
+                          <ClickableCountBadge
+                            count={row.detectionCount}
+                            label="lần phát hiện"
                             color="blue"
-                            size="sm"
-                            onClick={() => openEditModal(row)}
+                            icon={<IconCamera size={14} />}
+                            onClick={() => openStudentDetail(row, "detection")}
+                          />
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: "center" }}>
+                          <Badge
+                            color={statusDisplay.color}
+                            variant="light"
+                            radius="sm"
                           >
-                            <IconEdit size={14} />
-                          </ActionIcon>
-                        </Tooltip>
-                      </Table.Td>
-                    </Table.Tr>
-                  ))}
-                  {filteredBanned.length === 0 && (
+                            {statusDisplay.label}
+                          </Badge>
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: "center" }}>
+                          <Tooltip label="Xem toàn bộ thông tin">
+                            <ActionIcon
+                              variant="light"
+                              color="blue"
+                              radius="md"
+                              onClick={() =>
+                                openStudentDetail(row, getDefaultDetailTab(row))
+                              }
+                            >
+                              <IconEye size={17} />
+                            </ActionIcon>
+                          </Tooltip>
+                        </Table.Td>
+                      </Table.Tr>
+                    );
+                  })}
+                  {tableRows.length === 0 && (
                     <Table.Tr>
-                      <Table.Td colSpan={8}>
+                      <Table.Td colSpan={9}>
                         <Text ta="center" c="dimmed" py="xl">
                           {t("noData")}
                         </Text>
@@ -1301,6 +1589,282 @@ export default function BiCamSubPage() {
           </Card>
         </>
       )}
+
+      <Drawer
+        opened={Boolean(selectedDetailRow)}
+        onClose={() => setSelectedDetailRow(null)}
+        position="right"
+        size="xl"
+        title={
+          <Stack gap={2}>
+            <Text fw={700} c="#1f5ca9">
+              Chi tiết sinh viên
+            </Text>
+            <Text size="sm" c="dimmed">
+              {selectedDetailRow?.item.hoTen || "-"} •{" "}
+              {selectedDetailRow?.item.maSinhVien || "-"}
+            </Text>
+          </Stack>
+        }
+        styles={{
+          body: {
+            paddingBottom: 24,
+          },
+        }}
+      >
+        <Paper withBorder radius="lg" p="md" mb="md">
+          <Group justify="space-between" align="flex-start">
+            <Stack gap={3}>
+              <Text fw={700}>{selectedDetailRow?.item.hoTen || "-"}</Text>
+              <Text size="sm" c="dimmed">
+                MSSV: {selectedDetailRow?.item.maSinhVien || "-"}
+              </Text>
+              <Text size="sm" c="dimmed">
+                Lớp:{" "}
+                {selectedDetailRow?.item.maLop ||
+                  selectedDetailRow?.item.tenLop ||
+                  selectedDetailRow?.item.lop ||
+                  "-"}
+              </Text>
+              <Text size="sm" c="dimmed">
+                Phòng: {selectedDetailRow?.item.maPhong || "-"}
+              </Text>
+            </Stack>
+          </Group>
+        </Paper>
+
+        <SimpleGrid cols={{ base: 1, sm: 3 }} mb="lg">
+          <Paper withBorder radius="md" p="md">
+            <Text size="xs" c="dimmed">
+              Danh sách cấm
+            </Text>
+            <Text fw={800} size="xl" c="red">
+              {selectedDetailRow?.bannedCount ?? 0}
+            </Text>
+          </Paper>
+
+          <Paper withBorder radius="md" p="md">
+            <Text size="xs" c="dimmed">
+              Nợ phí
+            </Text>
+            <Text fw={800} size="xl" c="orange">
+              {selectedDetailRow?.debtCount ?? 0}
+            </Text>
+          </Paper>
+
+          <Paper withBorder radius="md" p="md">
+            <Text size="xs" c="dimmed">
+              Camera phát hiện
+            </Text>
+            <Text fw={800} size="xl" c="blue">
+              {selectedDetailRow?.detectionCount ?? 0}
+            </Text>
+          </Paper>
+        </SimpleGrid>
+
+        <Tabs
+          value={activeDetailTab}
+          onChange={(value) =>
+            setActiveDetailTab((value as DetailTab) || "banned")
+          }
+        >
+          <Tabs.List grow>
+            <Tabs.Tab value="banned" leftSection={<IconBan size={15} />}>
+              Danh sách cấm ({selectedDetailRow?.bannedCount ?? 0})
+            </Tabs.Tab>
+            <Tabs.Tab value="debt" leftSection={<IconCash size={15} />}>
+              Nợ phí ({selectedDetailRow?.debtCount ?? 0})
+            </Tabs.Tab>
+            <Tabs.Tab value="detection" leftSection={<IconCamera size={15} />}>
+              Camera ({selectedDetailRow?.detectionCount ?? 0})
+            </Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="banned" pt="md">
+            {selectedDetailRow && selectedDetailRow.bannedItems.length === 0 ? (
+              <Center py="xl">
+                <Stack align="center" gap="xs">
+                  <ThemeIcon size={44} radius="xl" color="gray" variant="light">
+                    <IconCircleCheck size={22} />
+                  </ThemeIcon>
+                  <Text c="dimmed">Sinh viên không có thông tin cấm.</Text>
+                </Stack>
+              </Center>
+            ) : (
+              <Stack gap="sm">
+                {selectedDetailRow?.bannedItems.map((item, index) => {
+                  const reason =
+                    item.lyDo ||
+                    item.lyDoCam ||
+                    item.noiDung ||
+                    item.moTa ||
+                    item.tenLoaiSuKien ||
+                    "Thông tin cấm";
+
+                  return (
+                    <Paper
+                      key={`banned-${index}`}
+                      withBorder
+                      radius="md"
+                      p="md"
+                    >
+                      <Stack gap={6}>
+                        <Group justify="space-between" align="flex-start">
+                          <Text fw={700}>{reason}</Text>
+                          {item.trangThai && (
+                            <Badge color="red" variant="light">
+                              {item.trangThai}
+                            </Badge>
+                          )}
+                        </Group>
+                        {item.maPhong && (
+                          <Text size="sm" c="dimmed">
+                            Phòng: {item.maPhong}
+                          </Text>
+                        )}
+                        {formatDateValue(item.ngayBatDau) && (
+                          <Text size="sm" c="dimmed">
+                            Ngày bắt đầu: {formatDateValue(item.ngayBatDau)}
+                          </Text>
+                        )}
+                        {formatDateValue(item.ngayKetThuc) && (
+                          <Text size="sm" c="dimmed">
+                            Ngày kết thúc: {formatDateValue(item.ngayKetThuc)}
+                          </Text>
+                        )}
+                        {item.ghiChu && (
+                          <Text size="sm" c="dimmed">
+                            Ghi chú: {item.ghiChu}
+                          </Text>
+                        )}
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+            )}
+          </Tabs.Panel>
+
+          <Tabs.Panel value="debt" pt="md">
+            {selectedDetailRow && selectedDetailRow.debtItems.length === 0 ? (
+              <Center py="xl">
+                <Stack align="center" gap="xs">
+                  <ThemeIcon size={44} radius="xl" color="gray" variant="light">
+                    <IconCircleCheck size={22} />
+                  </ThemeIcon>
+                  <Text c="dimmed">Sinh viên không có khoản nợ phí.</Text>
+                </Stack>
+              </Center>
+            ) : (
+              <Stack gap="sm">
+                {selectedDetailRow?.debtItems.map((item, index) => {
+                  const debtName =
+                    item.tenLoaiSuKien ||
+                    item.noiDung ||
+                    item.tenLoi ||
+                    item.moTa ||
+                    "Khoản nợ";
+
+                  return (
+                    <Paper key={`debt-${index}`} withBorder radius="md" p="md">
+                      <Stack gap={6}>
+                        <Group justify="space-between" align="flex-start">
+                          <Text fw={700}>{debtName}</Text>
+                          {item.soTien !== null &&
+                            item.soTien !== undefined && (
+                              <Text fw={700} c="orange">
+                                {formatCurrency(item.soTien)}
+                              </Text>
+                            )}
+                        </Group>
+                        {item.maPhong && (
+                          <Text size="sm" c="dimmed">
+                            Phòng: {item.maPhong}
+                          </Text>
+                        )}
+                        {(item.noiDung || item.ghiChu) && (
+                          <Text size="sm" c="dimmed">
+                            Nội dung: {item.noiDung || item.ghiChu}
+                          </Text>
+                        )}
+                        {item.trangThai && (
+                          <Text size="sm" c="dimmed">
+                            Trạng thái: {item.trangThai}
+                          </Text>
+                        )}
+                      </Stack>
+                    </Paper>
+                  );
+                })}
+              </Stack>
+            )}
+          </Tabs.Panel>
+
+          <Tabs.Panel value="detection" pt="md">
+            {selectedDetailRow &&
+            selectedDetailRow.detectionDetails.length === 0 ? (
+              <Center py="xl">
+                <Stack align="center" gap="xs">
+                  <ThemeIcon size={44} radius="xl" color="gray" variant="light">
+                    <IconCircleCheck size={22} />
+                  </ThemeIcon>
+                  <Text c="dimmed">Chưa có lần phát hiện từ camera.</Text>
+                </Stack>
+              </Center>
+            ) : (
+              <Stack gap="sm">
+                {selectedDetailRow?.detectionDetails.map((detail, index) => (
+                  <Paper
+                    key={`${detail.violation}-${detail.detectedAtLabel}-${index}`}
+                    withBorder
+                    radius="md"
+                    p="md"
+                  >
+                    <Group
+                      justify="space-between"
+                      align="flex-start"
+                      wrap="nowrap"
+                    >
+                      <Group
+                        align="flex-start"
+                        wrap="nowrap"
+                        style={{ flex: 1, minWidth: 0 }}
+                      >
+                        <DetectionThumbnail
+                          src={detail.imageUrl}
+                          alt={`Ảnh camera phát hiện lần ${index + 1}`}
+                        />
+
+                        <ThemeIcon
+                          color="blue"
+                          variant="light"
+                          style={{ flexShrink: 0 }}
+                        >
+                          <IconCamera size={17} />
+                        </ThemeIcon>
+
+                        <Stack gap={3}>
+                          <Text fw={700}>{detail.violation}</Text>
+                          <Text size="sm" c="dimmed">
+                            Vị trí: {detail.cameraPosition}
+                          </Text>
+                          <Text size="sm" c="dimmed">
+                            Thời gian: {detail.detectedAtLabel}
+                          </Text>
+                        </Stack>
+                      </Group>
+
+                      <Badge variant="light" color="blue">
+                        Lần {index + 1}
+                      </Badge>
+                    </Group>
+                  </Paper>
+                ))}
+              </Stack>
+            )}
+          </Tabs.Panel>
+        </Tabs>
+      </Drawer>
 
       {/* Add / Edit Modal */}
       <Modal
@@ -1659,7 +2223,7 @@ export default function BiCamSubPage() {
           >
             <Text size="xs" c="dimmed">
               Dữ liệu sẽ được lưu trực tiếp vào cơ sở dữ liệu. Các trường có dấu{" "}
-              <b>*</b> lĂ  báº¯t buá»™c.
+              <b>*</b> là bắt buộc.
             </Text>
           </Alert>
 
@@ -1722,123 +2286,3 @@ export default function BiCamSubPage() {
     </Stack>
   );
 }
-
-const ViolationBarChartLegend = ({
-  data,
-}: {
-  data: ViolationChartItem[];
-}) => {
-  return (
-    <Group justify="center" align="flex-end" gap="lg" mt={8} wrap="wrap">
-      <Box
-        style={{
-          position: "relative",
-          width: 78,
-          height: 40,
-          flexShrink: 0,
-        }}
-      >
-        <Text
-          size="10px"
-          fw={600}
-          c="#64748b"
-          style={{
-            position: "absolute",
-            top: -2,
-            left: 0,
-          }}
-        >
-          Số lượng
-        </Text>
-
-        <Box
-          style={{
-            position: "absolute",
-            left: 5,
-            bottom: 4,
-            width: 1,
-            height: 21,
-            backgroundColor: "#94a3b8",
-          }}
-        />
-
-        <Box
-          style={{
-            position: "absolute",
-            left: 5,
-            bottom: 4,
-            width: 45,
-            height: 1,
-            backgroundColor: "#94a3b8",
-          }}
-        />
-
-        <Box
-          style={{
-            position: "absolute",
-            left: 16,
-            bottom: 5,
-            width: 10,
-            height: 13,
-            borderRadius: "2px 2px 0 0",
-            backgroundColor: "#1f5ca9",
-          }}
-        />
-
-        <Text
-          size="10px"
-          fw={600}
-          c="#64748b"
-          style={{
-            position: "absolute",
-            right: -4,
-            bottom: 0,
-          }}
-        >
-          Loại
-        </Text>
-      </Box>
-
-      {data.map((item) => (
-        <Group key={item.name} gap={5} wrap="nowrap">
-          <Box
-            style={{
-              width: 11,
-              height: 11,
-              borderRadius: 2,
-              backgroundColor: item.color,
-            }}
-          />
-
-          <Text size="12px" c="#64748b">
-            {item.name}
-          </Text>
-        </Group>
-      ))}
-    </Group>
-  );
-};
-
-const BannedChartLegend = ({ data }: { data: ViolationChartItem[] }) => {
-  return (
-    <Stack gap={8}>
-      {data.map((item) => (
-        <Group key={item.name} gap="xs" wrap="nowrap" align="flex-start">
-          <Box
-            style={{
-              width: 12,
-              height: 12,
-              borderRadius: "50%",
-              backgroundColor: item.color,
-              marginTop: 3,
-              flexShrink: 0,
-            }}
-          />
-          <Text size="sm" c="#475569" style={{ lineHeight: 1.4 }}>
-            {item.name}: {item.value} ({formatPercentVi(item.percentage)}%)
-          </Text>
-        </Group>
-      ))}
-    </Stack>
-  );
-};

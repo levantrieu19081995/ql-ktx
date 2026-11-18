@@ -4,13 +4,10 @@ import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { getSession } from "next-auth/react";
 import { QLDK_SERVICE } from "@/constants/servicePaths";
+import { buildSockJsUrl } from "@/utils/websocketUrl";
 
 // const SOCKET_URL = "http://172.16.10.191:3004/stomp";
 // const SOCKET_URL = "https://api-qldk.cusc.vn/qldk-service/stomp";
-
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "";
-const SOCKET_URL = `${baseUrl}${QLDK_SERVICE}/stomp`; 
-console.log('SOCKET_URL :>> ', SOCKET_URL);
 
 export const usePaymentWebSocket = (transactionId?: string, token?: string) => {
   const [connected, setConnected] = useState(false);
@@ -48,8 +45,9 @@ export const usePaymentWebSocket = (transactionId?: string, token?: string) => {
     }
 
     // Tạo SockJS và client STOMP
+    const socketUrl = buildSockJsUrl(QLDK_SERVICE);
     const client = new Client({
-      webSocketFactory: () => new SockJS(SOCKET_URL),
+      webSocketFactory: () => new SockJS(socketUrl),
       connectHeaders: { jwt: `${session.accessToken}` }, // Sử dụng session.accessToken
       reconnectDelay: 5000, // tự động reconnect sau 5s
       debug: (msg) => console.log("STOMP DEBUG:", msg),

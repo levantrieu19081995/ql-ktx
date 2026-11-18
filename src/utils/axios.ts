@@ -2,18 +2,48 @@
 
 // src/utils/axios.ts
 import axios from "axios";
+import { notifications } from "@mantine/notifications";
 import { useSessionStore } from "@/context/sessionStore";
+import { GLOBAL_ERROR_NOTIFICATION_ID } from "@/constants/notification";
+import {
+  findUnsafePayload,
+  UnsafePayloadError,
+} from "@/utils/payloadSecurity";
 
 const axiosInstance = axios.create({
   baseURL: typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_BASE_URL
+    ? process.env.API_BASE_URL
     : "/api/proxy",
 });
 
 // luôn lấy token mới nhất
 axiosInstance.interceptors.request.use((config) => {
+  const unsafePayload =
+    findUnsafePayload(config.data, "data") ||
+    findUnsafePayload(config.params, "params");
+
+  if (unsafePayload) {
+    if (typeof window !== "undefined") {
+      const fieldName = unsafePayload.path
+        .replace(/^(?:data|params)\.?/, "")
+        .replace(/\[\d+\]/g, "");
+
+      notifications.show({
+        id: GLOBAL_ERROR_NOTIFICATION_ID,
+        title: "Dữ liệu không hợp lệ",
+        message: fieldName
+          ? `Trường ${fieldName} không được chứa mã HTML hoặc script.`
+          : "Dữ liệu nhập không được chứa mã HTML hoặc script.",
+        color: "red",
+        autoClose: 4000,
+      });
+    }
+
+    throw new UnsafePayloadError(unsafePayload.path);
+  }
+
   const token = useSessionStore.getState().accessToken;
-  if (token) config.headers["Authorization"] = `Bearer ${token}`;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 

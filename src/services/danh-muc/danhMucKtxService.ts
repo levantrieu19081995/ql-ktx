@@ -18,9 +18,11 @@ import type {
   SinhVienBiCam, 
   SinhVienBiCamRequest, 
   SinhVienKtx,
+  SinhVienNoPhi,
   UiisKhuPayload,
   UiisPhongPayload,
   UiisSinhVienPayload,
+  UiisSinhVienNoPhiPayload,
 } from "@/types/type-danh-muc-ktx";
 
 const taoThamSoPhanTrang = ({
@@ -62,6 +64,49 @@ export const fetchSinhVienTheoMaPhong = async (
   );
 
   return res?.payload || [];
+};
+
+export const fetchDanhSachSinhVienNoPhi = async (): Promise<SinhVienNoPhi[]> => {
+  try {
+    const res = await get<ApiResponse<SinhVienNoPhi[]>>(
+      API_URLS.danhMucKtx.sinhVienNoPhi.index
+    );
+
+    return res?.payload || [];
+  } catch (error) {
+    console.error("Error fetching debt student list:", error);
+    throw error;
+  }
+};
+
+export interface DanhSachSinhVienNoPhiPaginateRequest {
+  page?: number;
+  pageSize?: number;
+  keyWord?: string;
+  maKhu?: string;
+  loaiSuKienId?: number;
+}
+
+export const fetchDanhSachSinhVienNoPhiPaginate = async (
+  params?: DanhSachSinhVienNoPhiPaginateRequest
+): Promise<DanhMucKtxPaginatePayload<SinhVienNoPhi>> => {
+  try {
+    const res = await post<ApiResponse<DanhMucKtxPaginatePayload<SinhVienNoPhi>>>(
+      API_URLS.danhMucKtx.sinhVienNoPhi.paginate,
+      {
+        page: params?.page ?? 1,
+        pageSize: params?.pageSize ?? 9999,
+        keyWord: params?.keyWord ?? "",
+        maKhu: params?.maKhu ?? "-1",
+        loaiSuKienId: params?.loaiSuKienId ?? 0,
+      }
+    );
+
+    return res?.payload;
+  } catch (error) {
+    console.error("Error fetching debt student list:", error);
+    throw error;
+  }
 };
 
 export interface DanhSachPhongKtxRequest {
@@ -225,6 +270,12 @@ export const fetchDanhSachSinhVienUiis = async (data: UiisSinhVienPayload) => {
   return await post(API_URLS.danhMucKtx.sinhVien.uiisDanhSach, data);
 };
 
+export const fetchDanhSachSinhVienNoPhiUiis = async (
+  data: UiisSinhVienNoPhiPayload
+) => {
+  return await post(API_URLS.danhMucKtx.sinhVienNoPhi.uiisDanhSach, data);
+};
+
 const DEFAULT_UIIS_PAGE_SIZE = 200;
 const DEFAULT_KTX_PAGE_SIZE = 200;
 
@@ -305,6 +356,25 @@ export const fetchAllDanhSachSinhVienUiis = async (
   return allItems;
 };
 
+export const fetchAllDanhSachSinhVienNoPhiUiis = async (
+  data: UiisSinhVienNoPhiPayload,
+  _pageSize = DEFAULT_UIIS_PAGE_SIZE,
+  onProgress?: (progress: PagedFetchProgress) => void
+) => {
+  const res = await fetchDanhSachSinhVienNoPhiUiis(data);
+  const payload = res?.payload ?? res;
+  const items = extractPagedItems(payload);
+
+  onProgress?.({
+    currentPage: 1,
+    totalPages: 1,
+    loadedItems: items.length,
+    pageSize: items.length || _pageSize,
+  });
+
+  return items;
+};
+
 export const fetchAllDanhSachSinhVienKtx = async (
   params?: DanhSachSinhVienKtxRequest,
   pageSize = DEFAULT_KTX_PAGE_SIZE,
@@ -337,4 +407,10 @@ export const fetchAllDanhSachSinhVienKtx = async (
 
 export const syncDanhSachSinhVienUiis = async (data: UiisSinhVienPayload) => {
   return await post(API_URLS.danhMucKtx.sinhVien.uiisSync, data);
+};
+
+export const syncDanhSachSinhVienNoPhiUiis = async (
+  data: UiisSinhVienNoPhiPayload
+) => {
+  return await post(API_URLS.danhMucKtx.sinhVienNoPhi.uiisSync, data);
 };

@@ -1,7 +1,20 @@
 import dayjs from 'dayjs';
+import { post } from '@/utils/axios';
+import API_URLS from '@/constants/apiUrls';
 
-const AUTH_HEADER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
-const BASE_URL = 'http://172.16.20.177:53009';
+// Gọi paginate qua axios dùng chung (proxy + token + API_BASE_URL từ .env.local)
+async function paginate<T>(url: string, payload: Record<string, any>) {
+  try {
+    const data = await post<any>(url, payload);
+    if (data?.status !== 'OK') return { items: [] as T[], totalElements: 0 };
+    return {
+      items: (data?.payload?.items || []) as T[],
+      totalElements: data?.payload?.totalElements || 0,
+    };
+  } catch {
+    return { items: [] as T[], totalElements: 0 };
+  }
+}
 
 export interface SinhVienItem {
   sinhVienId: number;
@@ -64,21 +77,7 @@ export const categoryService = {
         requestPayload.hoTen = body.hoTen.trim();
       }
 
-      const res = await fetch(`https://qldaotaolaixe.cusc.vn/ktx-service/ktx-dm-sinh-vien/paginate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': AUTH_HEADER
-        },
-        body: JSON.stringify(requestPayload)
-      });
-      if (!res.ok) return { items: [], totalElements: 0 };
-      const data = await res.json();
-      if (data?.status !== 'OK') return { items: [], totalElements: 0 };
-      return {
-        items: (data?.payload?.items || []) as SinhVienItem[],
-        totalElements: data?.payload?.totalElements || 0
-      };
+      return await paginate<SinhVienItem>(API_URLS.danhMucKtx.sinhVien.paginate, requestPayload);
     } catch {
       return { items: [], totalElements: 0 };
     }
@@ -91,26 +90,12 @@ export const categoryService = {
     maPhong: string;
   }) => {
     try {
-      const res = await fetch(`${BASE_URL}/ktx-service/ktx-dm-phong/paginate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': AUTH_HEADER
-        },
-        body: JSON.stringify({
-          page: String(body.page),
-          pageSize: String(body.pageSize),
-          maKhu: body.maKhu,
-          maPhong: body.maPhong
-        })
+      return await paginate<PhongItem>(API_URLS.danhMucKtx.phong.paginate, {
+        page: String(body.page),
+        pageSize: String(body.pageSize),
+        maKhu: body.maKhu,
+        maPhong: body.maPhong,
       });
-      if (!res.ok) return { items: [], totalElements: 0 };
-      const data = await res.json();
-      if (data?.status !== 'OK') return { items: [], totalElements: 0 };
-      return {
-        items: (data?.payload?.items || []) as PhongItem[],
-        totalElements: data?.payload?.totalElements || 0
-      };
     } catch {
       return { items: [], totalElements: 0 };
     }
@@ -122,25 +107,11 @@ export const categoryService = {
     maKhu: string;
   }) => {
     try {
-      const res = await fetch(`${BASE_URL}/ktx-service/ktx-dm-khu/paginate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': AUTH_HEADER
-        },
-        body: JSON.stringify({
-          page: String(body.page),
-          pageSize: String(body.pageSize),
-          maKhu: body.maKhu
-        })
+      return await paginate<KhuItem>(API_URLS.danhMucKtx.khu.paginate, {
+        page: String(body.page),
+        pageSize: String(body.pageSize),
+        maKhu: body.maKhu,
       });
-      if (!res.ok) return { items: [], totalElements: 0 };
-      const data = await res.json();
-      if (data?.status !== 'OK') return { items: [], totalElements: 0 };
-      return {
-        items: (data?.payload?.items || []) as KhuItem[],
-        totalElements: data?.payload?.totalElements || 0
-      };
     } catch {
       return { items: [], totalElements: 0 };
     }
@@ -152,25 +123,11 @@ export const categoryService = {
     maSinhVien: string;
   }) => {
     try {
-      const res = await fetch(`${BASE_URL}/ktx-service/ktx-sinh-vien-cam/paginate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Authorization': AUTH_HEADER
-        },
-        body: JSON.stringify({
-          page: String(body.page),
-          pageSize: String(body.pageSize),
-          maSinhVien: body.maSinhVien
-        })
+      return await paginate<SinhVienCamItem>(API_URLS.danhMucKtx.sinhVienBiCam.paginate, {
+        page: String(body.page),
+        pageSize: String(body.pageSize),
+        maSinhVien: body.maSinhVien,
       });
-      if (!res.ok) return { items: [], totalElements: 0 };
-      const data = await res.json();
-      if (data?.status !== 'OK') return { items: [], totalElements: 0 };
-      return {
-        items: (data?.payload?.items || []) as SinhVienCamItem[],
-        totalElements: data?.payload?.totalElements || 0
-      };
     } catch {
       return { items: [], totalElements: 0 };
     }

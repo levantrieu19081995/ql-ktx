@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BASE_URL = 'http://172.16.20.177:53009';
-const AUTH_HEADER = 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInR5cGUiOjEsImd1aWQiOiI5YTFiZTIzNS05OGJhLTQxOTYtOTMyYi0xMmY0NTc3NjNmYjQiLCJpZCI6MSwiaXNzIjoiaHR0cDovL2N1c2Nzb2Z0LmNvbS8iLCJpYXQiOjE3ODE3NDQ2NTQsImV4cCI6MjA5NzEwNDY1NH0.h70KwFf0rL5cSyyVlBHbadx5bl_7QXYN2VEIaC987lE';
+const BASE_URL = process.env.FACE_DETECT_BASE_URL;
+const SERVICE_TOKEN = process.env.FACE_DETECT_SERVICE_TOKEN;
 
 async function forward(req: NextRequest, path: string[]) {
   try {
+    if (!BASE_URL) {
+      return NextResponse.json(
+        { status: 'ERROR', message: 'FACE_DETECT_BASE_URL is not configured' },
+        { status: 500 },
+      );
+    }
+
     const url = new URL(req.url);
-    const target = `${BASE_URL}/face-detect-service/${path.join('/')}${url.search}`;
+    const target = `${BASE_URL.replace(/\/+$/, '')}/face-detect-service/${path.join('/')}${url.search}`;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json; charset=utf-8',
+    };
+
+    if (SERVICE_TOKEN) {
+      headers.Authorization = `Bearer ${SERVICE_TOKEN}`;
+    }
     
     const init: RequestInit = {
       method: req.method,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-        'Authorization': AUTH_HEADER
-      },
+      headers,
       body: ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer(),
     };
     

@@ -1,10 +1,11 @@
 "use client";
 
-import { Modal, Button, Text, Group, Stack, ThemeIcon } from "@mantine/core";
+import { Button, Group, Modal, Stack, Text, ThemeIcon } from "@mantine/core";
 import { useSessionStore } from "@/context/sessionStore";
 import { signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { fetchUserAPI, refreshTokenAPI } from "@/services/auth/authService";
+import { refreshTokenAPI } from "@/services/auth/authService";
 
 export default function SessionWatcher({
   title,
@@ -17,18 +18,10 @@ export default function SessionWatcher({
   reloginLabel: string;
   continueLabel: string;
 }) {
-  // const expired = useSessionStore((s) => s.expired);
-  // const setExpired = useSessionStore((s) => s.setExpired);
-  // const setAccessToken = useSessionStore((s) => s.setAccessToken);
-  // const setRefreshToken = useSessionStore((s) => s.setRefreshToken);
   const isExpired = useSessionStore((s) => s.isExpired);
   const setIsExpired = useSessionStore((s) => s.setIsExpired);
   const setTokens = useSessionStore((s) => s.setTokens);
-
-  // const logout = async () => {
-  //   setIsExpired(false);
-  //   await signOut({ callbackUrl: "/" });
-  // };
+  const router = useRouter();
 
   const logout = async () => {
     setIsExpired(false);
@@ -46,36 +39,35 @@ export default function SessionWatcher({
     const oldRefresh = useSessionStore.getState().refreshToken;
     if (!oldRefresh) return logout();
 
-    const data = await refreshTokenAPI(oldRefresh);
+    try {
+      const data = await refreshTokenAPI(oldRefresh);
 
-    // GỌI LẠI USER INFO BẰNG TOKEN MỚI
-    const userInfo = await fetchUserAPI(data.access_token);
-    // update store
-    setTokens(data.access_token, data.refresh_token, data.expired);
-    setIsExpired(false);
+      const result = await signIn("credentials", {
+        redirect: false,
+        username: "REFRESH_MODE",
+        password: "REFRESH_MODE",
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expired: data.expired,
+      });
 
-    // update NextAuth JWT
-    await signIn("credentials", {
-      redirect: false,
-      username: "REFRESH_MODE",
-      password: "REFRESH_MODE",
-      accessToken: data.access_token,
-      refreshToken: data.refresh_token,
-      expired: data.expired,
-      user: JSON.stringify(userInfo),
-    });
+      if (result?.error) {
+        return logout();
+      }
+
+      setTokens(data.access_token, data.refresh_token, data.expired);
+      setIsExpired(false);
+
+      router.refresh();
+      window.location.reload();
+    } catch (error) {
+      console.error("Continue session failed:", error);
+      await logout();
+    }
   };
 
   return (
-    <Modal
-      opened={isExpired}
-      centered
-      withCloseButton={false}
-      // onClose={function (): void {
-      //   throw new Error("Function not implemented.");
-      // }}
-      onClose={() => {}}
-    >
+    <Modal opened={isExpired} centered withCloseButton={false} onClose={() => {}}>
       <Stack align="center">
         <ThemeIcon color="yellow" size={64}>
           <IconAlertTriangle size={32} />

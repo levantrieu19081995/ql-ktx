@@ -117,6 +117,42 @@ export const DrawerChiTietLichSu: React.FC<ThuocTinhDrawerChiTietLichSu> = ({
                     {lichSuDuocChon.thietBi || "N/A"}
                   </span>
                 </div>
+                <div className="details-item">
+                  <span className="details-label">Dự đoán</span>
+                  <span className="details-val">
+                    {lichSuDuocChon.duDoan
+                      ? `${lichSuDuocChon.duDoan.ten} (${lichSuDuocChon.duDoan.ma})`
+                      : "Không có"}
+                  </span>
+                </div>
+                {lichSuDuocChon.duDoan && (
+                  <>
+                    <div className="details-item">
+                      <span className="details-label">Độ tin cậy / Tương đồng</span>
+                      <span className="details-val">
+                        {typeof lichSuDuocChon.duDoan.doTinCay === "number"
+                          ? `${Math.round(lichSuDuocChon.duDoan.doTinCay * 100)}%`
+                          : "N/A"}
+                        {" / "}
+                        {typeof lichSuDuocChon.duDoan.doTuongDong === "number"
+                          ? `${Math.round(lichSuDuocChon.duDoan.doTuongDong * 100)}%`
+                          : "N/A"}
+                      </span>
+                    </div>
+                    {lichSuDuocChon.duDoan.gnhat && (
+                      <div className="details-item">
+                        <span className="details-label">Người gần nhất</span>
+                        <span className="details-val">
+                          {lichSuDuocChon.duDoan.gnhat.ten} (
+                          {lichSuDuocChon.duDoan.gnhat.ma})
+                          {typeof lichSuDuocChon.duDoan.gnhat.diem === "number"
+                            ? ` · ${Math.round(lichSuDuocChon.duDoan.gnhat.diem * 100)}%`
+                            : ""}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
               </>
             ) : (
               <>

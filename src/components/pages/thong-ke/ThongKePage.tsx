@@ -6,9 +6,10 @@ import VangMatSubPage from "./VangMatSubPage";
 import NguoiLaSubPage from "./NguoiLaSubPage";
 import BiCamSubPage from "./BiCamSubPage";
 import TheoMaSoSubPage from "./TheoMaSoSubPage";
+import DangCoMatSubPage from "./DangCoMatSubPage";
 
 interface ThongKePageProps {
-  type?: "luot-ra-vao" | "vang-mat" | "nguoi-la" | "bi-cam" | "theo-ma-so";
+  type?: "luot-ra-vao" | "vang-mat" | "nguoi-la" | "bi-cam" | "theo-ma-so" | "dang-co-mat";
 }
 
 export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) {
@@ -21,6 +22,8 @@ export default function ThongKePage({ type = "luot-ra-vao" }: ThongKePageProps) 
       return <NguoiLaSubPage />;
     case "bi-cam":
       return <BiCamSubPage />;
+    case "dang-co-mat":
+      return <DangCoMatSubPage />;
     case "theo-ma-so":
       return <TheoMaSoSubPage />;
     default:

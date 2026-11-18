@@ -7,6 +7,7 @@ import KhuKtxTable from "./Table/KhuKtxTable";
 import SinhVienBiCamTable from "./Table/SinhVienBiCamTable";
 import SinhVienKtxTable from "./Table/SinhVienKtxTable";
 import PhongKtxTable from "./Table/PhongKtxTable";
+import SinhVienNoPhiTable from "./Table/SinhVienNoPhiTable";
 import type { PhongKtx } from "@/types/type-danh-muc-ktx";
 
 type DanhMucType =
@@ -14,7 +15,8 @@ type DanhMucType =
   | "phong"
   | "sinhVienBiCam"
   | "phongKtx"
-  | "sinhVienKtx";
+  | "sinhVienKtx"
+  | "sinhVienNoPhi";
 
 type DanhMucFeaturePageProps = {
   type: DanhMucType;
@@ -58,6 +60,8 @@ export default function DanhMucFeaturePage({
         );
       case "sinhVienKtx":
         return <SinhVienKtxTable items={items} page={page} pageSize={pageSize} />;
+      case "sinhVienNoPhi":
+        return <SinhVienNoPhiTable items={items} page={page} pageSize={pageSize} />;
       case "phongKtx":
         return (
           <PhongKtxTable

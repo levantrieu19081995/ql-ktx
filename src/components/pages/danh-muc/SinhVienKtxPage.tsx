@@ -44,6 +44,7 @@ import {
   syncDanhSachSinhVienUiis,
 } from "@/services/danh-muc/danhMucKtxService";
 import type { PhongKtx, SinhVienKtx } from "@/types/type-danh-muc-ktx";
+import useAccountAccess from "@/hooks/useAccountAccess";
 
 type SelectOption = {
   value: string;
@@ -97,6 +98,8 @@ type PreviewFetchProgressState = {
 
 const normalizeString = (value?: string | null) => (value ?? "").trim();
 const displayText = (value?: string | null) => normalizeString(value) || "-";
+const getDefaultKhuValue = (options: SelectOption[]) =>
+  options.find((item) => item.value && item.value !== "-1")?.value || "-1";
 const getUiisMaSinhVien = (item: UiisSinhVienItem) =>
   item.sv_tu_dien_sinh_vien_ma || item.ma_sinh_vien || item.maSinhVien;
 const getUiisHoTen = (item: UiisSinhVienItem) =>
@@ -108,6 +111,7 @@ const getUiisMaKhu = (item: UiisSinhVienItem) =>
   item.ktx_td_khu_ma || item.ma_khu || item.maKhu;
 
 export default function SinhVienKtxPage() {
+  const { isAdmin } = useAccountAccess();
   const [items, setItems] = useState<SinhVienKtx[]>([]);
   const [dsKhu, setDsKhu] = useState<SelectOption[]>([]);
   const [dsPhong, setDsPhong] = useState<SelectOption[]>([]);
@@ -150,19 +154,76 @@ export default function SinhVienKtxPage() {
       current: null,
     });
 
-  const mapPhongOptions = (rooms: PhongKtx[]): SelectOption[] => [
-    { value: "-1", label: "Tất cả" },
-    ...rooms.map((item) => ({
-      value: item.maPhong || item.phongMa || "",
-      label: item.tenPhong || item.phongMa || item.maPhong || "",
-    })),
-  ];
+  const mapPhongFilterOptions = (rooms: PhongKtx[]): SelectOption[] => {
+    const uniqueRooms = Array.from(
+      new Map(
+        rooms
+          .map((item) => {
+            const value = String(item.phongId ?? item.id ?? "").trim();
+            const roomLabel = String(
+              item.phongMa || item.maPhong || item.tenPhong || "",
+            ).trim();
+
+            return [
+              value,
+              {
+                value,
+                label: roomLabel || value,
+              },
+            ] as const;
+          })
+          .filter(([value]) => value),
+      ).values(),
+    );
+
+    return [{ value: "-1", label: "Tất cả" }, ...uniqueRooms];
+  };
+
+  const mapPhongSearchOptions = (rooms: PhongKtx[]): SelectOption[] => {
+    const roomCodeById = new Map(
+      rooms.map((item) => [
+        String(item.phongId ?? item.id ?? "").trim(),
+        String(item.maPhong || item.phongMa || "").trim(),
+      ]),
+    );
+
+    return mapPhongFilterOptions(rooms).map((option) => {
+      if (option.value === "-1") return option;
+
+      return {
+        ...option,
+        value: roomCodeById.get(option.value) || option.label,
+      };
+    });
+  };
+
+  const mapPhongSyncOptions = (rooms: PhongKtx[]): SelectOption[] => {
+    const uniqueRooms = Array.from(
+      new Map(
+        rooms
+          .map((item) => {
+            const value = String(item.maPhong || item.phongMa || "").trim();
+
+            return [
+              value,
+              {
+                value,
+                label:
+                  item.tenPhong || item.phongMa || item.maPhong || value,
+              },
+            ] as const;
+          })
+          .filter(([value]) => value),
+      ).values(),
+    );
+
+    return [{ value: "-1", label: "Tất cả" }, ...uniqueRooms];
+  };
 
   const loadDanhMucKhu = async () => {
     try {
       const res = await fetchDanhMucKhuKtx();
       setDsKhu([
-        { value: "-1", label: "Tất cả", khuId: 0 },
         ...res.map((item) => ({
           value: item.khuMa || item.maKhu || "",
           label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
@@ -178,7 +239,7 @@ export default function SinhVienKtxPage() {
 
   const loadDanhMucPhong = async (khuValue: string) => {
     if (!khuValue || khuValue === "-1") {
-      setDsPhong(mapPhongOptions(roomsList));
+      setDsPhong(mapPhongSearchOptions(roomsList));
       return;
     }
 
@@ -190,7 +251,7 @@ export default function SinhVienKtxPage() {
         maPhong: "-1",
       });
 
-      setDsPhong(mapPhongOptions(res?.items || []));
+      setDsPhong(mapPhongSearchOptions(res?.items || []));
     } catch (error) {
       console.error("Lỗi lấy danh mục phòng KTX:", error);
       setDsPhong([{ value: "-1", label: "Tất cả" }]);
@@ -199,7 +260,7 @@ export default function SinhVienKtxPage() {
 
   const loadSyncPhongOptions = async (khuValue: string) => {
     if (!khuValue || khuValue === "-1") {
-      setSyncPhongOptions(mapPhongOptions(roomsList));
+      setSyncPhongOptions(mapPhongSyncOptions(roomsList));
       return;
     }
 
@@ -211,7 +272,7 @@ export default function SinhVienKtxPage() {
         maPhong: "-1",
       });
 
-      setSyncPhongOptions(mapPhongOptions(res?.items || []));
+      setSyncPhongOptions(mapPhongSyncOptions(res?.items || []));
     } catch (error) {
       console.error("Lỗi lấy phòng sync sinh viên KTX:", error);
       setSyncPhongOptions([{ value: "-1", label: "Tất cả" }]);
@@ -231,9 +292,9 @@ export default function SinhVienKtxPage() {
       setRoomsList(allRooms);
 
       if (!maKhu || maKhu === "-1") {
-        setDsPhong(mapPhongOptions(allRooms));
+        setDsPhong(mapPhongSearchOptions(allRooms));
       }
-      setSyncPhongOptions(mapPhongOptions(allRooms));
+      setSyncPhongOptions(mapPhongSyncOptions(allRooms));
     } catch (error) {
       console.error("Lỗi tải toàn bộ phòng KTX:", error);
       setRoomsList([]);
@@ -284,8 +345,8 @@ export default function SinhVienKtxPage() {
   };
 
   const handleReset = async () => {
-    setMaKhu("-1");
-    setMaPhong("-1");
+    setMaKhu("");
+    setMaPhong("");
     setAppliedFilters({
       maKhu: "-1",
       maPhong: "-1",
@@ -293,7 +354,7 @@ export default function SinhVienKtxPage() {
     setMaSinhVien("");
     setHoTen("");
     setPage(1);
-    setDsPhong(mapPhongOptions(roomsList));
+    setDsPhong(mapPhongSearchOptions(roomsList));
 
     try {
       const res = await fetchDanhSachSinhVienKtx({
@@ -317,6 +378,11 @@ export default function SinhVienKtxPage() {
   };
 
   const handleOpenSync = () => {
+    const defaultSyncMaKhu =
+      appliedFilters.maKhu && appliedFilters.maKhu !== "-1"
+        ? appliedFilters.maKhu
+        : getDefaultKhuValue(dsKhu);
+
     setOpenedSync(true);
     setShowPreview(false);
     setActivePreviewFilter("ALL");
@@ -326,8 +392,8 @@ export default function SinhVienKtxPage() {
     });
     setUiisItems([]);
     setCurrentItems([]);
-    setSyncMaKhu(appliedFilters.maKhu || "-1");
-    setSyncMaPhong(appliedFilters.maPhong || "-1");
+    setSyncMaKhu(defaultSyncMaKhu);
+    setSyncMaPhong("-1");
   };
 
   const handleCloseSync = () => {
@@ -340,9 +406,9 @@ export default function SinhVienKtxPage() {
     });
     setUiisItems([]);
     setCurrentItems([]);
-    setSyncMaKhu("-1");
+    setSyncMaKhu(getDefaultKhuValue(dsKhu));
     setSyncMaPhong("-1");
-    setSyncPhongOptions(mapPhongOptions(roomsList));
+    setSyncPhongOptions(mapPhongSyncOptions(roomsList));
   };
 
   const buildSyncPayload = () => {
@@ -546,7 +612,13 @@ export default function SinhVienKtxPage() {
       return `Đang hiển thị toàn bộ ${filteredPreviewRows.length} sinh viên.`;
     }
 
-    return `Đang lọc ${filteredPreviewRows.length} sinh viên theo trạng thái ${activePreviewFilter}.`;
+    const previewFilterLabel: Record<SyncStatus, string> = {
+      NEW: "hoàn toàn mới",
+      CHANGED: "có thay đổi",
+      SAME: "không đổi",
+    };
+
+    return `Đang lọc ${filteredPreviewRows.length} sinh viên theo trạng thái ${previewFilterLabel[activePreviewFilter]}.`;
   }, [activePreviewFilter, filteredPreviewRows.length, isFilterLoading]);
 
   const getProgressPercent = (progress: PagedFetchProgress | null) => {
@@ -621,16 +693,25 @@ export default function SinhVienKtxPage() {
 
   useEffect(() => {
     if (!maKhu || maKhu === "-1") {
-      setDsPhong(mapPhongOptions(roomsList));
+      setDsPhong(mapPhongSearchOptions(roomsList));
     }
   }, [roomsList, maKhu]);
 
   useEffect(() => {
     if (!openedSync) return;
 
+    if (!syncMaKhu || syncMaKhu === "-1") {
+      const defaultSyncMaKhu = getDefaultKhuValue(dsKhu);
+
+      if (defaultSyncMaKhu !== syncMaKhu) {
+        setSyncMaKhu(defaultSyncMaKhu);
+        return;
+      }
+    }
+
     setSyncMaPhong("-1");
     loadSyncPhongOptions(syncMaKhu);
-  }, [syncMaKhu, openedSync]);
+  }, [dsKhu, syncMaKhu, openedSync]);
 
   useEffect(() => {
     loadData(1, pageSize);
@@ -682,14 +763,17 @@ export default function SinhVienKtxPage() {
                 style={{ minWidth: 150, flexGrow: 1 }}
               />
 
-              <Autocomplete
+              <Select
                 label="Phòng"
                 placeholder="Chọn phòng..."
-                data={dsPhong
-                  .map((item) => item.value)
-                  .filter((value) => value && value !== "-1")}
-                value={maPhong}
-                onChange={setMaPhong}
+                data={dsPhong.map((item) => ({
+                  value: item.value,
+                  label: item.label,
+                }))}
+                value={maPhong || null}
+                onChange={(value) => setMaPhong(value || "")}
+                searchable
+                clearable
                 style={{ minWidth: 150, flexGrow: 1 }}
               />
 
@@ -726,15 +810,16 @@ export default function SinhVienKtxPage() {
               >
                 Làm mới
               </Button>
-
-              <Button
-                leftSection={<IconCloudDownload size={18} />}
-                color="green"
-                radius="md"
-                onClick={handleOpenSync}
-              >
-                Đồng bộ từ UIIS
-              </Button>
+              {isAdmin && (
+                <Button
+                  leftSection={<IconCloudDownload size={18} />}
+                  color="green"
+                  radius="md"
+                  onClick={handleOpenSync}
+                >
+                  Đồng bộ từ UIIS
+                </Button>
+              )}
             </Group>
           </Stack>
         }

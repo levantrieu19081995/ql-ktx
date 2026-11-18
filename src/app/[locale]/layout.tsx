@@ -1,3 +1,4 @@
+import "@fontsource-variable/inter";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/dates/styles.css";
@@ -14,13 +15,9 @@ import { notFound } from "next/navigation";
 import { NotificationsProviderClient } from "@/providers/NotificationsProviderClient";
 import { Suspense } from "react";
 import { FONT } from "@/constants/theme";
-import { Inter } from "next/font/google";
 
-const inter = Inter({
-  subsets: ["latin", "vietnamese"],
-  display: "swap",
-  variable: "--font-inter",
-});
+//
+import { DatesProviderClient } from "@/providers/DatesProviderClient";
 
 type Props = { children: React.ReactNode; params: { locale: string } };
 
@@ -38,7 +35,7 @@ export default async function RootLayout({ children, params }: Props) {
   const messages = await getMessages({ locale });
 
   return (
-    <html lang={locale} {...mantineHtmlProps} className={inter.variable}>
+    <html lang={locale} {...mantineHtmlProps}>
       <head>
         <ColorSchemeScript defaultColorScheme="light" />
       </head>
@@ -76,11 +73,13 @@ export default async function RootLayout({ children, params }: Props) {
           }}
         >
           <NotificationsProviderClient />
-          <NextIntlClientProvider messages={messages} locale={locale}>
-            <Suspense fallback={<div>Đang tải trang...</div>}>
-              {children}
-            </Suspense>
-          </NextIntlClientProvider>
+          <DatesProviderClient locale={locale}>
+            <NextIntlClientProvider messages={messages} locale={locale}>
+              <Suspense fallback={<div>Đang tải trang...</div>}>
+                {children}
+              </Suspense>
+            </NextIntlClientProvider>
+          </DatesProviderClient>
         </MantineProvider>
       </body>
     </html>

@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 // src\components\shell\AppSidebar.tsx
-// import Image from "next/image";
+import { motion, useReducedMotion } from "motion/react";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { filterMenuByPermission } from "@/utils/menuPermission";
@@ -10,6 +11,7 @@ import {
   Stack,
   Modal,
   Group,
+  Menu,
   Button,
   Text,
   Box,
@@ -35,6 +37,7 @@ import {
   IconChartBar,
   IconArrowsLeftRight,
   IconUserX,
+  IconUserCheck,
   IconEyeExclamation,
   IconLockFilled,
   IconHistory,
@@ -62,6 +65,7 @@ type Props = {
 // Dữ liệu về các tính năng mới và đã có của phiên bản
 
 export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
+  const giamChuyenDong = useReducedMotion();
   const { permissions, loading } = usePermissions();
 
   const t = useTranslations("Menu");
@@ -70,6 +74,9 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
   const locale = useLocale();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [collapsedOpenLabel, setCollapsedOpenLabel] = useState<string | null>(
+    null,
+  );
 
   const [versionInfoOpen, setVersionInfoOpen] = useState(false);
 
@@ -131,6 +138,11 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
           icon: <IconUser size={16} />,
         },
         {
+          label: t("categoryDebtStudent"),
+          href: "/danh-muc/sinh-vien-no-phi",
+          icon: <IconAlertTriangle size={16} />,
+        },
+        {
           label: t("categoryRoomDorm"),
           href: "/danh-muc/phong-ktx",
           icon: <IconHome2 size={16} />,
@@ -164,6 +176,11 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
         //   href: "/thong-ke/theo-ma-so",
         //   icon: <IconId size={16} />,
         // },
+        {
+          label: t("statPresent"),
+          href: "/thong-ke/dang-co-mat",
+          icon: <IconUserCheck size={16} />,
+        },
         {
           label: t("statAbsent"),
           href: "/thong-ke/vang-mat",
@@ -302,77 +319,157 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
     const isOpen = openParents.includes(item.label);
 
     if (collapsed) {
-      // === Dạng mở rộng đầy đủ ===
-      // ================= COLLAPSED MODE =================
-      if (collapsed) {
+      const compactStyles = {
+        root: {
+          width: 44,
+          height: 44,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 8,
+          padding: 0,
+          margin: "4px auto",
+          flexDirection: "row" as const,
+        },
+        section: {
+          marginRight: 0,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+        },
+        label: {
+          display: "none",
+        },
+      };
+
+      if (hasChildren) {
         return (
           <Box key={item.label} style={{ width: "100%" }}>
-            <Tooltip
-              label={item.label}
-              position="right"
+            <Menu
+              opened={collapsedOpenLabel === item.label}
+              onChange={(opened) =>
+                setCollapsedOpenLabel(opened ? item.label : null)
+              }
+              position="right-start"
               withArrow
               withinPortal
-              openDelay={200}
-              transitionProps={{ transition: "fade", duration: 150 }}
+              shadow="md"
+              offset={10}
+              width={260}
             >
-              <Box
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <NavLink
-                  leftSection={item.icon}
-                  component={item.onClick ? "button" : (Link as any)}
-                  href={item.href}
-                  onClick={() => {
-                    if (item.onClick) {
-                      item.onClick();
-                      return;
-                    }
+              <Menu.Target>
+                <Box>
+                  <Tooltip
+                    label={item.label}
+                    position="right"
+                    withArrow
+                    withinPortal
+                    openDelay={200}
+                    transitionProps={{ transition: "fade", duration: 150 }}
+                  >
+                    <Box
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: "100%",
+                      }}
+                    >
+                      <NavLink
+                        leftSection={item.icon}
+                        component="button"
+                        onClick={() =>
+                          setCollapsedOpenLabel((prev) =>
+                            prev === item.label ? null : item.label,
+                          )
+                        }
+                        active={isActive}
+                        styles={compactStyles}
+                      />
+                    </Box>
+                  </Tooltip>
+                </Box>
+              </Menu.Target>
 
-                    if (hasChildren) {
-                      toggleParent(item, isActive);
-                      return;
-                    }
-
-                    if (isMobile) {
-                      onNavigate?.();
-                    }
-                  }}
-                  active={isActive}
-                  styles={{
-                    root: {
-                      width: 44,
-                      height: 44,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      borderRadius: 8,
-                      padding: 0,
-                      margin: "4px auto",
-                      flexDirection: "row",
-                    },
-                    section: {
-                      marginRight: 0,
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      width: "100%",
-                      height: "100%",
-                    },
-                    label: {
-                      display: "none",
-                    },
-                  }}
-                />
-              </Box>
-            </Tooltip>
+              <Menu.Dropdown>
+                <Menu.Label>{item.label}</Menu.Label>
+                {item.children.map((child: any, childIndex: number) =>
+                  child.onClick ? (
+                    <Menu.Item
+                      key={child.label ?? childIndex}
+                      leftSection={child.icon}
+                      onClick={() => {
+                        child.onClick();
+                        setCollapsedOpenLabel(null);
+                      }}
+                    >
+                      {child.label}
+                    </Menu.Item>
+                  ) : (
+                    <Menu.Item
+                      key={child.href ?? childIndex}
+                      component={Link as any}
+                      href={child.href}
+                      leftSection={child.icon}
+                      color={pathname.startsWith(child.href) ? "blue" : undefined}
+                      onClick={() => {
+                        setCollapsedOpenLabel(null);
+                        if (isMobile) {
+                          onNavigate?.();
+                        }
+                      }}
+                    >
+                      {child.label}
+                    </Menu.Item>
+                  ),
+                )}
+              </Menu.Dropdown>
+            </Menu>
           </Box>
         );
       }
+
+      return (
+        <Box key={item.label} style={{ width: "100%" }}>
+          <Tooltip
+            label={item.label}
+            position="right"
+            withArrow
+            withinPortal
+            openDelay={200}
+            transitionProps={{ transition: "fade", duration: 150 }}
+          >
+            <Box
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <NavLink
+                leftSection={item.icon}
+                component={item.onClick ? "button" : (Link as any)}
+                href={item.href}
+                onClick={() => {
+                  if (item.onClick) {
+                    item.onClick();
+                    return;
+                  }
+
+                  if (isMobile) {
+                    onNavigate?.();
+                  }
+                }}
+                active={isActive}
+                styles={compactStyles}
+              />
+            </Box>
+          </Tooltip>
+        </Box>
+      );
     }
 
     // === Dạng mở rộng đầy đủ ===
@@ -616,7 +713,21 @@ export default function AppSidebar({ onNavigate, collapsed, toggle }: Props) {
         >
           <Stack gap={collapsed ? 8 : 10}>
             {/* {filteredItems.map((it) => renderNavItem(it))} */}
-            {filteredItems.map((it, index) => renderNavItem(it, index))}
+            {filteredItems.map((it, index) => (
+              // Mục menu hiện lần lượt từ trên xuống (fade + trượt xuống nhẹ), chỉ chạy một lần khi menu dựng lên
+              <motion.div
+                key={it.label}
+                initial={giamChuyenDong ? false : { opacity: 0, y: -14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.12 + index * 0.07,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                {renderNavItem(it, index)}
+              </motion.div>
+            ))}
           </Stack>
         </div>
         <Box

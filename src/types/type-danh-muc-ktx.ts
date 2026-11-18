@@ -28,6 +28,7 @@ export interface DanhMucKtxPaginatePayload<T> {
   last: boolean;
   empty: boolean;
   items: T[];
+  chiTiet: T[];
 }
 
 export interface ApiResponse<T> {
@@ -116,6 +117,37 @@ export interface SinhVienKtx {
 
 }
 
+export interface SinhVienNoPhi {
+  id?: number | string;
+  guid?: string;
+  sinhVienNoPhiId?: number | string;
+  noPhiId?: number | string;
+  sinhVienId?: number | string;
+  maSinhVien?: string;
+  mssv?: string;
+  maso?: string;
+  hoTen?: string;
+  hoten?: string;
+  lop?: string;
+  maLop?: string;
+  tenLop?: string;
+  maKhu?: string;
+  tenKhu?: string;
+  maPhong?: string;
+  tenPhong?: string;
+  dotTotNghiep?: string;
+  loaiSuKienId?: number;
+  loaiSuKien?: LoaiSuKienKtx | null;
+  soTien?: number | string | null;
+  soTienNo?: number | string | null;
+  tongTienNo?: number | string | null;
+  noiDung?: string;
+  tenLoaiSuKien?: string;
+  ghiChu?: string | null;
+  ngayCapNhat?: string | number | null;
+  updatedAt?: string | number | null;
+}
+
 export interface PhongKtx {
   khuTen: string | undefined;
   khuMa: string | undefined;
@@ -165,6 +197,12 @@ export interface DanhSachSinhVienKtxRequest {
   hoTen?: string;
 }
 
+export interface DanhSachSinhVienNoPhiRequest {
+  keyword?: string;
+  maKhu?: string;
+  maPhong?: string;
+}
+
 
 // === SYNC - ĐỒNG BỘ DANH SÁCH  SINH VIÊN
 export type UiisKhuPayload = {
@@ -179,6 +217,12 @@ export type UiisSinhVienPayload = {
   khu_id?: number;
   page?: number;
   pageSize?: number;
+};
+
+export type UiisSinhVienNoPhiPayload = {
+  nam_hoc: number;
+  hoc_ky: number;
+  ma_khu?: string;
 };
 
 export type UiisPhongPayload = {

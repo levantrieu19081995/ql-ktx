@@ -20,12 +20,37 @@ const PROTECTED = [
   "/manage-users",
   "/manage-roles",
 ];
- 
+
+function getPublicOrigin(req: NextRequest): string {
+  const configuredOrigin = process.env.NEXTAUTH_URL;
+  if (configuredOrigin) {
+    try {
+      return new URL(configuredOrigin).origin;
+    } catch {
+      // Fall back to reverse-proxy headers when the configured URL is invalid.
+    }
+  }
+
+  const forwardedHost = req.headers
+    .get("x-forwarded-host")
+    ?.split(",")[0]
+    .trim();
+  const host = forwardedHost || req.headers.get("host");
+  const forwardedProto = req.headers
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    .trim();
+  const protocol = forwardedProto || req.nextUrl.protocol.replace(":", "");
+
+  return host ? `${protocol}://${host}` : req.nextUrl.origin;
+}
+
+function redirectTo(req: NextRequest, pathname: string) {
+  return NextResponse.redirect(new URL(pathname, getPublicOrigin(req)));
+}
 
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  console.log('->>>>>>>>>>>>>> Middleware is running <<<<<<<<<<<<-' ); 
 
   // Nếu là các route của NextAuth, không can thiệp
   if (pathname.startsWith('/api/auth')) return NextResponse.next();
@@ -50,41 +75,29 @@ export default async function middleware(req: NextRequest) {
   
   // Kiểm tra route có yêu cầu bảo vệ không
   // const isProtectedRoute = PROTECTED.some(p => pathname.startsWith(p));
-  console.log('-----------> isProtectedRoute:', isProtectedRoute);
-  
   // Nếu người dùng chưa đăng nhập và vào route yêu cầu đăng nhập
   if (isProtectedRoute && !token) {
-    console.log('Chưa đăng nhập ------ isProtectedRoute && !token:' );
-    const redirectUrl = new URL(`/${locale}/login`, req.url);  // Chuyển hướng đến /login
-    return NextResponse.redirect(redirectUrl);
+    return redirectTo(req, `/${locale}/login`);
   }
 
   // Nếu người dùng chưa đăng nhập và vào trang chủ '/', chuyển đến splashscreen hoặc login
   if (!token && pathname === '/') {
-    console.log('Chưa đăng nhập ------ !token && pathname === /:' );
-    const redirectUrl = new URL(`/splashscreen`, req.url); // Chuyển hướng đến trang splashscreen
-    return NextResponse.redirect(redirectUrl);
+    return redirectTo(req, "/splashscreen");
   }
 
   // Nếu người dùng đã đăng nhập và vào trang login, chuyển về dashboard
   if (token && pathname.endsWith('/login')) {
-    console.log('Đã đăng nhập ------  token && pathname === /login:' );
-    const redirectUrl = new URL(`/${locale}/dashboard`, req.url);  // Chuyển hướng đến dashboard
-    return NextResponse.redirect(redirectUrl);
+    return redirectTo(req, `/${locale}/dashboard`);
   }
 
   // Nếu người dùng đã đăng nhập và vào trang splashscreen, chuyển về dashboard
   if (token && pathname === '/splashscreen') {
-    console.log('Đã đăng nhập ------  token && pathname === /splashscreen:' );
-    const redirectUrl = new URL(`/${locale}/dashboard`, req.url);  // Chuyển hướng đến dashboard
-    return NextResponse.redirect(redirectUrl);
+    return redirectTo(req, `/${locale}/dashboard`);
   }
 
   // Nếu người dùng đã đăng nhập và vào trang chủ '/', chuyển ngay tới dashboard
   if (token && pathname === '/') {
-    console.log('Đã đăng nhập ------ token && pathname === /:' );
-    const redirectUrl = new URL(`/${locale}/dashboard`, req.url);  // Chuyển hướng đến dashboard
-    return NextResponse.redirect(redirectUrl);
+    return redirectTo(req, `/${locale}/dashboard`);
   }
  
 

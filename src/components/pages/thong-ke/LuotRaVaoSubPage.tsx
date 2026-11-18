@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { DateInput } from "@mantine/dates";
+import { DateInput, MonthPickerInput } from "@mantine/dates";
 import {
   Card,
   Group,
@@ -69,6 +69,9 @@ export interface ThongKeOverview {
   khu: string;
   phong: string;
   trangThai: string;
+  thoiGian?: string;
+  sourceKey: string;
+  rawItem?: any;
 }
 
 type DuLieuXuat = {
@@ -146,6 +149,7 @@ const resolveKhu = (item: any): string => {
 
 export default function LuotRaVaoSubPage() {
   const t = useTranslations("Statistics");
+  type GroupByMode = "DAY" | "MONTH";
 
   const getTranslatedStatus = (statusName: string) => {
     if (statusName === "Hợp lệ") return t("statusValid");
@@ -173,14 +177,54 @@ export default function LuotRaVaoSubPage() {
     return khu;
   };
 
-  const [hoTen, setHoTen] = useState("");
-  const [mssv, setMssv] = useState("");
-  const [tuNgay, setTuNgay] = useState<Date | null>(new Date("2026-06-01"));
-  const [denNgay, setDenNgay] = useState<Date | null>(new Date("2026-06-06"));
-  const [khuKtx, setKhuKtx] = useState("Tất cả");
-  const [trangThai, setTrangThai] = useState("Tất cả");
-  const [loaiDoiTuong, setLoaiDoiTuong] = useState("Tất cả");
+  // Mặc định: từ ngày đầu tháng đến ngày hiện tại (chuẩn hóa 00:00 để giá trị ổn định giữa các lần render)
+  const homNay = new Date();
+  const defaultTuNgay = new Date(homNay.getFullYear(), homNay.getMonth(), 1);
+  const defaultDenNgay = new Date(
+    homNay.getFullYear(),
+    homNay.getMonth(),
+    homNay.getDate(),
+  );
+
+  const [draftHoTen, setDraftHoTen] = useState("");
+  const [draftMssv, setDraftMssv] = useState("");
+  const [draftGroupByMode, setDraftGroupByMode] = useState<GroupByMode>("DAY");
+  const [draftTuNgay, setDraftTuNgay] = useState<Date | null>(defaultTuNgay);
+  const [draftDenNgay, setDraftDenNgay] = useState<Date | null>(defaultDenNgay);
+  const [draftKhuKtx, setDraftKhuKtx] = useState("Tất cả");
+  const [draftTrangThai, setDraftTrangThai] = useState("Tất cả");
+  const [draftLoaiDoiTuong, setDraftLoaiDoiTuong] = useState("Tất cả");
+  const [appliedHoTen, setAppliedHoTen] = useState("");
+  const [appliedMssv, setAppliedMssv] = useState("");
+  const [appliedGroupByMode, setAppliedGroupByMode] =
+    useState<GroupByMode>("DAY");
+  const [appliedTuNgay, setAppliedTuNgay] =
+    useState<Date | null>(defaultTuNgay);
+  const [appliedDenNgay, setAppliedDenNgay] =
+    useState<Date | null>(defaultDenNgay);
+  const [appliedKhuKtx, setAppliedKhuKtx] = useState("Tất cả");
+  const [appliedTrangThai, setAppliedTrangThai] = useState("Tất cả");
+  const [appliedLoaiDoiTuong, setAppliedLoaiDoiTuong] = useState("Tất cả");
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+
+  const hoTen = draftHoTen;
+  const setHoTen = setDraftHoTen;
+  const mssv = draftMssv;
+  const setMssv = setDraftMssv;
+  const groupByMode = draftGroupByMode;
+  const setGroupByMode = setDraftGroupByMode;
+  const tuNgay = draftTuNgay;
+  const setTuNgay = setDraftTuNgay;
+  const denNgay = draftDenNgay;
+  const setDenNgay = setDraftDenNgay;
+  const khuKtx = draftKhuKtx;
+  const setKhuKtx = setDraftKhuKtx;
+  const trangThai = draftTrangThai;
+  const setTrangThai = setDraftTrangThai;
+  const loaiDoiTuong = draftLoaiDoiTuong;
+  const setLoaiDoiTuong = setDraftLoaiDoiTuong;
+  const defaultTu = defaultTuNgay;
+  const defaultDen = defaultDenNgay;
 
   const [overviewList, setOverviewList] = useState<ThongKeOverview[]>([]);
   const [globalHistoryList, setGlobalHistoryList] = useState<any[]>([]);
@@ -217,19 +261,128 @@ export default function LuotRaVaoSubPage() {
   });
   const [formGhiChu, setFormGhiChu] = useState("");
 
+  const startOfMonth = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), 1);
+
+  const endOfMonth = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+  const normalizePickerDate = (value: unknown): Date | null => {
+    if (!value) return null;
+    if (value instanceof Date) {
+      return isNaN(value.getTime()) ? null : value;
+    }
+
+    const parsed = new Date(String(value));
+    return isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const isSameMonth = (a: Date | null, b: Date | null) =>
+    !!a &&
+    !!b &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth();
+
+  const getMonthDistance = (a: Date | null, b: Date | null) => {
+    if (!a || !b) return 0;
+    return Math.abs(
+      (a.getFullYear() - b.getFullYear()) * 12 + (a.getMonth() - b.getMonth()),
+    );
+  };
+
+  const handleGroupByModeChange = (value: string | null) => {
+    const nextMode = (value || "DAY") as GroupByMode;
+    setDraftGroupByMode(nextMode);
+
+    if (nextMode === "MONTH") {
+      const baseDate = draftTuNgay || draftDenNgay || new Date();
+      setDraftTuNgay(startOfMonth(baseDate));
+      setDraftDenNgay(endOfMonth(baseDate));
+    }
+  };
+
+  const handleTuNgayChange = (value: Date | string | null) => {
+    const nextDate = normalizePickerDate(value);
+    if (!nextDate) {
+      setDraftTuNgay(null);
+      return;
+    }
+
+    if (draftGroupByMode === "MONTH") {
+      setDraftTuNgay(startOfMonth(nextDate));
+      setDraftDenNgay(endOfMonth(nextDate));
+      return;
+    }
+
+    setDraftTuNgay(new Date(nextDate));
+  };
+
+  const handleDenNgayChange = (value: Date | string | null) => {
+    const nextDate = normalizePickerDate(value);
+    if (!nextDate) {
+      setDraftDenNgay(null);
+      return;
+    }
+
+    if (draftGroupByMode === "MONTH") {
+      setDraftTuNgay(startOfMonth(nextDate));
+      setDraftDenNgay(endOfMonth(nextDate));
+      return;
+    }
+
+    setDraftDenNgay(new Date(nextDate));
+  };
+
+  const handleMonthChange = (value: Date | string | null) => {
+    const nextDate = normalizePickerDate(value);
+    if (!nextDate) {
+      setDraftTuNgay(null);
+      setDraftDenNgay(null);
+      return;
+    }
+
+    setDraftTuNgay(startOfMonth(nextDate));
+    setDraftDenNgay(endOfMonth(nextDate));
+  };
+
   const loadThongKeData = useCallback(
-    async (overrides?: { tuNgay?: Date | null; denNgay?: Date | null }) => {
+    async (overrides?: {
+      tuNgay?: Date | null;
+      denNgay?: Date | null;
+      groupByMode?: GroupByMode;
+    }) => {
       setLoading(true);
       setError(null);
       try {
         const activeTu =
           overrides && overrides.tuNgay !== undefined
             ? overrides.tuNgay
-            : tuNgay;
+            : appliedTuNgay;
         const activeDen =
           overrides && overrides.denNgay !== undefined
             ? overrides.denNgay
-            : denNgay;
+            : appliedDenNgay;
+        const activeGroupByMode =
+          overrides && overrides.groupByMode !== undefined
+            ? overrides.groupByMode
+            : appliedGroupByMode;
+
+        if (!activeTu || !activeDen) {
+          throw new Error("Vui lòng chọn đầy đủ từ ngày và đến ngày");
+        }
+
+        if (activeTu.getTime() > activeDen.getTime()) {
+          throw new Error("Từ ngày không được lớn hơn đến ngày");
+        }
+
+        if (
+          activeGroupByMode === "MONTH" &&
+          getMonthDistance(activeTu, activeDen) > 1
+        ) {
+          throw new Error(
+            "Chế độ theo tháng chỉ cho phép chọn tối đa 2 tháng liền kề",
+          );
+        }
 
         const formatDate = (dateVal: Date | null, isStart: boolean): string => {
           if (dateVal && !isNaN(dateVal.getTime())) {
@@ -238,8 +391,9 @@ export default function LuotRaVaoSubPage() {
             const yyyy = dateVal.getFullYear();
             return `${mm}/${dd}/${yyyy}`;
           }
-          // Default to mock data range 06/01/2026 - 06/06/2026 when not filtered
-          return isStart ? "06/01/2026" : "06/06/2026";
+          // Không có ngày hợp lệ thì dùng ngày đang chọn mặc định (đầu tháng / cuối tháng hiện tại)
+          const fb = isStart ? defaultTuNgay : defaultDenNgay;
+          return `${String(fb.getMonth() + 1).padStart(2, "0")}/${String(fb.getDate()).padStart(2, "0")}/${fb.getFullYear()}`;
         };
 
         const tuNgayFormatted = formatDate(activeTu, true);
@@ -248,6 +402,7 @@ export default function LuotRaVaoSubPage() {
         const res = await fetchThongKeRaVao({
           tuNgay: tuNgayFormatted,
           denNgay: denNgayFormatted,
+          groupBy: activeGroupByMode,
         });
 
         const list = res?.payload || [];
@@ -280,6 +435,7 @@ export default function LuotRaVaoSubPage() {
           const statsRes = await fetchThongKeSvBiCamNoPhi({
             tuNgay: tuNgayFormatted,
             denNgay: denNgayFormatted,
+            groupBy: activeGroupByMode,
           });
           const items = statsRes?.payload || [];
           items.forEach((item: any) => {
@@ -306,14 +462,15 @@ export default function LuotRaVaoSubPage() {
         const mappedOverview: ThongKeOverview[] = list.map(
           (item: any, index: number) => {
             const studentId = item.maSo || item.maSinhVien || `no-id-${index}`;
+            const sourceKey = `${studentId}__${item.thoiGian || "no-date"}__${index}`;
             const hasVaoScans =
               Array.isArray(item.danhSachVao) && item.danhSachVao.length > 0;
             const hasRaScans =
               Array.isArray(item.danhSachRa) && item.danhSachRa.length > 0;
 
             let pathImage = "";
-            if (hasVaoScans) pathImage = item.danhSachVao[0].pathimage || "";
-            else if (hasRaScans) pathImage = item.danhSachRa[0].pathimage || "";
+            if (hasVaoScans) pathImage = item.danhSachVao[0].pathImage || "";
+            else if (hasRaScans) pathImage = item.danhSachRa[0].pathImage || "";
 
             const avatarUrl = pathImage
               ? resolveImageUrl(pathImage)
@@ -348,6 +505,9 @@ export default function LuotRaVaoSubPage() {
               khu,
               phong,
               trangThai,
+              thoiGian: item.thoiGian,
+              sourceKey,
+              rawItem: item,
             };
           },
         );
@@ -399,91 +559,57 @@ export default function LuotRaVaoSubPage() {
 
         // 2. Map global check-in/out history list
         const allScans: any[] = [];
-        list.forEach((studentItem: any) => {
+        list.forEach((studentItem: any, index: number) => {
           const studentId = studentItem.maSo || studentItem.maSinhVien || "N/A";
           const hoTen = studentItem.hoTen || "Chưa rõ";
+          const sourceKey = `${studentId}__${studentItem.thoiGian || "no-date"}__${index}`;
+          const hasCombinedScans =
+            Array.isArray(studentItem.danhSachTatCa) &&
+            studentItem.danhSachTatCa.length > 0;
 
-          // Map Vào list
-          (studentItem.danhSachVao || []).forEach((scan: any) => {
+          const pushScanToHistory = (scan: any, forcedType?: "Vào" | "Ra") => {
             const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(studentId)}`;
             const isBanned = bannedMap.has(studentId);
             const isDebt = debtMap.has(studentId);
-            let resolvedStatus = scan.cameraName || "Camera vào";
-            if (isBanned) {
-              resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
-            } else if (isDebt) {
-              resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
-            }
-
-            allScans.push({
-              timecheck: scan.timecheck || 0,
-              time: formatDisplayTime(scan),
-              studentId,
-              hoTen,
-              avatarUrl: scan.pathimage || defaultAvatar,
-              type: "Vào",
-              ktx: resolveKhu(studentItem),
-              room: scan.maPhong || studentItem.maPhong || "--",
-              status: resolvedStatus,
-            });
-          });
-
-          // Map Ra list
-          (studentItem.danhSachRa || []).forEach((scan: any) => {
-            const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(studentId)}`;
-            const isBanned = bannedMap.has(studentId);
-            const isDebt = debtMap.has(studentId);
-            let resolvedStatus = scan.cameraName || "Camera ra";
-            if (isBanned) {
-              resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
-            } else if (isDebt) {
-              resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
-            }
-
-            allScans.push({
-              timecheck: scan.timecheck || 0,
-              time: formatDisplayTime(scan),
-              studentId,
-              hoTen,
-              avatarUrl: scan.pathimage || defaultAvatar,
-              type: "Ra",
-              ktx: resolveKhu(studentItem),
-              room: scan.maPhong || studentItem.maPhong || "--",
-              status: resolvedStatus,
-            });
-          });
-
-          // Map custom danhSachTatCa if it exists
-          if (Array.isArray(studentItem.danhSachTatCa)) {
-            studentItem.danhSachTatCa.forEach((scan: any) => {
-              const defaultAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(studentId)}`;
-              const isVao =
-                String(scan.cameraName || scan.checkType || scan.type || "")
+            const isVao = forcedType
+              ? forcedType === "Vào"
+              : String(scan.cameraName || scan.checkType || scan.type || "")
                   .toLowerCase()
                   .includes("vào") || scan.cameraIdId === 1;
-              const isBanned = bannedMap.has(studentId);
-              const isDebt = debtMap.has(studentId);
-              let resolvedStatus =
-                scan.cameraName ||
-                scan.tenLoaiSuKien ||
-                (isVao ? "Camera vào" : "Camera ra");
-              if (isBanned) {
-                resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
-              } else if (isDebt) {
-                resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
-              }
+            let resolvedStatus =
+              scan.cameraName ||
+              scan.tenLoaiSuKien ||
+              (isVao ? "Camera vào" : "Camera ra");
+            if (isBanned) {
+              resolvedStatus = `Không hợp lệ (${bannedReasons[studentId] || "Bị cấm"})`;
+            } else if (isDebt) {
+              resolvedStatus = `Nghi vấn (${debtReasons[studentId] || "Nợ học phí"})`;
+            }
 
-              allScans.push({
-                timecheck: scan.timecheck || 0,
-                time: formatDisplayTime(scan),
-                studentId,
-                hoTen,
-                avatarUrl: scan.pathimage || defaultAvatar,
-                type: isVao ? "Vào" : "Ra",
-                ktx: resolveKhu(studentItem),
-                room: scan.maPhong || studentItem.maPhong || "--",
-                status: resolvedStatus,
-              });
+            allScans.push({
+              timecheck: scan.timecheck || 0,
+              time: formatDisplayTime(scan),
+              studentId,
+              hoTen,
+              avatarUrl: scan.pathImage || scan.pathimage || defaultAvatar,
+              type: isVao ? "Vào" : "Ra",
+              ktx: resolveKhu(studentItem),
+              room: scan.maPhong || studentItem.maPhong || "--",
+              status: resolvedStatus,
+              sourceKey,
+            });
+          };
+
+          if (hasCombinedScans) {
+            studentItem.danhSachTatCa.forEach((scan: any) => {
+              pushScanToHistory(scan);
+            });
+          } else {
+            (studentItem.danhSachVao || []).forEach((scan: any) => {
+              pushScanToHistory(scan, "Vào");
+            });
+            (studentItem.danhSachRa || []).forEach((scan: any) => {
+              pushScanToHistory(scan, "Ra");
             });
           }
         });
@@ -503,7 +629,7 @@ export default function LuotRaVaoSubPage() {
         setLoading(false);
       }
     },
-    [tuNgay, denNgay],
+    [appliedTuNgay, appliedDenNgay, appliedGroupByMode],
   );
 
   // Load data once on mount
@@ -511,6 +637,22 @@ export default function LuotRaVaoSubPage() {
     loadThongKeData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleSearch = () => {
+    setAppliedHoTen(draftHoTen);
+    setAppliedMssv(draftMssv);
+    setAppliedGroupByMode(draftGroupByMode);
+    setAppliedTuNgay(draftTuNgay);
+    setAppliedDenNgay(draftDenNgay);
+    setAppliedKhuKtx(draftKhuKtx);
+    setAppliedTrangThai(draftTrangThai);
+    setAppliedLoaiDoiTuong(draftLoaiDoiTuong);
+    loadThongKeData({
+      tuNgay: draftTuNgay,
+      denNgay: draftDenNgay,
+      groupByMode: draftGroupByMode,
+    });
+  };
 
   const handleMssvChange = (value: string) => {
     setFormMssv(value);
@@ -546,6 +688,7 @@ export default function LuotRaVaoSubPage() {
       ktx: formKhuKtx,
       room: formPhong,
       status: formGhiChu || t("manualRecord"),
+      sourceKey: `manual-${formMssv}-${parsedDate.getTime()}`,
     };
 
     setGlobalHistoryList([newScan, ...globalHistoryList]);
@@ -580,6 +723,7 @@ export default function LuotRaVaoSubPage() {
         khu: formKhuKtx || "Khu A",
         phong: formPhong || "--",
         trangThai: formGhiChu || t("statusValid"),
+        sourceKey: newScan.sourceKey,
       };
       setOverviewList([...overviewList, newStudent]);
     }
@@ -594,18 +738,29 @@ export default function LuotRaVaoSubPage() {
   };
 
   const handleReset = () => {
-    setHoTen("");
-    setMssv("");
-    const defaultTu = new Date("2026-06-01");
-    const defaultDen = new Date("2026-06-06");
-    setTuNgay(defaultTu);
-    setDenNgay(defaultDen);
+    setDraftHoTen("");
+    setDraftMssv("");
+    setDraftGroupByMode("DAY");
+    setDraftTuNgay(defaultTuNgay);
+    setDraftDenNgay(defaultDenNgay);
+    setAppliedHoTen("");
+    setAppliedMssv("");
+    setAppliedGroupByMode("DAY");
+    setAppliedTuNgay(defaultTuNgay);
+    setAppliedDenNgay(defaultDenNgay);
+    setAppliedKhuKtx("Tất cả");
+    setAppliedTrangThai("Tất cả");
+    setAppliedLoaiDoiTuong("Tất cả");
     setKhuKtx("Tất cả");
     setTrangThai("Tất cả");
     setLoaiDoiTuong("Tất cả");
     setSelectedStudent(null);
     setDetailType(null);
-    loadThongKeData({ tuNgay: defaultTu, denNgay: defaultDen });
+    loadThongKeData({
+      tuNgay: defaultTu,
+      denNgay: defaultDen,
+      groupByMode: "DAY",
+    });
   };
 
   // Normalize khu value để so sánh (xử lý mọi format: "A", "Khu A", "KHU_A", "khu a"...)
@@ -624,30 +779,18 @@ export default function LuotRaVaoSubPage() {
     const name = item.hoTen || "";
     const id = item.studentId || "";
     const group = item.maNhom || "";
-    const matchName = name.toLowerCase().includes(hoTen.toLowerCase());
-    const matchMssv = id.toLowerCase().includes(mssv.toLowerCase());
+    const matchName = name.toLowerCase().includes(appliedHoTen.toLowerCase());
+    const matchMssv = id.toLowerCase().includes(appliedMssv.toLowerCase());
     const matchGroup =
-      loaiDoiTuong === "Tất cả" ||
-      (loaiDoiTuong === "Sinh viên" && group.includes("Sinh viên")) ||
-      (loaiDoiTuong === "Cán bộ" && group.includes("Cán bộ"));
-    const matchKhu = khuKtx === "Tất cả" || normalizeKhu(item.khu) === khuKtx;
+      appliedLoaiDoiTuong === "Tất cả" ||
+      (appliedLoaiDoiTuong === "Sinh viên" && group.includes("Sinh viên")) ||
+      (appliedLoaiDoiTuong === "Cán bộ" && group.includes("Cán bộ"));
+    const matchKhu =
+      appliedKhuKtx === "Tất cả" || normalizeKhu(item.khu) === appliedKhuKtx;
     const matchTrangThai =
-      trangThai === "Tất cả" || item.trangThai === trangThai;
+      appliedTrangThai === "Tất cả" || item.trangThai === appliedTrangThai;
     return matchName && matchMssv && matchGroup && matchKhu && matchTrangThai;
   });
-
-  // Calculate chart data based on dynamic list (Top 10 most active in/outs)
-  // const chartData =
-  //   filteredOverview.length > 0
-  //     ? [...filteredOverview]
-  //         .sort((a, b) => b.tongLuot - a.tongLuot)
-  //         .slice(0, 10)
-  //         .map((student) => ({
-  //           name: student.studentId ? `MS: ${student.studentId}` : "Chưa rõ",
-  //           "Lượt vào": student.luotVao,
-  //           "Lượt ra": student.luotRa,
-  //         }))
-  //     : [{ name: t("noData"), "Lượt vào": 0, "Lượt ra": 0 }];
 
   const chartData =
     filteredOverview.length > 0
@@ -682,26 +825,39 @@ export default function LuotRaVaoSubPage() {
   const filteredHistoryList = globalHistoryList.filter((item) => {
     if (!item) return false;
 
-    // Filter by selected student
-    if (selectedStudent && item.studentId !== selectedStudent.studentId)
+    // Filter by selected overview row
+    if (selectedStudent?.sourceKey) {
+      if (item.sourceKey !== selectedStudent.sourceKey) return false;
+    } else if (
+      selectedStudent &&
+      item.studentId !== selectedStudent.studentId
+    ) {
       return false;
+    }
 
     // Filter by check direction
     if (detailType === "Vào" && item.type !== "Vào") return false;
     if (detailType === "Ra" && item.type !== "Ra") return false;
 
     // Filter by KTX - normalize both sides
-    if (khuKtx !== "Tất cả" && normalizeKhu(item.ktx) !== khuKtx) return false;
+    if (appliedKhuKtx !== "Tất cả" && normalizeKhu(item.ktx) !== appliedKhuKtx)
+      return false;
 
     // Filter by status
-    if (trangThai !== "Tất cả") {
+    if (appliedTrangThai !== "Tất cả") {
       const lowerStatus = String(item.status || "").toLowerCase();
-      if (trangThai === "Không hợp lệ" && !lowerStatus.includes("không hợp lệ"))
-        return false;
-      if (trangThai === "Nghi vấn" && !lowerStatus.includes("nghi vấn"))
+      if (
+        appliedTrangThai === "Không hợp lệ" &&
+        !lowerStatus.includes("không hợp lệ")
+      )
         return false;
       if (
-        trangThai === "Hợp lệ" &&
+        appliedTrangThai === "Nghi vấn" &&
+        !lowerStatus.includes("nghi vấn")
+      )
+        return false;
+      if (
+        appliedTrangThai === "Hợp lệ" &&
         (lowerStatus.includes("không hợp lệ") ||
           lowerStatus.includes("nghi vấn"))
       )
@@ -962,7 +1118,9 @@ export default function LuotRaVaoSubPage() {
             style={{
               display: "grid",
               gridTemplateColumns:
-                "minmax(120px, 1fr) minmax(120px, 1fr) max-content max-content max-content max-content 40px",
+                groupByMode === "MONTH"
+                  ? "minmax(120px, 0.9fr) minmax(120px, 1fr) max-content max-content max-content max-content 40px"
+                  : "minmax(120px, 0.9fr) minmax(120px, 1fr) minmax(120px, 1fr) max-content max-content max-content max-content 40px",
               gap: "12px",
               alignItems: "end",
               justifyContent: "start",
@@ -975,13 +1133,16 @@ export default function LuotRaVaoSubPage() {
               className="inout-compact-filter__field"
               style={{ minWidth: 0 }}
             >
-              <DateInput
-                label={t("fromDate")}
-                placeholder="MM/DD/YYYY"
-                value={tuNgay}
-                onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
+              <Select
+                label="Loại thời gian"
+                placeholder="Chọn mode"
+                value={groupByMode}
+                onChange={handleGroupByModeChange}
+                data={[
+                  { value: "DAY", label: "Theo ngày" },
+                  { value: "MONTH", label: "Theo tháng" },
+                ]}
+                allowDeselect={false}
                 styles={{
                   label: {
                     fontSize: "12px",
@@ -1002,28 +1163,84 @@ export default function LuotRaVaoSubPage() {
               className="inout-compact-filter__field"
               style={{ minWidth: 0 }}
             >
-              <DateInput
-                label={t("toDate")}
-                placeholder="MM/DD/YYYY"
-                value={denNgay}
-                onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                valueFormat="DD/MM/YYYY"
-                clearable
-                styles={{
-                  label: {
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "#475569",
-                    marginBottom: "6px",
-                    letterSpacing: "0.3px",
-                  },
-                  input: {
-                    borderRadius: "8px",
-                    height: "40px",
-                  },
-                }}
-              />
+              {groupByMode === "MONTH" ? (
+                <MonthPickerInput
+                  label="Tháng"
+                  placeholder="MM/YYYY"
+                  value={tuNgay}
+                  onChange={handleMonthChange}
+                  valueFormat="MM/YYYY"
+                  closeOnChange
+                  clearable
+                  styles={{
+                    label: {
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#475569",
+                      marginBottom: "6px",
+                      letterSpacing: "0.3px",
+                    },
+                    input: {
+                      borderRadius: "8px",
+                      height: "40px",
+                    },
+                  }}
+                />
+              ) : (
+                <>
+                  <DateInput
+                    label={t("fromDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={tuNgay}
+                    onChange={handleTuNgayChange}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: {
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#475569",
+                        marginBottom: "6px",
+                        letterSpacing: "0.3px",
+                      },
+                      input: {
+                        borderRadius: "8px",
+                        height: "40px",
+                      },
+                    }}
+                  />
+                </>
+              )}
             </Box>
+
+            {groupByMode !== "MONTH" && (
+              <Box
+                className="inout-compact-filter__field"
+                style={{ minWidth: 0 }}
+              >
+                <DateInput
+                  label={t("toDate")}
+                  placeholder="MM/DD/YYYY"
+                  value={denNgay}
+                  onChange={handleDenNgayChange}
+                  valueFormat="DD/MM/YYYY"
+                  clearable
+                  styles={{
+                    label: {
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      color: "#475569",
+                      marginBottom: "6px",
+                      letterSpacing: "0.3px",
+                    },
+                    input: {
+                      borderRadius: "8px",
+                      height: "40px",
+                    },
+                  }}
+                />
+              </Box>
+            )}
 
             <Box
               className="inout-compact-filter__control"
@@ -1038,7 +1255,7 @@ export default function LuotRaVaoSubPage() {
                     <IconSearch size={17} />
                   )
                 }
-                onClick={() => loadThongKeData()}
+                onClick={handleSearch}
                 disabled={loading}
                 style={{
                   backgroundColor: "#1f5ca9",
@@ -1162,13 +1379,15 @@ export default function LuotRaVaoSubPage() {
               }}
             >
               <Box style={{ gridColumn: "span 3", minWidth: 0 }}>
-                <DateInput
-                  label={t("fromDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={tuNgay}
-                  onChange={(val) => setTuNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
+                <Select
+                  label="Loại thời gian"
+                  value={groupByMode}
+                  onChange={handleGroupByModeChange}
+                  data={[
+                    { value: "DAY", label: "Theo ngày" },
+                    { value: "MONTH", label: "Theo tháng" },
+                  ]}
+                  allowDeselect={false}
                   styles={{
                     label: {
                       fontSize: "12px",
@@ -1186,28 +1405,79 @@ export default function LuotRaVaoSubPage() {
               </Box>
 
               <Box style={{ gridColumn: "span 3", minWidth: 0 }}>
-                <DateInput
-                  label={t("toDate")}
-                  placeholder="MM/DD/YYYY"
-                  value={denNgay}
-                  onChange={(val) => setDenNgay(val ? new Date(val) : null)}
-                  valueFormat="DD/MM/YYYY"
-                  clearable
-                  styles={{
-                    label: {
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: "#475569",
-                      marginBottom: "6px",
-                      letterSpacing: "0.3px",
-                    },
-                    input: {
-                      borderRadius: "8px",
-                      height: "40px",
-                    },
-                  }}
-                />
+                {groupByMode === "MONTH" ? (
+                  <MonthPickerInput
+                    label="Tháng"
+                    placeholder="MM/YYYY"
+                    value={tuNgay}
+                    onChange={handleMonthChange}
+                    valueFormat="MM/YYYY"
+                    closeOnChange
+                    clearable
+                    styles={{
+                      label: {
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#475569",
+                        marginBottom: "6px",
+                        letterSpacing: "0.3px",
+                      },
+                      input: {
+                        borderRadius: "8px",
+                        height: "40px",
+                      },
+                    }}
+                  />
+                ) : (
+                  <DateInput
+                    label={t("fromDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={tuNgay}
+                    onChange={handleTuNgayChange}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: {
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#475569",
+                        marginBottom: "6px",
+                        letterSpacing: "0.3px",
+                      },
+                      input: {
+                        borderRadius: "8px",
+                        height: "40px",
+                      },
+                    }}
+                  />
+                )}
               </Box>
+
+              {groupByMode !== "MONTH" && (
+                <Box style={{ gridColumn: "span 3", minWidth: 0 }}>
+                  <DateInput
+                    label={t("toDate")}
+                    placeholder="MM/DD/YYYY"
+                    value={denNgay}
+                    onChange={handleDenNgayChange}
+                    valueFormat="DD/MM/YYYY"
+                    clearable
+                    styles={{
+                      label: {
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: "#475569",
+                        marginBottom: "6px",
+                        letterSpacing: "0.3px",
+                      },
+                      input: {
+                        borderRadius: "8px",
+                        height: "40px",
+                      },
+                    }}
+                  />
+                </Box>
+              )}
 
               <Box style={{ gridColumn: "span 3", minWidth: 0 }}>
                 <Select
@@ -1352,7 +1622,7 @@ export default function LuotRaVaoSubPage() {
                       <IconSearch size={16} />
                     )
                   }
-                  onClick={() => loadThongKeData()}
+                  onClick={handleSearch}
                   disabled={loading}
                   style={{
                     backgroundColor: "#1f5ca9",
@@ -1792,7 +2062,7 @@ export default function LuotRaVaoSubPage() {
                 <Table.Tbody>
                   {paginatedOverview.map((row, index) => {
                     const isSelected =
-                      selectedStudent?.studentId === row.studentId;
+                      selectedStudent?.sourceKey === row.sourceKey;
                     const roleTxt =
                       row.maNhom === "Sinh viên"
                         ? t("roleStudent")
@@ -1955,7 +2225,7 @@ export default function LuotRaVaoSubPage() {
               setDetailType(null);
             }}
             position="right"
-            size="xl"
+            size="60%"
             padding="lg"
             title={<Title c="#0f172a">Chi tiết lịch sử ra vào</Title>}
             styles={{
@@ -2451,6 +2721,7 @@ export default function LuotRaVaoSubPage() {
           .inout-compact-filter {
             gap: 8px !important;
             grid-template-columns:
+              minmax(95px, 1fr)
               minmax(95px, 1fr)
               minmax(95px, 1fr)
               max-content

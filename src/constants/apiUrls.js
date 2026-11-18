@@ -176,6 +176,13 @@ const API_URLS = {
       detail: `${KTX_SERVICE}/ktx-sinh-vien-cam`,
     },
 
+    sinhVienNoPhi: {
+      index: `${KTX_SERVICE}/ktx-sinh-vien-no-phi/index`,
+      paginate: `${KTX_SERVICE}/ktx-sinh-vien-no-phi/paginate`,
+      uiisDanhSach: `${KTX_SERVICE}/uiis/dm-sinh-vien-no-phi/danh-sach`,
+      uiisSync: `${KTX_SERVICE}/uiis/dm-sinh-vien-no-phi/sync`,
+    },
+
     loaiSuKien: {
       paginate: `${KTX_SERVICE}/ktx-dm-loai-su-kien/paginate`,
     },
@@ -278,9 +285,11 @@ const API_URLS = {
 
   thongKeKtx: {
     luotRaVao: `${KTX_SERVICE}/thong-ke/luot-ra-vao`,
+    thongKeVangMat: `${KTX_SERVICE}/thong-ke/vang-mat`,
     svBiCamNoPhi: `${KTX_SERVICE}/thong-ke/sv-bi-cam-no-phi`,
     theoMaSo: `${KTX_SERVICE}/thong-ke/theo-ma-so`,
     nguoiLa: `${KTX_SERVICE}/thong-ke/nguoi-la`,
+    chiTietNguoiLa: `${KTX_SERVICE}/thong-ke/nguoi-la/chi-tiet`,
     suKienRaVaoPaginate: "/ktx-su-kien-ra-vao/paginate",
   },
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useChartAnimation } from './Reveal';
 import { Card, Text, Box, Group, Stack, Anchor, Flex } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -13,6 +14,7 @@ export default function KtxDistributionChart({
   data = [],
   onViewDetails,
 }: KtxDistributionChartProps) {
+  const anim = useChartAnimation(200, 1300);
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
   const t = useTranslations("Dashboard");
 
@@ -47,6 +49,9 @@ export default function KtxDistributionChart({
                 outerRadius={75}
                 paddingAngle={3}
                 dataKey="value"
+                startAngle={90}
+                endAngle={-270}
+                {...anim}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />

@@ -27,7 +27,7 @@ function getAuthErrorMessage(error) {
 export async function refreshTokenAPI(refreshToken) {
   try {
     const API_BASE_URL = typeof window === "undefined"
-      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.API_BASE_URL
       : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
@@ -37,7 +37,6 @@ export async function refreshTokenAPI(refreshToken) {
       { timeout: AUTH_TIMEOUT_MS },
     );
 
-    console.log("refreshTokenAPI response :>> ", response.data);
     return response.data.payload;
   } catch (error) {
     console.error("Error refreshing token:", error);
@@ -48,7 +47,7 @@ export async function refreshTokenAPI(refreshToken) {
 export async function fetchCaptchaAPI() {
   try {
     const API_BASE_URL = typeof window === "undefined"
-      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.API_BASE_URL
       : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
@@ -106,7 +105,6 @@ export async function verifyCredentialsAPI({
       },
     );
 
-    console.log("verifyCredentialsAPI response :>> ", response.data);
     return response.data.payload;
   } catch (error) {
     console.error(
@@ -120,7 +118,7 @@ export async function verifyCredentialsAPI({
 export async function fetchUserAPI(accessToken) {
   try {
     const API_BASE_URL = typeof window === "undefined"
-      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.API_BASE_URL
       : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 
@@ -134,7 +132,6 @@ export async function fetchUserAPI(accessToken) {
       },
     );
 
-    console.log("fetchUserAPI response :>> ", response.data);
     return response.data.payload;
   } catch (error) {
     console.error("Error fetching user info:", error);
@@ -154,7 +151,7 @@ export async function fetchUserPermissionsAPI(
     }
 
     const API_BASE_URL = typeof window === "undefined"
-      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      ? process.env.API_BASE_URL
       : "/api/proxy";
     if (!API_BASE_URL) throw new Error("API_BASE_URL is not defined");
 

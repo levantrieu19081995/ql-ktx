@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Text, Box, Stack } from '@mantine/core';
 import { useTranslations } from 'next-intl';
+import { useChartAnimation } from './Reveal';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { StudentActivity } from './dashboardTypes';
 
@@ -34,6 +35,7 @@ function StudentTick({
 }
 
 export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
+  const anim = useChartAnimation(250);
   const t = useTranslations("Dashboard");
 
   return (
@@ -98,6 +100,7 @@ export default function TopStudentsChart({ data = [] }: TopStudentsChartProps) {
               fill="#1d4ed8"
               radius={[0, 6, 6, 0]}
               barSize={18}
+              {...anim}
             />
           </BarChart>
         </ResponsiveContainer>

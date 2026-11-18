@@ -1,4 +1,5 @@
 import React from 'react';
+import { useChartAnimation } from './Reveal';
 import { Card, Text, Box } from '@mantine/core';
 import { useTranslations } from 'next-intl';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -9,6 +10,7 @@ interface StrangerDetectionChartProps {
 }
 
 export default function StrangerDetectionChart({ data = [] }: StrangerDetectionChartProps) {
+  const anim = useChartAnimation(200, 1400);
   const t = useTranslations("Dashboard");
 
   return (
@@ -61,6 +63,7 @@ export default function StrangerDetectionChart({ data = [] }: StrangerDetectionC
               strokeWidth={3.5}
               dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6 }}
+              {...anim}
             />
           </LineChart>
         </ResponsiveContainer>

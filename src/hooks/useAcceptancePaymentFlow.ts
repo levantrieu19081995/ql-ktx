@@ -69,6 +69,7 @@ import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import { getSession } from "next-auth/react";
 import { QLDK_SERVICE } from "@/constants/servicePaths";
+import { buildSockJsUrl } from "@/utils/websocketUrl";
 
 //   giữ nguyên các util cũ (nếu bạn vẫn dùng payment flow)
 import {
@@ -77,9 +78,6 @@ import {
   doPayment,
   fetchPaymentConfigSimple,
 } from "@/utils/acceptancePaymentFlow";
-
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") || "";
-const SOCKET_URL = `${baseUrl}${QLDK_SERVICE}/stomp`;
 
 // ==============================
 // 1) Websocket tối ưu (internal)
@@ -128,8 +126,9 @@ function usePaymentWebSocket(transactionId?: string) {
     // đã có client thì thôi
     if (clientRef.current) return;
 
+    const socketUrl = buildSockJsUrl(QLDK_SERVICE);
     const client = new Client({
-      webSocketFactory: () => new SockJS(SOCKET_URL),
+      webSocketFactory: () => new SockJS(socketUrl),
       connectHeaders: { jwt: `${session.accessToken}` },
       reconnectDelay: 5000,
       // debug: (msg) => console.log("STOMP DEBUG:", msg),

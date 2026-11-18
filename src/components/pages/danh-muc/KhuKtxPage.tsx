@@ -28,6 +28,7 @@ import {
 } from "@tabler/icons-react";
 
 import CustomPagination from "@/components/common/CustomPagination";
+import { showNoti } from "@/components/common/showNoti";
 import DanhMucFeaturePage from "./DanhMucFeaturePage";
 import {
   fetchDanhMucKhuKtx,
@@ -36,6 +37,7 @@ import {
   syncDanhSachKhuUiis,
 } from "@/services/danh-muc/danhMucKtxService";
 import type { KhuKtx } from "@/types/type-danh-muc-ktx";
+import useAccountAccess from "@/hooks/useAccountAccess";
 
 type SyncStatus = "SAME" | "CHANGED" | "NEW";
 
@@ -68,6 +70,7 @@ const normalizeNumberText = (value?: string | number | null) =>
 const displayText = (value?: string | null) => normalizeString(value) || "-";
 
 export default function KhuKtxPage() {
+  const { isAdmin } = useAccountAccess();
   const [items, setItems] = useState<KhuKtx[]>([]);
   const [dsKhu, setDsKhu] = useState<{ value: string; label: string }[]>([]);
   const [maKhu, setMaKhu] = useState("");
@@ -106,7 +109,6 @@ export default function KhuKtxPage() {
     try {
       const res = await fetchDanhMucKhuKtx();
       setDsKhu([
-        { value: "-1", label: "Tất cả" },
         ...res.map((item) => ({
           value: item.khuMa || item.maKhu || "",
           label: item.khuTen || item.tenKhu || item.khuMa || item.maKhu || "",
@@ -211,12 +213,14 @@ export default function KhuKtxPage() {
         hoc_ky: hocKy,
       });
 
+      showNoti("success", "Đồng bộ danh sách khu từ UIIS thành công.");
       handleCloseSync();
       await loadDanhMucKhu();
       await loadData(1, pageSize);
       setPage(1);
     } catch (error) {
       console.error("Loi dong bo danh sach khu tu UIIS:", error);
+      showNoti("error", "Đồng bộ danh sách khu từ UIIS thất bại.");
     } finally {
       setConfirmSyncLoading(false);
     }
@@ -391,14 +395,16 @@ export default function KhuKtxPage() {
                 Làm mới
               </Button>
 
-              <Button
-                leftSection={<IconCloudDownload size={18} />}
-                color="green"
-                radius="md"
-                onClick={handleOpenSync}
-              >
-                Đồng bộ từ UIIS
-              </Button>
+              {isAdmin && (
+                <Button
+                  leftSection={<IconCloudDownload size={18} />}
+                  color="green"
+                  radius="md"
+                  onClick={handleOpenSync}
+                >
+                  Đồng bộ từ UIIS
+                </Button>
+              )}
             </Group>
           </Stack>
         }
