@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { ActionIcon, Menu, Divider } from "@mantine/core";
+import { useLocale } from "next-intl";
 import {
   IconBook2,
   IconFileText,
   IconFileInvoice,
   IconHelpCircle,
+  IconListDetails,
 } from "@tabler/icons-react";
 
 export default function DocumentMenu() {
   const [opened, setOpened] = useState(false);
+  const locale = useLocale();
 
   return (
     <Menu
@@ -40,6 +43,14 @@ export default function DocumentMenu() {
       <Menu.Dropdown>
         <Menu.Label>Tài liệu hướng dẫn</Menu.Label>
 
+        <Menu.Item
+          leftSection={<IconListDetails size={16} />}
+          onClick={() => window.open(`/${locale}/tutorial`, "_blank")}
+          c={"#0f2b52ff"}
+        >
+          Hướng dẫn sử dụng hệ thống
+        </Menu.Item>
+        <Divider />
         <Menu.Item
           leftSection={<IconFileText size={16} />}
           onClick={() => window.open("/doc/huong_dan1.pdf", "_blank")}
