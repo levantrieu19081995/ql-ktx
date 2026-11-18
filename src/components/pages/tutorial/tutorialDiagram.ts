@@ -26,13 +26,13 @@ export interface DiagramEdge {
 export const DIAGRAM_NODES: DiagramNode[] = [
   // Hàng trên: người dùng, giao diện web và nguồn bên ngoài (UIIS)
   { id: "user", x: 10, y: 30, w: 190, h: 64, line1: "Người dùng", line2: "Trình duyệt" },
-  { id: "fe", x: 290, y: 30, w: 230, h: 64, line1: "Giao diện web", line2: "Next.js + React" },
+  { id: "fe", x: 290, y: 30, w: 230, h: 64, line1: "Giao diện web", line2: "Next.js" },
   { id: "uiis", x: 1000, y: 30, w: 150, h: 64, line1: "UIIS", line2: "Hệ thống của trường" },
   // Hàng dưới: từ camera đến dữ liệu
   { id: "camera", x: 10, y: 250, w: 190, h: 64, line1: "Camera", line2: "Luồng hình ảnh" },
-  { id: "ai", x: 290, y: 250, w: 230, h: 64, line1: "Nhận diện khuôn mặt", line2: "Python + FastAPI" },
-  { id: "be", x: 670, y: 250, w: 250, h: 64, line1: "Máy chủ nghiệp vụ", line2: "Java: gateway + service" },
-  { id: "db", x: 1000, y: 250, w: 150, h: 64, line1: "Dữ liệu", line2: "MySQL + kho ảnh" },
+  { id: "ai", x: 290, y: 250, w: 230, h: 64, line1: "Nhận diện khuôn mặt", line2: "Python" },
+  { id: "be", x: 670, y: 250, w: 250, h: 64, line1: "Máy chủ nghiệp vụ", line2: "Java" },
+  { id: "db", x: 1000, y: 250, w: 150, h: 64, line1: "Dữ liệu", line2: "MySQL" },
 ];
 
 export const DIAGRAM_EDGES: DiagramEdge[] = [
