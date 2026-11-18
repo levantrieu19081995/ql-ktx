@@ -9,6 +9,8 @@
 // Nội dung nằm trong tutorialContent.ts.
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+// Font duy nhất của trang hướng dẫn (đã kèm bộ chữ tiếng Việt, chạy được khi không có Internet)
+import "@fontsource-variable/readex-pro";
 import { useLocale } from "next-intl";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
@@ -30,6 +32,7 @@ import {
   IconHistory,
   IconLayoutDashboard,
   IconListDetails,
+  IconMap2,
   IconPhoto,
   IconSchool,
   IconSettings,
@@ -45,10 +48,12 @@ import {
   IMAGE_SIZE,
   TUTORIAL_GOAL,
   TUTORIAL_GROUPS,
+  TUTORIAL_TEAM,
   TUTORIAL_TECH,
   TutorialGroup,
   TutorialIcon,
   TutorialItem,
+  TutorialMark,
 } from "./tutorialContent";
 import { DIAGRAM_EDGES, DIAGRAM_NODES, DIAGRAM_SIZE } from "./tutorialDiagram";
 
@@ -220,14 +225,40 @@ const TEN_CUM = ["Giới thiệu", "Mục tiêu", "Công nghệ", "Chức năng"
 // Thứ tự các cụm trên trang (trùng thứ tự TEN_CUM và mảng cumRef)
 const CUM = { bia: 0, mucTieu: 1, kyThuat: 2, nhom: 3, huongDan: 4 } as const;
 
+/** Độ dài đường đi (chỉ gồm lệnh M, H, V như trong tutorialDiagram.ts), để các điểm sáng chạy cùng tốc độ. */
+function doDaiDuong(d: string): number {
+  let x = 0;
+  let y = 0;
+  let tong = 0;
+  const re = /([MHV])\s*(-?\d+(?:\.\d+)?)(?:[\s,]+(-?\d+(?:\.\d+)?))?/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(d))) {
+    const a = parseFloat(m[2]);
+    if (m[1] === "M") {
+      x = a;
+      y = parseFloat(m[3]);
+    } else if (m[1] === "H") {
+      tong += Math.abs(a - x);
+      x = a;
+    } else {
+      tong += Math.abs(a - y);
+      y = a;
+    }
+  }
+  return tong;
+}
+
+const TOC_DO_DIEM_SANG = 85; // điểm ảnh mỗi giây
+
 /** Sơ đồ các phần của hệ thống nối với nhau thế nào (dữ liệu ở tutorialDiagram.ts). */
 function SoDoKetNoi() {
+  const giamChuyenDong = useReducedMotion();
   return (
     <div className="tut-diagram">
       <svg
         viewBox={`0 0 ${DIAGRAM_SIZE.width} ${DIAGRAM_SIZE.height}`}
         role="img"
-        aria-label="Sơ đồ kết nối: camera gửi hình tới dịch vụ nhận diện Python, dịch vụ này gửi kết quả cho máy chủ nghiệp vụ Java, Java đọc ghi cơ sở dữ liệu và nhận danh mục đồng bộ từ UIIS. Người dùng mở giao diện web Next.js, giao diện web gọi Java để lấy dữ liệu nghiệp vụ và gọi Python để xem camera, nhật ký và lấy mẫu."
+        aria-label="Sơ đồ kết nối: camera gửi hình tới dịch vụ nhận diện Python, dịch vụ này gửi kết quả cho máy chủ nghiệp vụ Java, Java đọc ghi cơ sở dữ liệu và nhận danh mục đồng bộ từ UIIS. Người dùng mở giao diện web Next.js, giao diện web gọi Java để lấy dữ liệu nghiệp vụ."
       >
         <defs>
           <marker
@@ -255,6 +286,33 @@ function SoDoKetNoi() {
             </text>
           </g>
         ))}
+        {/* Điểm sáng nhỏ chạy dọc các cạnh để mô tả luồng dữ liệu (tắt khi người dùng giảm chuyển động) */}
+        {!giamChuyenDong &&
+          DIAGRAM_EDGES.map((e, i) => {
+            const dai = Math.max(doDaiDuong(e.d), 1);
+            const dur = `${(dai / TOC_DO_DIEM_SANG).toFixed(2)}s`;
+            const dotLech = `${((i * 0.55) % 2).toFixed(2)}s`;
+            return (
+              <g key={`flow-${e.id}`} className="tut-flow" aria-hidden="true">
+                <circle r={4} className="tut-flow-dot">
+                  <animateMotion path={e.d} dur={dur} begin={dotLech} repeatCount="indefinite" />
+                </circle>
+                {e.both && (
+                  <circle r={4} className="tut-flow-dot is-back">
+                    <animateMotion
+                      path={e.d}
+                      dur={dur}
+                      begin={`${((i * 0.55 + dai / TOC_DO_DIEM_SANG / 2) % 4).toFixed(2)}s`}
+                      repeatCount="indefinite"
+                      keyPoints="1;0"
+                      keyTimes="0;1"
+                      calcMode="linear"
+                    />
+                  </circle>
+                )}
+              </g>
+            );
+          })}
         {DIAGRAM_NODES.map((n) => (
           <g key={n.id} className="tut-node-box">
             <rect x={n.x} y={n.y} width={n.w} height={n.h} rx={12} />
@@ -271,6 +329,94 @@ function SoDoKetNoi() {
   );
 }
 
+/**
+ * Ảnh chụp màn hình rộng hết chiều ngang khung. Nếu ảnh cao hơn chỗ trống thì cắt bớt phần đáy
+ * (hoặc đầu) sao cho các chấm số luôn nằm trong vùng nhìn thấy.
+ */
+function KhungAnh({
+  src,
+  alt,
+  marks,
+  diemNhan,
+  rong,
+}: {
+  src: string;
+  alt: string;
+  marks: TutorialMark[];
+  diemNhan: number | null;
+  rong: boolean;
+}) {
+  const khungRef = useRef<HTMLDivElement>(null);
+  const [kt, setKt] = useState({ w: 0, vh: 0, mayTinh: true });
+  useEffect(() => {
+    const el = khungRef.current;
+    // Đo bề ngang của cả slide (khung ảnh có thể được thu nhỏ nên không đo chính nó)
+    const goc = el?.closest<HTMLElement>(".tut-slide");
+    if (!el || !goc) return;
+    const capNhat = () =>
+      setKt((c) => {
+        const mayTinh = window.matchMedia("(min-width: 861px)").matches;
+        const w = goc.clientWidth;
+        const vh = window.innerHeight;
+        return c.w === w && c.vh === vh && c.mayTinh === mayTinh ? c : { w, vh, mayTinh };
+      });
+    capNhat();
+    const ro = new ResizeObserver(capNhat);
+    ro.observe(goc);
+    window.addEventListener("resize", capNhat);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", capNhat);
+    };
+  }, []);
+
+  // Chỗ trống theo chiều cao (phần còn lại của khung sau tiêu đề, nhãn, nút)
+  const khaDung = Math.max(kt.vh - (rong ? 312 : 470), 220);
+  const minY = marks.length ? marks.reduce((a, m) => Math.min(a, m.y), IMAGE_SIZE.height) : 0;
+  const maxY = marks.length ? marks.reduce((a, m) => Math.max(a, m.y), 0) : 0;
+  const dau = Math.max(0, minY - 60); // điểm bắt đầu vùng cần thấy (tính theo ảnh gốc)
+  const can = Math.min(IMAGE_SIZE.height, maxY + 44) - dau; // chiều cao cần thấy để đủ các chấm số
+
+  let tyLe = kt.w / IMAGE_SIZE.width;
+  let cat = false;
+  let dich = 0;
+  if (kt.mayTinh && kt.w > 0 && tyLe * IMAGE_SIZE.height > khaDung) {
+    cat = true;
+    // Nếu cắt rồi mà vẫn không đủ chỗ cho các chấm số thì thu nhỏ ảnh lại một chút
+    if (can > 0) tyLe = Math.min(tyLe, khaDung / can);
+    const cuaSo = khaDung / tyLe;
+    dich = Math.min(Math.max(0, maxY + 44 - cuaSo), Math.max(0, IMAGE_SIZE.height - cuaSo));
+    if (cuaSo >= can) dich = Math.min(dich, dau);
+  }
+  const rongAnh = kt.mayTinh && kt.w > 0 ? tyLe * IMAGE_SIZE.width : undefined;
+
+  return (
+    <div
+      ref={khungRef}
+      className="tut-shot-frame"
+      style={cat ? { height: khaDung, width: rongAnh } : undefined}
+    >
+      <div className="tut-shot-inner" style={cat ? { transform: `translateY(${-dich * tyLe}px)` } : undefined}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} width={IMAGE_SIZE.width} height={IMAGE_SIZE.height} draggable={false} />
+        {marks.map((m, n) => (
+          <span
+            key={n}
+            className={`tut-mark${diemNhan === n ? " is-on" : ""}`}
+            style={{
+              left: `${(m.x / IMAGE_SIZE.width) * 100}%`,
+              top: `${(m.y / IMAGE_SIZE.height) * 100}%`,
+            }}
+            aria-hidden="true"
+          >
+            {n + 1}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function TutorialPage() {
   const locale = useLocale();
   const giamChuyenDong = useReducedMotion();
@@ -280,6 +426,37 @@ export default function TutorialPage() {
   const [diemNhan, setDiemNhan] = useState<number | null>(null);
   // true: khung nội dung mở rộng, danh sách bên trái thu thành bản đồ nhỏ ở góc trái màn hình
   const [moRong, setMoRong] = useState(false);
+  // Bản đồ nhỏ khi mở rộng: nổi lên ít giây rồi tự ẩn; rê chuột hoặc bấm vào biểu tượng thì hiện lại
+  const [hienBanDo, setHienBanDo] = useState(false);
+  const henGio = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const huyHen = useCallback(() => {
+    if (henGio.current) {
+      clearTimeout(henGio.current);
+      henGio.current = null;
+    }
+  }, []);
+  const henAn = useCallback(() => {
+    huyHen();
+    henGio.current = setTimeout(() => setHienBanDo(false), 4000);
+  }, [huyHen]);
+  const hienBanDoLai = useCallback(
+    (giuLai: boolean) => {
+      setHienBanDo(true);
+      if (giuLai) huyHen();
+      else henAn();
+    },
+    [henAn, huyHen],
+  );
+  useEffect(() => {
+    if (moRong) {
+      setHienBanDo(true);
+      henAn();
+    } else {
+      setHienBanDo(false);
+      huyHen();
+    }
+    return huyHen;
+  }, [moRong, henAn, huyHen]);
   const [cumHienTai, setCumHienTai] = useState(0);
 
   const cumRef = [
@@ -296,11 +473,6 @@ export default function TutorialPage() {
 
   const hienTai = FLAT[index];
   const tong = FLAT.length;
-  // Khi mở rộng, ảnh được cắt phần đáy để rộng hết chiều ngang; vẫn giữ đủ các chấm số
-  const phanAnhHien = Math.min(
-    1,
-    ((hienTai.item.marks ?? []).reduce((a, m) => Math.max(a, m.y), 0) + 44) / IMAGE_SIZE.height,
-  );
 
   const denCum = useCallback(
     (n: number) => {
@@ -375,6 +547,54 @@ export default function TutorialPage() {
       el.scrollIntoView({ block: "start", behavior: giamChuyenDong ? "auto" : "smooth" });
     }
   }, [hienTai.item.id, giamChuyenDong]);
+
+  // Máy tính: mỗi lần lăn chuột chuyển đúng một trang (cụm). Vùng có thanh cuộn riêng
+  // (danh sách, khung nội dung) vẫn cuộn bình thường cho tới khi hết rồi mới sang trang.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 861px)");
+    let khoaDen = 0;
+    const trangHienTai = () => {
+      let tot = 0;
+      let kc = Infinity;
+      cumRef.forEach((r, i) => {
+        const top = r.current?.getBoundingClientRect().top;
+        if (top === undefined) return;
+        const d = Math.abs(top);
+        if (d < kc) {
+          kc = d;
+          tot = i;
+        }
+      });
+      return tot;
+    };
+    const conCuonDuoc = (goc: EventTarget | null, dy: number) => {
+      let el = goc instanceof HTMLElement ? goc : null;
+      while (el && el !== document.body) {
+        const oy = getComputedStyle(el).overflowY;
+        if ((oy === "auto" || oy === "scroll") && el.scrollHeight > el.clientHeight + 1) {
+          if (dy > 0 && el.scrollTop + el.clientHeight < el.scrollHeight - 1) return true;
+          if (dy < 0 && el.scrollTop > 0) return true;
+        }
+        el = el.parentElement;
+      }
+      return false;
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (!mq.matches || e.ctrlKey || Math.abs(e.deltaY) < 4 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      if (conCuonDuoc(e.target, e.deltaY)) return;
+      e.preventDefault();
+      const now = Date.now();
+      if (now < khoaDen) return;
+      const hien = trangHienTai();
+      const dich = hien + (e.deltaY > 0 ? 1 : -1);
+      if (dich < 0 || dich >= cumRef.length) return;
+      khoaDen = now + 900;
+      denCum(dich);
+    };
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [denCum]);
 
   // Phím mũi tên trái / phải chuyển mục khi đang ở cụm hướng dẫn
   useEffect(() => {
@@ -468,7 +688,6 @@ export default function TutorialPage() {
 
   return (
     <div className="tut-root">
-      <ThanhCuon nguon="trang" />
 
       {/* Điều hướng nhanh giữa 3 cụm */}
       <nav className="tut-side" aria-label="Các phần của trang">
@@ -507,6 +726,23 @@ export default function TutorialPage() {
           Xem mục tiêu
           <IconChevronDown size={18} />
         </button>
+
+        <aside className="tut-team" aria-label={TUTORIAL_TEAM.title}>
+          <p className="tut-team-title">{TUTORIAL_TEAM.title}</p>
+          {TUTORIAL_TEAM.groups.map((g) => (
+            <div key={g.name} className="tut-team-group">
+              <p className="tut-team-name">{g.name}</p>
+              <ul>
+                {g.members.map((m) => (
+                  <li key={m.name}>
+                    <span>{m.name}</span>
+                    <span className="tut-team-role">{m.role}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </aside>
       </section>
 
       {/* ───────── Cụm 2: Mục tiêu ───────── */}
@@ -547,12 +783,14 @@ export default function TutorialPage() {
           <div className="tut-stack-grid">
             {TUTORIAL_TECH.stacks.map((st) => (
               <article key={st.id} className="tut-card tut-stack">
-                <h3 className="tut-stack-name">{st.name}</h3>
-                <ul className="tut-chips">
-                  {st.tech.map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
+                <div className="tut-stack-head">
+                  <h3 className="tut-stack-name">{st.name}</h3>
+                  <ul className="tut-chips">
+                    {st.tech.map((t) => (
+                      <li key={t}>{t}</li>
+                    ))}
+                  </ul>
+                </div>
                 <p className="tut-stack-label">Dùng để</p>
                 <p className="tut-stack-purpose">{st.purpose}</p>
               </article>
@@ -575,8 +813,7 @@ export default function TutorialPage() {
             Các nhóm chức năng
           </h2>
           <p className="tut-hero-lead">
-            Hệ thống có {TUTORIAL_GROUPS.length} nhóm với {tong} chức năng. Chọn một nhóm hoặc một chức
-            năng để xem hướng dẫn.
+            Hệ thống có {TUTORIAL_GROUPS.length} nhóm với {tong} chức năng.
           </p>
 
           <div className="tut-groups">
@@ -598,15 +835,9 @@ export default function TutorialPage() {
                   <p className="tut-group-sum">{g.summary}</p>
                   <ul className="tut-gcard-list">
                     {g.items.map((it) => (
-                      <li key={it.id}>
-                        <button
-                          type="button"
-                          className="tut-gcard-item"
-                          onClick={() => chon(chiSoTheoId(it.id), { denCum3: true })}
-                        >
-                          <span className="tut-dot" aria-hidden="true" />
-                          <span>{it.title}</span>
-                        </button>
+                      <li key={it.id} className="tut-gcard-item">
+                        <span className="tut-dot" aria-hidden="true" />
+                        <span>{it.title}</span>
                       </li>
                     ))}
                   </ul>
@@ -695,38 +926,13 @@ export default function TutorialPage() {
 
                 {item.image && (
                   <figure className="tut-shot">
-                    <div
-                      className="tut-shot-frame"
-                      style={
-                        {
-                          "--vis": phanAnhHien,
-                        } as React.CSSProperties
-                      }
-                    >
-                      <div className="tut-shot-inner">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.image}
-                        alt={`Màn hình ${item.title}`}
-                        width={IMAGE_SIZE.width}
-                        height={IMAGE_SIZE.height}
-                        draggable={false}
-                      />
-                      {item.marks?.map((m, n) => (
-                        <span
-                          key={n}
-                          className={`tut-mark${diemNhan === n ? " is-on" : ""}`}
-                          style={{
-                            left: `${(m.x / IMAGE_SIZE.width) * 100}%`,
-                            top: `${(m.y / IMAGE_SIZE.height) * 100}%`,
-                          }}
-                          aria-hidden="true"
-                        >
-                          {n + 1}
-                        </span>
-                      ))}
-                      </div>
-                    </div>
+                    <KhungAnh
+                      src={item.image}
+                      alt={`Màn hình ${item.title}`}
+                      marks={item.marks ?? []}
+                      diemNhan={diemNhan}
+                      rong={moRong}
+                    />
                     {item.marks && item.marks.length > 0 && (
                       <ol className="tut-legend">
                         {item.marks.map((m, n) => (
@@ -784,13 +990,13 @@ export default function TutorialPage() {
         {moRong ? (
           /* Cột điều khiển bên phải khi mở rộng: chuyển mục (dọc), nút biểu tượng, bản đồ nhỏ */
           cumHienTai === CUM.huongDan && (
+            <>
             <motion.div
-              className="tut-dock"
-              initial={giamChuyenDong ? false : { opacity: 0, x: -24 }}
+              className="tut-vbar"
+              initial={giamChuyenDong ? false : { opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: giamChuyenDong ? 0 : 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
-              <div className="tut-dock-bar">
                 <div className="tut-dock-nav" role="group" aria-label="Chuyển mục">
                   <button
                     type="button"
@@ -817,8 +1023,34 @@ export default function TutorialPage() {
                   </button>
                 </div>
                 {nutHanhDong(true)}
-              </div>
-
+                <button
+                  type="button"
+                  className="tut-open is-ghost tut-mapbtn"
+                  aria-label="Bản đồ các chức năng"
+                  aria-expanded={hienBanDo}
+                  title="Bản đồ"
+                  onPointerEnter={() => hienBanDoLai(true)}
+                  onPointerLeave={henAn}
+                  onClick={() => hienBanDoLai(false)}
+                >
+                  <IconMap2 size={20} />
+                </button>
+            </motion.div>
+            <AnimatePresence>
+            {hienBanDo && (
+            <motion.div
+              key="dock"
+              className="tut-dock"
+              style={{ transformOrigin: "bottom right" }}
+              onPointerEnter={huyHen}
+              onPointerLeave={henAn}
+              onFocus={huyHen}
+              onBlur={henAn}
+              initial={giamChuyenDong ? false : { opacity: 0, scale: 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={giamChuyenDong ? { opacity: 0 } : { opacity: 0, scale: 0.85 }}
+              transition={{ duration: giamChuyenDong ? 0 : 0.2, ease: [0.22, 1, 0.36, 1] }}
+            >
               <nav className="tut-mini" aria-label="Bản đồ các chức năng">
                 <button
                   type="button"
@@ -856,6 +1088,9 @@ export default function TutorialPage() {
                 ))}
               </nav>
             </motion.div>
+            )}
+            </AnimatePresence>
+            </>
           )
         ) : (
           <div className="tut-pill" role="group" aria-label="Chuyển mục">
@@ -905,12 +1140,16 @@ const CSS = `
   --tut-surface-2: #181818;
   --tut-line: #2a2a2a;
   --tut-line-strong: #454545;
+  --tut-font: "Readex Pro Variable", "Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--tut-font);
   position: relative;
   color: var(--tut-text);
   background: #000;
   color-scheme: dark;
 }
 html:has(.tut-root), body:has(.tut-root) { background: #000; }
+/* Một font duy nhất cho mọi chữ trong trang (kể cả nút, ô tóm tắt và chữ trong sơ đồ) */
+.tut-root, .tut-root * { font-family: var(--tut-font); }
 
 /* Khối nội dung: màu phẳng, viền mảnh, không bóng, không mờ */
 .tut-card {
@@ -930,6 +1169,18 @@ html:has(.tut-root), body:has(.tut-root) { background: #000; }
 html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 
 .tut-top { display: flex; align-items: center; gap: 28px; }
+.tut-team {
+  position: absolute; bottom: 24px; right: calc(24px - max(0px, (100vw - 1400px) / 2));
+  width: 320px; padding: 14px 18px 16px; border-radius: 10px;
+  background: var(--tut-surface); border: 1px solid var(--tut-line);
+}
+.tut-team-title { margin: 0 0 10px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tut-dim); }
+.tut-team-group + .tut-team-group { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--tut-line); }
+.tut-team-name { margin: 0 0 6px; font-size: 13px; font-weight: 700; color: var(--tut-accent); }
+.tut-team ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.tut-team li { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 1.45; }
+.tut-team li > span:first-child { font-weight: 600; }
+.tut-team-role { color: var(--tut-dim); text-align: right; }
 .tut-s0-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 0; }
 .tut-logo { flex: none; width: 192px; height: 192px; border-radius: 50%; background: #fff; padding: 6px; }
 .tut-eyebrow { margin: 0; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tut-dim); }
@@ -940,23 +1191,27 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 .tut-hero-lead { margin: 16px 0 0; max-width: 68ch; font-size: 19px; line-height: 1.65; color: var(--tut-dim); }
 
 /* Cụm công nghệ */
-.tut-tech-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 20px 0; }
+.tut-tech { max-width: 1700px; padding-top: 14px; }
+.tut-tech-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-start; padding: 0; }
 .tut-tech .tut-hero-title { font-size: 34px; }
 .tut-tech .tut-hero-lead { margin-top: 10px; font-size: 16px; }
 .tut-stack-grid { margin-top: 22px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .tut-stack { padding: 18px 18px 20px; display: flex; flex-direction: column; min-width: 0; }
-.tut-stack-name { margin: 0; font-size: 18px; font-weight: 700; }
-.tut-chips { list-style: none; margin: 10px 0 14px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tut-stack-name { margin: 0; font-size: 18px; font-weight: 700; line-height: 1.25; }
+.tut-stack-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 50px; margin-bottom: 8px; }
+.tut-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; flex: none; }
 .tut-chips li { padding: 3px 8px; border: 1px solid var(--tut-line-strong); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--tut-accent); }
 .tut-stack-label { margin: 0 0 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tut-dim); }
 .tut-stack-purpose { margin: 0; font-size: 14px; line-height: 1.55; }
-.tut-diagram { margin-top: 20px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--tut-accent) transparent; }
-.tut-diagram svg { display: block; width: 100%; min-width: 900px; max-height: 300px; margin: 0 auto; }
+.tut-diagram { flex: 1; min-height: 340px; margin-top: 14px; display: flex; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--tut-accent) transparent; }
+.tut-diagram svg { display: block; width: 100%; height: 100%; min-width: 900px; margin: 0 auto; }
 .tut-node-box rect { fill: #16254a; stroke: #2a437a; stroke-width: 1; }
 .tut-node-box text { font-family: inherit; }
 .tut-node-box .l1 { fill: #a9d0ff; font-size: 15px; font-weight: 700; }
 .tut-node-box .l2 { fill: #8fb4e6; font-size: 13px; }
 .tut-edge { fill: none; stroke: #d4d4d4; stroke-width: 1.3; }
+.tut-flow-dot { fill: #00afef; }
+.tut-flow-dot.is-back { fill: #f5b800; }
 .tut-edge-label { fill: #a3a3a3; font-family: inherit; font-size: 12px; }
 
 .tut-goal-grid { list-style: none; margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
@@ -964,7 +1219,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 .tut-goal-no { font-size: 28px; font-weight: 700; line-height: 1; color: var(--tut-accent); }
 
 .tut-next {
-  appearance: none; font: inherit; cursor: pointer; align-self: center;
+  appearance: none; font: inherit; cursor: pointer; align-self: center; flex: none; margin-top: 20px;
   min-height: 44px; padding: 0 20px; display: inline-flex; align-items: center; gap: 8px;
   border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--tut-text);
   background: transparent; border: 1px solid var(--tut-line-strong);
@@ -973,26 +1228,44 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 
 .tut-groups { margin-top: 34px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
 .tut-gcard { padding: 18px 16px 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.tut-gcard.is-active { border-color: var(--tut-accent); }
 .tut-gcard-head {
   appearance: none; font: inherit; color: inherit; background: none; border: 0; cursor: pointer;
   text-align: left; padding: 0; display: flex; flex-direction: column; gap: 4px;
 }
 .tut-group-icon {
   width: 44px; height: 44px; border-radius: 8px; display: grid; place-items: center;
-  background: var(--tut-surface-2); border: 1px solid var(--tut-line); color: var(--tut-accent); margin-bottom: 8px;
+  background: var(--tut-accent); border: 1px solid var(--tut-accent); color: #000; margin-bottom: 8px;
 }
-.tut-gcard.is-active .tut-group-icon, .tut-gcard-head:hover .tut-group-icon { background: var(--tut-accent); border-color: var(--tut-accent); color: #000; }
 .tut-group-name { font-size: 18px; font-weight: 700; }
 .tut-group-count { font-size: 12.5px; color: var(--tut-accent); font-weight: 600; }
 .tut-group-sum { margin: 2px 0 8px; font-size: 13.5px; line-height: 1.5; color: var(--tut-dim); }
 .tut-gcard-list { list-style: none; margin: 0; padding: 8px 0 0; border-top: 1px solid var(--tut-line); display: grid; gap: 2px; }
 .tut-gcard-item {
-  appearance: none; font: inherit; color: var(--tut-text); background: none; border: 0; cursor: pointer;
-  width: 100%; min-height: 36px; padding: 4px 6px; display: flex; align-items: center; gap: 10px;
+  color: var(--tut-text); width: 100%; min-height: 36px; padding: 4px 6px; display: flex; align-items: center; gap: 10px;
   text-align: left; font-size: 13.5px; line-height: 1.35; border-radius: 6px;
 }
-.tut-gcard-item:hover { background: var(--tut-surface-2); }
+
+/* Màn hình máy tính: nội dung sát mép trên, chữ và thẻ lớn dần cho vừa hết chiều cao màn hình */
+@media (min-width: 861px) {
+  .tut-s1, .tut-s2, .tut-s3 { max-width: 1700px; padding-top: 14px; }
+  .tut-s1-body, .tut-s2-body { justify-content: flex-start; min-height: 0; padding: 0; }
+  .tut-s1 .tut-hero-title, .tut-s2 .tut-hero-title { font-size: 44px; }
+  .tut-s1 .tut-hero-lead, .tut-s2 .tut-hero-lead { max-width: none; font-size: 22px; }
+  .tut-goal-grid {
+    flex: 1; min-height: 0; margin: 24px 0 0; grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr); gap: 20px;
+  }
+  .tut-goal-card { padding: 28px 36px; justify-content: center; gap: 16px; font-size: 26px; line-height: 1.45; }
+  .tut-goal-no { font-size: 56px; }
+  .tut-groups { flex: 1; min-height: 0; margin-top: 24px; gap: 18px; }
+  .tut-gcard { padding: 24px 22px 18px; gap: 8px; }
+  .tut-group-icon { width: 56px; height: 56px; margin-bottom: 12px; }
+  .tut-group-name { font-size: 24px; }
+  .tut-group-count { font-size: 14px; }
+  .tut-group-sum { margin: 4px 0 12px; font-size: 16px; }
+  .tut-gcard-list { padding-top: 12px; gap: 4px; }
+  .tut-gcard-item { min-height: 48px; font-size: 17px; line-height: 1.35; }
+}
 
 /* Cụm 3 */
 .tut-s3 { height: 100dvh; padding-top: 24px; padding-bottom: 20px; }
@@ -1040,7 +1313,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 /* Ảnh chụp màn hình + chấm số */
 .tut-shot { margin: 18px 0 0; }
 .tut-shot-frame {
-  position: relative; width: min(100%, calc((100dvh - 470px) * 1.6)); min-width: min(100%, 520px);
+  position: relative; width: 100%;
   border-radius: 8px; overflow: hidden; border: 1px solid var(--tut-line-strong); background: #fff;
 }
 .tut-shot-inner { position: relative; }
@@ -1128,30 +1401,41 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 .tut-mini-dot.is-active { background: var(--tut-accent); border-color: var(--tut-accent); }
 /* Cột điều khiển bên phải khi mở rộng */
 .tut-dock {
-  position: fixed; z-index: 15; left: 16px; bottom: 20px; width: 236px;
+  position: fixed; z-index: 16; right: 68px; bottom: 24px; width: 236px;
   display: flex; flex-direction: column; gap: 12px;
 }
-.tut-dock-bar { flex: none; display: flex; align-items: center; gap: 8px; }
+/* Cụm chuyển mục + nút biểu tượng: cột dọc ở mép phải, ngay dưới dãy chấm điều hướng */
+.tut-vbar {
+  position: fixed; z-index: 15; right: 7px; top: calc(50% + 100px); width: 46px;
+  display: flex; flex-direction: column; gap: 8px;
+}
 .tut-dock-nav {
-  flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 4px;
-  min-height: 46px; padding: 4px; border-radius: 10px; background: var(--tut-surface); border: 1px solid var(--tut-line);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px 0; border-radius: 10px; background: var(--tut-surface); border: 1px solid var(--tut-line);
 }
 .tut-dock-step {
-  appearance: none; cursor: pointer; flex: none; width: 34px; height: 36px; padding: 0; border-radius: 8px;
-  display: grid; place-items: center; color: var(--tut-text);
-  background: var(--tut-surface-2); border: 1px solid var(--tut-line-strong);
+  appearance: none; cursor: pointer; flex: none; width: 36px; height: 34px; padding: 0; border-radius: 8px;
+  display: grid; place-items: center; color: #000;
+  background: var(--tut-accent); border: 1px solid var(--tut-accent);
 }
-.tut-dock-step:hover:not(:disabled) { background: #232323; }
+.tut-dock-step svg { transform: rotate(90deg); }
+.tut-dock-step:hover:not(:disabled) { background: #33c1f5; border-color: #33c1f5; }
 .tut-dock-step:disabled { opacity: 0.4; cursor: default; }
-.tut-dock-count { font-size: 15px; font-weight: 700; white-space: nowrap; }
-.tut-dock .tut-actions { margin: 0; gap: 8px; flex-wrap: nowrap; flex: none; }
-.tut-dock .tut-actions .tut-open { width: 46px; min-height: 46px; padding: 0; justify-content: center; }
-.tut-dock .tut-actions .tut-expand { margin-left: 0; }
-.tut-dock .tut-open-label { display: none; }
+.tut-dock-count { font-size: 13px; font-weight: 700; white-space: nowrap; }
+.tut-vbar .tut-actions { margin: 0; gap: 8px; flex-direction: column; flex-wrap: nowrap; }
+.tut-vbar .tut-actions .tut-open { width: 46px; min-height: 46px; padding: 0; justify-content: center; }
+.tut-vbar .tut-actions .tut-expand { margin-left: 0; }
+/* Trong cột dọc, nút mở trang không tô xanh (màu xanh dành cho nút Trước/Sau) */
+.tut-vbar .tut-actions .tut-open:not(.is-ghost) {
+  color: var(--tut-text); background: transparent; border-color: var(--tut-line-strong);
+}
+.tut-vbar .tut-actions .tut-open:not(.is-ghost):hover { background: var(--tut-surface-2); border-color: var(--tut-dim); }
+.tut-vbar .tut-open-label { display: none; }
+.tut-vbar > .tut-mapbtn { width: 46px; min-height: 46px; padding: 0; justify-content: center; }
 @media (min-width: 861px) {
   .tut-s3 { transition: padding-left 0.3s ease; }
   /* Mở rộng: bỏ giới hạn bề ngang, khung nội dung trải tới sát mép phải (chừa chỗ cho chấm điều hướng) */
-  .tut-s3.has-dock { max-width: none; padding-left: 284px; padding-right: 64px; }
+  .tut-s3.has-dock { max-width: none; padding-left: 56px; padding-right: 64px; }
   .tut-main { transition: grid-template-columns 0.3s ease, column-gap 0.3s ease; }
   .tut-main.is-wide { grid-template-columns: 0px minmax(0, 1fr); column-gap: 0; }
   .tut-rail { transition: opacity 0.2s ease; }
@@ -1168,8 +1452,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
   .tut-slide.is-wide .tut-summary { margin-top: 6px; font-size: 14px; max-width: none; }
   .tut-slide.is-wide > .tut-shot { display: contents; }
   .tut-slide.is-wide .tut-shot-frame {
-    grid-column: 1 / -1; grid-row: 4; margin-top: 14px; overflow: hidden;
-    width: min(100%, calc((100dvh - 312px) / (var(--vis) * 0.625))); max-height: calc(100dvh - 312px);
+    grid-column: 1 / -1; grid-row: 4; margin-top: 14px;
   }
   .tut-slide.is-wide .tut-mark { width: 38px; height: 38px; margin: -19px 0 0 -19px; font-size: 26px; }
   /* Hai hàng dưới ảnh chừa chỗ cho bản đồ nhỏ ở góc trái */
@@ -1179,7 +1462,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
   .tut-slide.is-wide > .tut-more { grid-column: 1 / -1; grid-row: 6; margin: 6px 0 0; }
 }
 @media (max-width: 860px) {
-  .tut-expand, .tut-dock { display: none; }
+  .tut-expand, .tut-dock, .tut-vbar { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .tut-main, .tut-rail, .tut-s3 { transition: none; }
@@ -1256,8 +1539,12 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
   .tut-screen { min-height: 0; padding: 20px 16px; scroll-snap-align: none; }
   .tut-s1-body, .tut-s2-body, .tut-tech-body { padding: 28px 0 20px; justify-content: flex-start; }
   .tut-tech .tut-hero-title { font-size: 28px; }
+  .tut-diagram { flex: none; min-height: 0; }
+  .tut-diagram svg { height: auto; }
+  .tut-tech-body { padding: 28px 0 20px; }
   .tut-stack-grid { grid-template-columns: 1fr; }
   .tut-s0 { min-height: 100dvh; }
+  .tut-team { position: static; width: 100%; margin-top: 8px; }
   .tut-top { flex-direction: column; text-align: center; gap: 20px; }
   .tut-logo { width: 140px; height: 140px; padding: 4px; }
   .tut-title { font-size: 28px; }

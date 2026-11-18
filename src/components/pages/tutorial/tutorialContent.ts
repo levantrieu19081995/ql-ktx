@@ -568,35 +568,56 @@ export interface TutorialStack {
 export const TUTORIAL_TECH = {
   title: "Công nghệ và cách kết nối",
   lead:
-    "Hệ thống gồm bốn phần chạy riêng, nối với nhau qua mạng nội bộ. Người dùng chỉ làm việc trên giao diện web, các phần còn lại chạy phía sau.",
+    "Hệ thống gồm 4 phần.",
   stacks: [
     {
       id: "fe",
       name: "Giao diện web",
-      tech: ["Next.js", "React", "TypeScript", "Mantine"],
+      tech: ["Next.js"],
       purpose:
         "Hiển thị Tổng quan, Lịch sử, Camera, Thống kê và Danh mục cho người quản lý. Máy chủ Next.js giữ phiên đăng nhập và chuyển yêu cầu tới Java và Python, trình duyệt không gọi thẳng vào các máy chủ đó.",
     },
     {
       id: "be",
       name: "Máy chủ nghiệp vụ",
-      tech: ["Java", "API Gateway", "Nhiều service"],
+      tech: ["Java"],
       purpose:
         "Quản lý tài khoản, vai trò, phân quyền, danh mục sinh viên, phòng, khu, danh sách bị cấm và nợ phí. Trả số liệu thống kê, lịch sử ra vào và đồng bộ danh mục từ UIIS.",
     },
     {
       id: "ai",
       name: "Nhận diện khuôn mặt (AI)",
-      tech: ["Python", "FastAPI"],
+      tech: ["Python"],
       purpose:
         "Nhận hình từ camera, nhận diện sinh viên và cán bộ, phát hiện người lạ và nghi giả mạo, kiểm tra bị cấm hoặc nợ phí. Cũng là nơi lưu mẫu khuôn mặt khi lấy mẫu mới.",
     },
     {
       id: "data",
       name: "Dữ liệu",
-      tech: ["Cơ sở dữ liệu", "Kho ảnh"],
+      tech: ["MySQL"],
       purpose:
         "Lưu danh mục, lịch sử ra vào, danh sách bị cấm và nợ phí, tài khoản, phân quyền và ảnh chụp lúc quét. Dữ liệu sinh viên, phòng, khu được đồng bộ từ UIIS.",
     },
   ] as TutorialStack[],
+};
+
+/** Thành viên dự án, hiện ở góc dưới phải của trang bìa. */
+export const TUTORIAL_TEAM = {
+  title: "Thành viên dự án",
+  groups: [
+    {
+      name: "Nhóm R&D",
+      members: [
+        { name: "Đoàn Gia Thiều", role: "FastAPI" },
+        { name: "Nguyễn Khoa", role: "FastAPI" },
+      ],
+    },
+    {
+      name: "Nhóm G2B",
+      members: [
+        { name: "Diệp Ngô Minh Khôi", role: "BE Java service" },
+        { name: "Lê Văn Triệu", role: "FE UX/UI" },
+      ],
+    },
+  ],
 };
