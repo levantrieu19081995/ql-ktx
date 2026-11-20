@@ -34,6 +34,7 @@ import {
   IconListDetails,
   IconMap2,
   IconPhoto,
+  IconPlayerPlay,
   IconSchool,
   IconSettings,
   IconShield,
@@ -43,6 +44,7 @@ import {
   IconUserQuestion,
   IconUsers,
   IconVideo,
+  IconX,
 } from "@tabler/icons-react";
 import {
   IMAGE_SIZE,
@@ -220,6 +222,9 @@ function ThanhCuon({ nguon }: { nguon: "trang" | React.RefObject<HTMLElement | n
     </div>
   );
 }
+
+/** Video hướng dẫn nằm trong public/tutorial, mở được không cần đăng nhập. */
+const VIDEO_HUONG_DAN = "/tutorial/huong-dan-ktx.mp4";
 
 const TEN_CUM = ["Giới thiệu", "Mục tiêu", "Công nghệ", "Chức năng", "Hướng dẫn"];
 // Thứ tự các cụm trên trang (trùng thứ tự TEN_CUM và mảng cumRef)
@@ -426,6 +431,9 @@ export default function TutorialPage() {
   const [diemNhan, setDiemNhan] = useState<number | null>(null);
   // true: khung nội dung mở rộng, danh sách bên trái thu thành bản đồ nhỏ ở góc trái màn hình
   const [moRong, setMoRong] = useState(false);
+  const [moVideo, setMoVideo] = useState(false);
+  const moVideoRef = useRef(false);
+  moVideoRef.current = moVideo;
   // Bản đồ nhỏ khi mở rộng: nổi lên ít giây rồi tự ẩn; rê chuột hoặc bấm vào biểu tượng thì hiện lại
   const [hienBanDo, setHienBanDo] = useState(false);
   const henGio = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -548,6 +556,16 @@ export default function TutorialPage() {
     }
   }, [hienTai.item.id, giamChuyenDong]);
 
+  // Esc đóng cửa sổ video
+  useEffect(() => {
+    if (!moVideo) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoVideo(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [moVideo]);
+
   // Máy tính: mỗi lần lăn chuột chuyển đúng một trang (cụm). Vùng có thanh cuộn riêng
   // (danh sách, khung nội dung) vẫn cuộn bình thường cho tới khi hết rồi mới sang trang.
   useEffect(() => {
@@ -580,6 +598,7 @@ export default function TutorialPage() {
       return false;
     };
     const onWheel = (e: WheelEvent) => {
+      if (moVideoRef.current) { e.preventDefault(); return; }
       if (!mq.matches || e.ctrlKey || Math.abs(e.deltaY) < 4 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
       if (conCuonDuoc(e.target, e.deltaY)) return;
       e.preventDefault();
@@ -719,6 +738,10 @@ export default function TutorialPage() {
           <div>
             <p className="tut-eyebrow">Quản lý ký túc xá</p>
             <h1 className="tut-title">Hướng dẫn sử dụng hệ thống</h1>
+            <button type="button" className="tut-video-btn" onClick={() => setMoVideo(true)}>
+              <IconPlayerPlay size={20} />
+              Xem video hướng dẫn
+            </button>
           </div>
         </header>
         </div>
@@ -1126,6 +1149,23 @@ export default function TutorialPage() {
         )}
       </section>
 
+      {moVideo && (
+        <div className="tut-vid" role="dialog" aria-modal="true" aria-label="Video hướng dẫn" onClick={() => setMoVideo(false)}>
+          <div className="tut-vid-box" onClick={(e) => e.stopPropagation()}>
+            <div className="tut-vid-bar">
+              <span>Video hướng dẫn sử dụng hệ thống</span>
+              <a href={VIDEO_HUONG_DAN} target="_blank" rel="noopener noreferrer">
+                Mở ở tab mới
+              </a>
+              <button type="button" onClick={() => setMoVideo(false)} aria-label="Đóng video" title="Đóng (Esc)">
+                <IconX size={20} />
+              </button>
+            </div>
+            <video src={VIDEO_HUONG_DAN} controls autoPlay playsInline preload="metadata" />
+          </div>
+        </div>
+      )}
+
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
     </div>
   );
@@ -1169,6 +1209,30 @@ html:has(.tut-root), body:has(.tut-root) { background: #000; }
 html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 
 .tut-top { display: flex; align-items: center; gap: 28px; }
+.tut-video-btn {
+  appearance: none; font: inherit; cursor: pointer; margin-top: 22px; min-height: 48px; padding: 0 22px;
+  display: inline-flex; align-items: center; gap: 10px; border-radius: 8px;
+  font-size: 16px; font-weight: 600; color: #000; background: var(--tut-accent); border: 1px solid var(--tut-accent);
+}
+.tut-video-btn:hover { background: #33c1f5; border-color: #33c1f5; }
+.tut-vid {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px;
+  background: rgba(0, 0, 0, 0.9);
+}
+.tut-vid-box {
+  width: min(1200px, 100%); border-radius: 10px; overflow: hidden;
+  background: var(--tut-surface); border: 1px solid var(--tut-line-strong);
+}
+.tut-vid-bar { display: flex; align-items: center; gap: 16px; padding: 10px 14px; font-size: 15px; font-weight: 600; }
+.tut-vid-bar span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tut-vid-bar a { font-size: 14px; color: var(--tut-accent); text-decoration: none; white-space: nowrap; }
+.tut-vid-bar a:hover { text-decoration: underline; }
+.tut-vid-bar button {
+  appearance: none; cursor: pointer; width: 36px; height: 36px; display: grid; place-items: center;
+  color: var(--tut-text); background: transparent; border: 1px solid var(--tut-line-strong); border-radius: 8px;
+}
+.tut-vid-bar button:hover { background: var(--tut-surface-2); }
+.tut-vid video { display: block; width: 100%; max-height: calc(100dvh - 120px); background: #000; }
 .tut-team {
   position: absolute; bottom: 24px; right: calc(24px - max(0px, (100vw - 1400px) / 2));
   width: 320px; padding: 14px 18px 16px; border-radius: 10px;
