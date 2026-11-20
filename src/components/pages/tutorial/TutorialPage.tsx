@@ -499,9 +499,6 @@ export default function TutorialPage() {
       if (i !== index) {
         setHuong(i > index ? 1 : -1);
         setIndex(i);
-        try {
-          window.history.replaceState(null, "", `#${FLAT[i].item.id}`);
-        } catch {}
       }
       setMoMucLuc(false);
       if (opts?.denCum3) denCum(CUM.huongDan);
@@ -509,7 +506,22 @@ export default function TutorialPage() {
     [denCum, index, tong],
   );
 
-  // Mở thẳng một mục qua đường dẫn dạng /tutorial#camera
+  // Tải lại trang thì về đầu trang (không để trình duyệt tự khôi phục vị trí cuộn cũ)
+  useEffect(() => {
+    let cu: ScrollRestoration | null = null;
+    try {
+      cu = window.history.scrollRestoration;
+      window.history.scrollRestoration = "manual";
+    } catch {}
+    if (!window.location.hash) window.scrollTo(0, 0);
+    return () => {
+      try {
+        if (cu) window.history.scrollRestoration = cu;
+      } catch {}
+    };
+  }, []);
+
+  // Mở thẳng một mục qua đường dẫn dạng /tutorial#camera (đường dẫn không tự thêm #mục khi bấm chuyển trang)
   useEffect(() => {
     const doc = (cuon: boolean) => {
       const i = indexTuHash(window.location.hash);
@@ -738,13 +750,13 @@ export default function TutorialPage() {
           <div>
             <p className="tut-eyebrow">Quản lý ký túc xá</p>
             <h1 className="tut-title">Hướng dẫn sử dụng hệ thống</h1>
-            <button type="button" className="tut-video-btn" onClick={() => setMoVideo(true)}>
-              <IconPlayerPlay size={20} />
-              Xem video hướng dẫn
-            </button>
           </div>
         </header>
         </div>
+        <button type="button" className="tut-video-btn" onClick={() => setMoVideo(true)}>
+          <IconPlayerPlay size={20} />
+          Xem video hướng dẫn
+        </button>
         <button type="button" className="tut-next" onClick={() => denCum(CUM.mucTieu)}>
           Xem mục tiêu
           <IconChevronDown size={18} />
@@ -1210,7 +1222,8 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
 
 .tut-top { display: flex; align-items: center; gap: 28px; }
 .tut-video-btn {
-  appearance: none; font: inherit; cursor: pointer; margin-top: 22px; min-height: 48px; padding: 0 22px;
+  position: absolute; bottom: 24px; left: calc(24px - max(0px, (100vw - 1400px) / 2));
+  appearance: none; font: inherit; cursor: pointer; min-height: 48px; padding: 0 22px;
   display: inline-flex; align-items: center; gap: 10px; border-radius: 8px;
   font-size: 16px; font-weight: 600; color: #000; background: var(--tut-accent); border: 1px solid var(--tut-accent);
 }
@@ -1609,6 +1622,7 @@ html:has(.tut-root) { scroll-snap-type: y proximity; scroll-behavior: auto; }
   .tut-stack-grid { grid-template-columns: 1fr; }
   .tut-s0 { min-height: 100dvh; }
   .tut-team { position: static; width: 100%; margin-top: 8px; }
+  .tut-video-btn { position: static; width: 100%; justify-content: center; margin-top: 8px; }
   .tut-top { flex-direction: column; text-align: center; gap: 20px; }
   .tut-logo { width: 140px; height: 140px; padding: 4px; }
   .tut-title { font-size: 28px; }

@@ -6,7 +6,9 @@
     # Server cũ không nhận SFTP mặc định của OpenSSH mới: thêm cờ này để dùng SCP legacy (scp -O).
     [switch]$LegacyScp,
     # Không hỏi xác nhận trước khi upload.
-    [switch]$Yes
+    [switch]$Yes,
+    # Gói zip đã upload sẵn lên server (ví dụ ktx-frontend-20261120-132837.zip): chỉ chạy lại bước giải nén + PM2.
+    [string]$RemoteOnlyZip = ''
 )
 
 # Cách dùng (từ thư mục gốc dự án):
@@ -35,6 +37,10 @@ $LocalPort = 3000
 
 $Stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $ZipName = "ktx-frontend-$Stamp.zip"
+if ($RemoteOnlyZip) {
+    $ZipName = $RemoteOnlyZip
+    $Stamp = ($ZipName -replace '^ktx-frontend-', '') -replace '\.zip$', ''
+}
 $LocalZip = Join-Path $ArtifactsDir $ZipName
 
 function Invoke-Checked([string]$FilePath, [string[]]$Arguments) {
@@ -45,6 +51,7 @@ function Invoke-Checked([string]$FilePath, [string[]]$Arguments) {
 }
 
 # --- Bước 1: build -----------------------------------------------------------
+if (-not $RemoteOnlyZip) {
 if ($SkipBuild) {
     Write-Host '[1/4] Bỏ qua build, dùng .next hiện có.' -ForegroundColor Yellow
     if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot '.next\standalone\server.js'))) {
@@ -78,6 +85,7 @@ if ($Action -eq 'build') {
     Write-Host 'Build hoàn tất, chưa deploy.' -ForegroundColor Green
     exit 0
 }
+}
 
 # --- Cảnh báo trước khi đưa lên server ------------------------------------------
 Push-Location $ProjectRoot
@@ -92,7 +100,7 @@ if ($dirty -gt 0) {
     Write-Host "Lưu ý: còn $dirty file đã sửa chưa commit; gói này build từ mã đang có trên máy." -ForegroundColor Yellow
 }
 if ($unpushed -gt 0) {
-    Write-Host "Lưu ý: còn $unpushed commit chưa đẩy lên GitLab." -ForegroundColor Yellow
+    Write-Host "Lưu ý: còn $unpushed commit chưa đẩy lên GitHub." -ForegroundColor Yellow
 }
 
 $Remote = "$ServerUser@$ServerHost"
@@ -107,11 +115,16 @@ if (-not $Yes) {
 }
 
 # --- Bước 3: upload -----------------------------------------------------------
-Write-Host "[3/4] Upload $ZipName lên $Remote..." -ForegroundColor Cyan
-$scpArgs = @()
-if ($LegacyScp) { $scpArgs += '-O' }
-$scpArgs += @($LocalZip, "$Remote`:$RemoteFrontendDir/$ZipName")
-Invoke-Checked 'scp.exe' $scpArgs
+if ($RemoteOnlyZip) {
+    Write-Host "[3/4] Bỏ qua upload, dùng $ZipName đã có trên server." -ForegroundColor Yellow
+}
+else {
+    Write-Host "[3/4] Upload $ZipName lên $Remote..." -ForegroundColor Cyan
+    $scpArgs = @()
+    if ($LegacyScp) { $scpArgs += '-O' }
+    $scpArgs += @($LocalZip, "$Remote`:$RemoteFrontendDir/$ZipName")
+    Invoke-Checked 'scp.exe' $scpArgs
+}
 
 # --- Bước 4: giải nén, đổi `current`, PM2, kiểm tra, tự quay lại nếu lỗi --------
 Write-Host "[4/4] Giải nén trên server, gỡ $Pm2ServiceName cũ rồi chạy lại từ bản mới..." -ForegroundColor Cyan
