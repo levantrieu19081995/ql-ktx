@@ -93,4 +93,4 @@ KTX features read from two different sources, and mixing them up is the most com
 
 ## Git
 
-Branches: `main`, `develop` (active), `feature/*`. Push to the `github` remote (`https://github.com/levantrieu19081995/ql-ktx.git`, public); `develop` tracks `github/develop`. `gitlab.cusc.vn` (the `origin` remote) is no longer used, so don't push there. Commit messages in this repo are short Vietnamese (no diacritics) lines prefixed with the author name.
+Branches: `main`, `develop` (active), `feature/*`. Push to the `github` remote (`https://github.com/levantrieu19081995/ql-ktx.git`, public); `develop` tracks `github/develop`. The old `gitlab.cusc.vn` remote (`origin`) was removed and is no longer used. Commit messages in this repo are short Vietnamese (no diacritics) lines prefixed with the author name.
