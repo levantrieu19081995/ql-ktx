@@ -14,8 +14,9 @@
 #   npm run build-deploy   # build + đóng gói + upload + giải nén + chạy PM2 trên server
 #
 # Mỗi lần deploy tạo release mới trong frontend/releases/<ngày-giờ>, đổi liên kết `current`,
-# rồi `pm2 startOrReload` đúng tiến trình ktx_frontend. Nếu kiểm tra sau khi chạy bị lỗi thì
-# tự quay `current` về bản trước. Không đụng tới ktx_eureka, ktx_gateway, ktx_kytucxa, ktx_user.
+# rồi gỡ hẳn tiến trình ktx_frontend cũ (`pm2 delete`) và chạy lại từ bản mới (`pm2 start`) để không bị
+# đụng cổng hay bộ nhớ của bản cũ. Nếu cổng vẫn bị tiến trình lạ giữ thì dừng, không tự kill. Nếu kiểm
+# tra sau khi chạy bị lỗi thì tự quay `current` về bản trước. Không đụng tới ktx_eureka, ktx_gateway, ktx_kytucxa, ktx_user.
 # Mật khẩu SSH được hỏi trực tiếp bởi ssh.exe/scp.exe, script không lưu mật khẩu.
 
 $ErrorActionPreference = 'Stop'
@@ -113,7 +114,7 @@ $scpArgs += @($LocalZip, "$Remote`:$RemoteFrontendDir/$ZipName")
 Invoke-Checked 'scp.exe' $scpArgs
 
 # --- Bước 4: giải nén, đổi `current`, PM2, kiểm tra, tự quay lại nếu lỗi --------
-Write-Host "[4/4] Giải nén trên server và chạy PM2 ($Pm2ServiceName)..." -ForegroundColor Cyan
+Write-Host "[4/4] Giải nén trên server, gỡ $Pm2ServiceName cũ rồi chạy lại từ bản mới..." -ForegroundColor Cyan
 $remoteScript = @'
 cd '@@DIR@@' || exit 1
 PREVIOUS_RELEASE="$(readlink -f current 2>/dev/null)"
@@ -126,19 +127,31 @@ test -f "releases/$RELEASE/server.js" || { echo "Goi khong co server.js"; exit 1
 test -d "releases/$RELEASE/.next/static" || { echo "Goi thieu .next/static"; exit 1; }
 source ~/.nvm/nvm.sh >/dev/null 2>&1
 set -a; . shared/production.env; set +a
+start_app() { pm2 start current/ecosystem.config.cjs --only @@PM2@@ --update-env; }
+# Go han tien trinh cu (chi @@PM2@@) roi chay moi, tranh dung cong va dung bo nho cua ban cu.
+pm2 delete @@PM2@@ >/dev/null 2>&1 || true
+sleep 2
+if ss -ltn sport = :@@PORT@@ | grep -q LISTEN; then
+  echo "Cong @@PORT@@ van dang bi mot tien trinh khac giu sau khi go @@PM2@@. Khong tu kill, hay kiem tra:"
+  ss -ltnp sport = :@@PORT@@
+  echo "Chua chay ban moi; ban truoc van la: $PREVIOUS_RELEASE"
+  exit 1
+fi
 ln -sfn "releases/$RELEASE" current
-pm2 startOrReload current/ecosystem.config.cjs --only @@PM2@@ --update-env
+start_app
 sleep 4
 if curl --fail --silent --show-error --head http://127.0.0.1:@@PORT@@/ >/dev/null; then
   echo "DEPLOY OK: release $RELEASE (ban truoc: $PREVIOUS_RELEASE)"
   pm2 status @@PM2@@
 else
   echo "KIEM TRA LOI, quay ve ban truoc: $PREVIOUS_RELEASE"
+  pm2 logs @@PM2@@ --lines 40 --nostream
+  pm2 delete @@PM2@@ >/dev/null 2>&1 || true
   if [ -n "$PREVIOUS_RELEASE" ]; then
     ln -sfn "$PREVIOUS_RELEASE" current
-    pm2 startOrReload current/ecosystem.config.cjs --only @@PM2@@ --update-env
+    sleep 2
+    start_app
   fi
-  pm2 logs @@PM2@@ --lines 40 --nostream
   exit 1
 fi
 '@
