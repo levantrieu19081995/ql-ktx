@@ -19,7 +19,17 @@ npm run lint     # next lint
 
 There is no test runner configured. `tsc_output.txt` and `test_api.js` at the root are ad-hoc artifacts, not part of a test suite. ESLint is intentionally permissive (`no-explicit-any`, `no-unused-vars` and similar are off). TypeScript is `strict`, so use `npx tsc --noEmit` to type-check.
 
+`npm run build-zip` builds and packages a release zip into `artifacts/`; `npm run build-deploy` does the same, then asks for confirmation and uploads it with `scp`/`ssh` to `admin_ktx@172.18.141.250` (`scripts/build-deploy-ktx.ps1`, modelled on the NVKH script in the WEB25108 project). It unpacks into `frontend/releases/<timestamp>`, repoints `current`, reloads only the `ktx_frontend` PM2 app and rolls back automatically if the health check fails; ssh asks for the password, nothing is stored. Pass extra flags after `--` (e.g. `npm run build-deploy -- -SkipBuild`, `-Yes`, `-LegacyScp`).
+
 Production packaging for Ubuntu is covered in `DEPLOY_UBUNTU.md`: `npm ci && npm run build`, then `scripts/package-production.ps1`, which zips the standalone output (swapping in Linux `sharp` binaries) into `artifacts/`. PM2 config is in `deploy/ecosystem.config.cjs`, and `deploy/production.env.template` lists the production env vars.
+
+Use `npm` (both `package-lock.json` and `yarn.lock` are present; `package-lock.json` is the one the deploy docs use). The root `README.md` is the untouched create-next-app boilerplate and `readme.ts` is a scratch note of code snippets, so neither describes this project.
+
+### Non-app files at the repo root
+Not part of the Next.js build, so don't go looking for app logic in them:
+- `prototype-app-myctu-ktx/`: standalone static HTML/JS mock-up of the dormitory module for the MyCTU mobile app (open `index.html` directly; no build, no API calls).
+- `danhGia/` (untracked): internship evaluation forms (`.docx`), unrelated to the code. `.agents/AGENTS.md` is a dated changelog of past UI work, not a rules file.
+- `artifacts/` holds the production zip built by `scripts/package-production.ps1`; `WEB_2605_07.08_TieuChuanThietKeGiaoDien_v1.0.docx` is the UI design standard the theme follows.
 
 ## Architecture
 

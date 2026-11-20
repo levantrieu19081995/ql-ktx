@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build-zip": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-deploy-ktx.ps1 build",
+    "build-deploy": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/build-deploy-ktx.ps1 deploy"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
